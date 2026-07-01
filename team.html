@@ -153,250 +153,253 @@
 
     <script src="navbar.js"></script>
     <script>
-        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
-        const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
+        // Data Sync Endpoints
+const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
 
-        const URL_PARAMS = new URLSearchParams(window.location.search);
-        const TARGET_TEAM = URL_PARAMS.get('name');
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const TARGET_TEAM = URL_PARAMS.get('name');
 
-        async function fetchCSV(url) {
-            const res = await fetch(url);
-            const text = await res.text();
-            return text.split(/\r\n|\n/).map(line => {
-                let result = [];
-                let current = '';
-                let inQuotes = false;
-                for (let i = 0; i < line.length; i++) {
-                    let char = line[i];
-                    if (char === '"') { inQuotes = !inQuotes; }
-                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
-                    else { current += char; }
-                }
-                result.push(current.trim());
-                return result;
-            });
+async function fetchCSV(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return text.split(/\r\n|\n/).map(line => {
+        let result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            let char = line[i];
+            if (char === '"') { inQuotes = !inQuotes; }
+            else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+            else { current += char; }
+        }
+        result.push(current.trim());
+        return result;
+    });
+}
+
+function extractRating(str) {
+    if (!str) return 1;
+    let match = str.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 1;
+}
+
+// Transforms standard Google Drive web links into direct-render raw image URLs
+function formatDriveImageUrl(driveUrl) {
+    if (!driveUrl || !driveUrl.includes('drive.google.com')) return 'logo_hcl_main.png';
+    try {
+        let fileId = '';
+        if (driveUrl.includes('id=')) {
+            fileId = driveUrl.split('id=')[1].split('&')[0];
+        } else if (driveUrl.includes('/d/')) {
+            fileId = driveUrl.split('/d/')[1].split('/')[0];
+        }
+        return fileId ? `https://docs.google.com/uc?export=download&id=${fileId}` : 'logo_hcl_main.png';
+    } catch(e) {
+        return 'logo_hcl_main.png';
+    }
+}
+
+function detectPosition(posStr, currentCount) {
+    let s = posStr ? posStr.toUpperCase() : "";
+    if (s.includes("GK") || s.includes("GOAL")) return "GK";
+    if (s.includes("DEF") || s.includes("DEFENDER")) return "DEF";
+    if (s.includes("MID") || s.includes("MIDFIELDER")) return "MID";
+    if (s.includes("FWD") || s.includes("FORWARD")) return "FWD";
+    
+    if (currentCount === 0) return "GK";
+    if (currentCount <= 4) return "DEF";
+    if (currentCount <= 7) return "MID";
+    return "FWD";
+}
+
+async function assembleProfile() {
+    if (!TARGET_TEAM) {
+        document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">No team parameter selected. Return to standings.</div>`;
+        return;
+    }
+
+    try {
+        const directory = await fetchCSV(CSV_TEAMS);
+        let managerName = "Unassigned";
+        let displayTeamName = TARGET_TEAM;
+        let shortCode = "";
+        let driveLogoUrl = "logo_hcl_main.png";
+
+        let bracketMatch = TARGET_TEAM.match(/\[(.*?)\]/);
+        if (bracketMatch) {
+            shortCode = bracketMatch[1];
         }
 
-        function extractRating(str) {
-            if (!str) return 1;
-            let match = str.match(/\d+/);
-            return match ? parseInt(match[0], 10) : 1;
-        }
-
-        // Transforms standard Google Drive web links into direct-render raw image URLs
-        function formatDriveImageUrl(driveUrl) {
-            if (!driveUrl || !driveUrl.includes('drive.google.com')) return 'logo_hcl_main.png';
-            try {
-                let fileId = '';
-                if (driveUrl.includes('id=')) {
-                    fileId = driveUrl.split('id=')[1].split('&')[0];
-                } else if (driveUrl.includes('/d/')) {
-                    fileId = driveUrl.split('/d/')[1].split('/')[0];
-                }
-                return fileId ? `https://docs.google.com/uc?export=download&id=${fileId}` : 'logo_hcl_main.png';
-            } catch(e) {
-                return 'logo_hcl_main.png';
-            }
-        }
-
-        function detectPosition(posStr, currentCount) {
-            let s = posStr ? posStr.toUpperCase() : "";
-            if (s.includes("GK") || s.includes("GOAL")) return "GK";
-            if (s.includes("DEF") || s.includes("DEFENDER")) return "DEF";
-            if (s.includes("MID") || s.includes("MIDFIELDER")) return "MID";
-            if (s.includes("FWD") || s.includes("FORWARD")) return "FWD";
+        for(let i = 1; i < directory.length; i++) {
+            let row = directory[i];
+            let rowTeamName = row[0] ? row[0].trim() : "";
             
-            if (currentCount === 0) return "GK";
-            if (currentCount <= 4) return "DEF";
-            if (currentCount <= 7) return "MID";
-            return "FWD";
-        }
-
-        async function assembleProfile() {
-            if (!TARGET_TEAM) {
-                document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">No team parameter selected. Return to standings.</div>`;
-                return;
-            }
-
-            try {
-                const directory = await fetchCSV(CSV_TEAMS);
-                let managerName = "Unassigned";
-                let displayTeamName = TARGET_TEAM;
-                let shortCode = "";
-                let driveLogoUrl = "logo_hcl_main.png";
-
-                let bracketMatch = TARGET_TEAM.match(/\[(.*?)\]/);
-                if (bracketMatch) {
-                    shortCode = bracketMatch[1];
-                }
-
-                // Match layout row and check column index 3 (or wherever your logo column falls)
-                for(let i = 1; i < directory.length; i++) {
-                    let rowTeamName = directory[i][0] ? directory[i][0].trim() : "";
-                    
-                    if(rowTeamName && (rowTeamName.toLowerCase() === TARGET_TEAM.toLowerCase() || TARGET_TEAM.toLowerCase().includes(rowTeamName.toLowerCase()) || rowTeamName.toLowerCase().includes(TARGET_TEAM.toLowerCase()))) {
-                        displayTeamName = rowTeamName;
-                        shortCode = directory[i][1] || shortCode;
-                        managerName = directory[i][2] || "Club Officer";
-                        // Reads drive link field if populated in the row layout
-                        if (directory[i][3]) {
-                            driveLogoUrl = formatDriveImageUrl(directory[i][3].trim());
-                        }
-                        break;
-                    }
-                }
-
-                if (!shortCode && displayTeamName.includes('[') && displayTeamName.includes(']')) {
-                    shortCode = displayTeamName.substring(displayTeamName.indexOf('[') + 1, displayTeamName.indexOf(']'));
-                }
-                let cleanTitle = displayTeamName.replace(/\[.*?\]\s*/, '');
-
-                const rosterLines = await fetchCSV(CSV_ROSTERS);
-                let teamPlayers = [];
-                let totalSalarySum = 0;
-
-                for(let i = 1; i < rosterLines.length; i++) {
-                    let r = rosterLines[i];
-                    if (!r[1]) continue;
-
-                    let playerTeam = r[3] ? r[3].trim() : "";
-
-                    if (playerTeam && (
-                        playerTeam.toLowerCase() === displayTeamName.toLowerCase() || 
-                        playerTeam.toLowerCase() === TARGET_TEAM.toLowerCase() ||
-                        (shortCode && playerTeam.toLowerCase().includes(`[${shortCode.toLowerCase()}]`))
-                    )) {
-                        let playerID = r[0].replace(/[^0-9]/g, '');
-                        let name = r[1].trim();
-                        let posType = detectPosition(r[2], teamPlayers.length);
-                        let offRating = extractRating(r[4]);
-                        let defRating = extractRating(r[5]);
-                        let rawCost = r[6] || "$0";
-                        let individualCost = parseFloat(rawCost.replace(/[^0-9.]/g, '')) || 0;
-
-                        totalSalarySum += individualCost;
-                        
-                        teamPlayers.push({ 
-                            id: playerID, 
-                            name: name, 
-                            off: offRating, 
-                            def: defRating, 
-                            costStr: rawCost, 
-                            costNum: individualCost, 
-                            pos: posType,
-                            displayPos: r[2]
-                        });
-                    }
-                }
-
-                renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum, driveLogoUrl);
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">Failed syncing active cloud assets.</div>`;
-            }
-        }
-
-        function renderDashboard(name, code, manager, players, budgetSum, logoUrl) {
-            const capLimit = 50000;
-            const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
-            const isOverBudget = budgetSum > capLimit;
-
-            let pitchHTML = [];
-            let counts = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
-
-            const COORDINATES = {
-                GK:  [{ x: 50, y: 91 }],
-                DEF: [{ x: 15, y: 73 }, { x: 38, y: 76 }, { x: 62, y: 76 }, { x: 85, y: 73 }],
-                MID: [{ x: 25, y: 50 }, { x: 50, y: 53 }, { x: 75, y: 50 }],
-                FWD: [{ x: 18, y: 24 }, { x: 50, y: 18 }, { x: 82, y: 24 }]
-            };
-
-            players.forEach(p => {
-                let posType = p.pos;
-                let coordArray = COORDINATES[posType];
-                let trackingIndex = counts[posType];
-                let coords = coordArray[trackingIndex] || { x: 50, y: 50 };
+            if(rowTeamName && (rowTeamName.toLowerCase() === TARGET_TEAM.toLowerCase() || TARGET_TEAM.toLowerCase().includes(rowTeamName.toLowerCase()) || rowTeamName.toLowerCase().includes(TARGET_TEAM.toLowerCase()))) {
+                displayTeamName = rowTeamName;
+                shortCode = row[1] || shortCode;
+                managerName = row[2] || "Club Officer";
                 
-                counts[posType]++;
-
-                pitchHTML.push(`
-                    <div class="player-node" style="left: ${coords.x}%; top: ${coords.y}%;">
-                        <div class="rating-pill-matrix">
-                            <span class="matrix-off">${p.off}</span>
-                            <span class="matrix-def">${p.def}</span>
-                        </div>
-                        <div class="player-avatar">${parseInt(p.id, 10)}</div>
-                        <div class="player-name">${p.name.split(' ').pop()}</div>
-                    </div>
-                `);
-            });
-
-            document.getElementById('profile-mount').innerHTML = `
-                <div class="profile-header-card">
-                    <div class="identity-row">
-                        <div class="team-logo-frame">
-                            <img src="${logoUrl}" alt="${name} Crest" onerror="this.src='logo_hcl_main.png';">
-                        </div>
-                        <div class="team-title-block">
-                            <h1>${name} <span class="team-pill">${code || 'HCL'}</span></h1>
-                            <div class="manager-label">Team Manager: <strong>${manager}</strong></div>
-                        </div>
-                    </div>
-                    <div class="budget-tracker ${isOverBudget ? 'budget-warning' : ''}">
-                        <div class="budget-meta">
-                            <span>Squad Cap Management</span>
-                            <span>$${budgetSum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} / $${capLimit.toLocaleString()}</span>
-                        </div>
-                        <div class="budget-bar-bg">
-                            <div class="budget-bar-fill" style="width: ${capPercentage}%;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="profile-layout-grid">
-                    <div class="roster-list-card">
-                        <h3 class="pitch-title">Squad Contract Inventory</h3>
-                        <table class="roster-table">
-                            <thead>
-                                <tr>
-                                    <th>Player</th>
-                                    <th>Pos</th>
-                                    <th style="text-align:center;">OFF</th>
-                                    <th style="text-align:center;">DEF</th>
-                                    <th style="text-align:right;">Salary valuation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${players.length === 0 ? `<tr><td colspan="5" class="loading-text" style="padding: 20px 0;">No active contracts assigned to this squad roster yet.</td></tr>` : 
-                                players.map(p => `
-                                    <tr>
-                                        <td style="font-weight:700;">#${p.id} ${p.name}</td>
-                                        <td><span class="badge-pos ${p.pos}">${p.displayPos || p.pos}</span></td>
-                                        <td style="text-align:center; font-weight:700; color:#ef4444;">${p.off}</td>
-                                        <td style="text-align:center; font-weight:700; color:#0066cc;">${p.def}</td>
-                                        <td style="text-align:right; font-family:monospace; font-weight:600;">${p.costStr}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="pitch-card">
-                        <h3 class="pitch-title">Tactical Field Formation (4-3-3)</h3>
-                        <div class="pitch-canvas">
-                            <div class="pitch-center-line"></div>
-                            <div class="pitch-center-circle"></div>
-                            <div class="pitch-penalty-top"></div>
-                            <div class="pitch-penalty-bottom"></div>
-                            ${pitchHTML.join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
+                // Dynamic Search: Look through the entire row for any Google Drive link format
+                let foundLink = row.find(cell => cell && cell.includes('drive.google.com'));
+                if (foundLink) {
+                    driveLogoUrl = formatDriveImageUrl(foundLink.trim());
+                }
+                break;
+            }
         }
 
-        assembleProfile();
+        if (!shortCode && displayTeamName.includes('[') && displayTeamName.includes(']')) {
+            shortCode = displayTeamName.substring(displayTeamName.indexOf('[') + 1, displayTeamName.indexOf(']'));
+        }
+        let cleanTitle = displayTeamName.replace(/\[.*?\]\s*/, '');
+
+        const rosterLines = await fetchCSV(CSV_ROSTERS);
+        let teamPlayers = [];
+        let totalSalarySum = 0;
+
+        for(let i = 1; i < rosterLines.length; i++) {
+            let r = rosterLines[i];
+            if (!r[1]) continue;
+
+            let playerTeam = r[3] ? r[3].trim() : "";
+
+            if (playerTeam && (
+                playerTeam.toLowerCase() === displayTeamName.toLowerCase() || 
+                playerTeam.toLowerCase() === TARGET_TEAM.toLowerCase() ||
+                (shortCode && playerTeam.toLowerCase().includes(`[${shortCode.toLowerCase()}]`))
+            )) {
+                let playerID = r[0].replace(/[^0-9]/g, '');
+                let name = r[1].trim();
+                let posType = detectPosition(r[2], teamPlayers.length);
+                let offRating = extractRating(r[4]);
+                let defRating = extractRating(r[5]);
+                let rawCost = r[6] || "$0";
+                let individualCost = parseFloat(rawCost.replace(/[^0-9.]/g, '')) || 0;
+
+                totalSalarySum += individualCost;
+                
+                teamPlayers.push({ 
+                    id: playerID, 
+                    name: name, 
+                    off: offRating, 
+                    def: defRating, 
+                    costStr: rawCost, 
+                    costNum: individualCost, 
+                    pos: posType,
+                    displayPos: r[2]
+                });
+            }
+        }
+
+        renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum, driveLogoUrl);
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">Failed syncing active cloud assets.</div>`;
+    }
+}
+
+function renderDashboard(name, code, manager, players, budgetSum, logoUrl) {
+    const capLimit = 50000;
+    const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
+    const isOverBudget = budgetSum > capLimit;
+
+    let pitchHTML = [];
+    let counts = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+
+    const COORDINATES = {
+        GK:  [{ x: 50, y: 91 }],
+        DEF: [{ x: 15, y: 73 }, { x: 38, y: 76 }, { x: 62, y: 76 }, { x: 85, y: 73 }],
+        MID: [{ x: 25, y: 50 }, { x: 50, y: 53 }, { x: 75, y: 50 }],
+        FWD: [{ x: 18, y: 24 }, { x: 50, y: 18 }, { x: 82, y: 24 }]
+    };
+
+    players.forEach(p => {
+        let posType = p.pos;
+        let coordArray = COORDINATES[posType];
+        let trackingIndex = counts[posType];
+        let coords = coordArray[trackingIndex] || { x: 50, y: 50 };
+        
+        counts[posType]++;
+
+        pitchHTML.push(`
+            <div class="player-node" style="left: ${coords.x}%; top: ${coords.y}%;">
+                <div class="rating-pill-matrix">
+                    <span class="matrix-off">${p.off}</span>
+                    <span class="matrix-def">${p.def}</span>
+                </div>
+                <div class="player-avatar">${parseInt(p.id, 10)}</div>
+                <div class="player-name">${p.name.split(' ').pop()}</div>
+            </div>
+        `);
+    });
+
+    document.getElementById('profile-mount').innerHTML = `
+        <div class="profile-header-card">
+            <div class="identity-row">
+                <div class="team-logo-frame">
+                    <img src="${logoUrl}" alt="${name} Crest" onerror="this.src='logo_hcl_main.png';">
+                </div>
+                <div class="team-title-block">
+                    <h1>${name} <span class="team-pill">${code || 'HCL'}</span></h1>
+                    <div class="manager-label">Team Manager: <strong>${manager}</strong></div>
+                </div>
+            </div>
+            <div class="budget-tracker ${isOverBudget ? 'budget-warning' : ''}">
+                <div class="budget-meta">
+                    <span>Squad Cap Management</span>
+                    <span>$${budgetSum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} / $${capLimit.toLocaleString()}</span>
+                </div>
+                <div class="budget-bar-bg">
+                    <div class="budget-bar-fill" style="width: ${capPercentage}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-layout-grid">
+            <div class="roster-list-card">
+                <h3 class="pitch-title">Squad Contract Inventory</h3>
+                <table class="roster-table">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Pos</th>
+                            <th style="text-align:center;">OFF</th>
+                            <th style="text-align:center;">DEF</th>
+                            <th style="text-align:right;">Salary valuation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${players.length === 0 ? `<tr><td colspan="5" class="loading-text" style="padding: 20px 0;">No active contracts assigned to this squad roster yet.</td></tr>` : 
+                        players.map(p => `
+                            <tr>
+                                <td style="font-weight:700;">#${p.id} ${p.name}</td>
+                                <td><span class="badge-pos ${p.pos}">${p.displayPos || p.pos}</span></td>
+                                <td style="text-align:center; font-weight:700; color:#ef4444;">${p.off}</td>
+                                <td style="text-align:center; font-weight:700; color:#0066cc;">${p.def}</td>
+                                <td style="text-align:right; font-family:monospace; font-weight:600;">${p.costStr}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pitch-card">
+                <h3 class="pitch-title">Tactical Field Formation (4-3-3)</h3>
+                <div class="pitch-canvas">
+                    <div class="pitch-center-line"></div>
+                    <div class="pitch-center-circle"></div>
+                    <div class="pitch-penalty-top"></div>
+                    <div class="pitch-penalty-bottom"></div>
+                    ${pitchHTML.join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+assembleProfile();
     </script>
 </body>
 </html>
