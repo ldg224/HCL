@@ -536,13 +536,12 @@
                 let matchYtId = parseYoutubeId(rawYtLink);
 
                 if (weekNum === CURRENT_SELECTED_WEEK) {
-                    highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr });
+                    highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr, homeScore: homeScore, awayScore: awayScore });
                 }
 
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed") {
                     bucketUnconfirmed.push(payload);
                 } else if (dateStr === todayLabel) {
-                    // Absolute alignment security: match day values force layout grouping automatically
                     bucketToday.push(payload);
                 } else if (dateStr === tomorrowLabel) {
                     bucketTomorrow.push(payload);
@@ -719,7 +718,7 @@
                     let scoreContainerHTML = `<div class="loading-text" style="padding:5px 0; font-size:0.85rem;">Match details unlock at kick-off</div>`;
                     if (isAccessible) {
                         let scoreDisplayLine = (match.status === 'FINALISED') ? 'Reveal Score' : 'Match Live / Ended';
-                        let rawScoreLine = (match.status === 'FINALISED') ? `FT: ${match.title}` : 'Scores Syncing...';
+                        let rawScoreLine = (match.status === 'FINALISED') ? `FT: ${match.homeScore} - ${match.awayScore}` : 'Scores Syncing...';
                         scoreContainerHTML = `
                             <button class="reveal-btn" onclick="revealScore(this)" ${match.status !== 'FINALISED' ? 'disabled' : ''}>${scoreDisplayLine}</button>
                             <div class="score-display">${rawScoreLine}</div>
