@@ -165,37 +165,44 @@
             });
         }
 
+        // Extracts precise digit combinations out of strings like "(9) Nine"
+        function extractRating(str) {
+            if (!str) return 1;
+            let match = str.match(/\d+/);
+            return match ? parseInt(match[0], 10) : 1;
+        }
+
         async function initMarket() {
             try {
                 const rosterData = await fetchCSV(CSV_ROSTERS);
                 let allPlayers = [];
                 let freeAgents = [];
 
-                // Parse and map clean objects from rows (Skipping Header Index 0)
                 for(let i = 1; i < rosterData.length; i++) {
                     let r = rosterData[i];
-                    if(!r[1]) continue; // Skip blank rows
+                    if(!r[1]) continue; 
 
-                    let assignedTeam = r[0] ? r[0].trim() : "";
+                    let playerID = r[0].trim();
                     let name = r[1].trim();
-                    let offRating = parseInt(r[2]) || 1;
-                    let defRating = parseInt(r[3]) || 1;
-                    let rawCost = r[4] || "$0";
+                    let assignedTeam = r[3] ? r[3].trim() : "";
+                    
+                    let offRating = extractRating(r[4]);
+                    let defRating = extractRating(r[5]);
+                    let rawCost = r[6] || "$0";
                     let numericalCost = parseFloat(rawCost.replace(/[^0-9.]/g, '')) || 0;
 
-                    let item = { team: assignedTeam, name: name, off: offRating, def: defRating, costStr: rawCost, costNum: numericalCost };
+                    let item = { id: playerID, team: assignedTeam, name: name, off: offRating, def: defRating, costStr: rawCost, costNum: numericalCost };
 
                     allPlayers.push(item);
 
-                    // Sort criteria for Free Agency pool
-                    if(assignedTeam === "" || assignedTeam.toLowerCase() === "unassigned" || assignedTeam.toLowerCase() === "free agent") {
+                    // Check if player is completely unassigned/free agent
+                    if(assignedTeam === "" || assignedTeam.toLowerCase().includes("unassigned") || assignedTeam.toLowerCase().includes("free agent")) {
                         freeAgents.push(item);
                     }
                 }
 
-                // Compile Top Attackers (Sorted by Offense rating descending)
+                // Sort descending based on numeric values extracted
                 let powerAttackers = [...allPlayers].sort((a, b) => b.off - a.off).slice(0, 5);
-                // Compile Top Defenders (Sorted by Defense rating descending)
                 let anchorDefenders = [...allPlayers].sort((a, b) => b.def - a.def).slice(0, 5);
 
                 renderLeaderboards(powerAttackers, anchorDefenders);
@@ -215,7 +222,7 @@
                     <tr>
                         <td>
                             <div class="player-row-item">
-                                <span style="font-weight:700;">${p.name}</span>
+                                <span style="font-weight:700;">#${p.id} ${p.name}</span>
                                 <span class="player-sub-team">${teamContext}</span>
                             </div>
                         </td>
@@ -230,7 +237,7 @@
                     <tr>
                         <td>
                             <div class="player-row-item">
-                                <span style="font-weight:700;">${p.name}</span>
+                                <span style="font-weight:700;">#${p.id} ${p.name}</span>
                                 <span class="player-sub-team">${teamContext}</span>
                             </div>
                         </td>
@@ -249,10 +256,10 @@
 
             mount.innerHTML = agents.map(p => `
                 <tr>
-                    <td style="font-weight:700; color:var(--text-main);">${p.name}</td>
+                    <td style="font-weight:700; color:var(--text-main);">#${p.id} ${p.name}</td>
                     <td class="stat-badge off" style="text-align:center;">${p.off}</td>
                     <td class="stat-badge def" style="text-align:center;">${p.def}</td>
-                    <td class="cost-col">$${p.costNum.toLocaleString()}</td>
+                    <td class="cost-col">${p.costStr}</td>
                 </tr>
             `).join('');
         }
