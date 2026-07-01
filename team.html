@@ -61,6 +61,13 @@
         .manager-label { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
         .manager-label strong { color: var(--text-main); }
 
+        /* Form indicator style elements */
+        .form-container { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+        .form-pill { width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 800; }
+        .form-w { background-color: #10b981; }
+        .form-d { background-color: #64748b; }
+        .form-l { background-color: #ef4444; }
+
         /* Financial Cap Progress Tracker */
         .budget-tracker { display: flex; flex-direction: column; gap: 6px; background: var(--bg-color); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); }
         .budget-meta { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -155,6 +162,7 @@
     <script>
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
         const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
+        const CSV_RESULTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
 
         const URL_PARAMS = new URLSearchParams(window.location.search);
         const TARGET_TEAM = URL_PARAMS.get('name');
@@ -248,6 +256,53 @@
 
                 let teamLogoUrl = getLocalTeamLogo(shortCode);
 
+                // Fetch Form results tracking data
+                let formHTML = "";
+                try {
+                    const resultsData = await fetchCSV(CSV_RESULTS);
+                    let matchingMatches = [];
+
+                    for(let i = 1; i < resultsData.length; i++) {
+                        let matchRow = resultsData[i];
+                        if (!matchRow[3] || matchRow[3].toUpperCase() !== "FINALISED") continue;
+
+                        let homeTeam = matchRow[4] ? matchRow[4].toLowerCase() : "";
+                        let awayTeam = matchRow[6] ? matchRow[6].toLowerCase() : "";
+                        
+                        let isHome = false;
+                        let isAway = false;
+
+                        let tName = cleanTitle.toLowerCase();
+                        let sCode = shortCode ? shortCode.toLowerCase() : "---";
+
+                        if (homeTeam.includes(tName) || tName.includes(homeTeam) || (sCode && homeTeam.includes(sCode))) { isHome = true; }
+                        if (awayTeam.includes(tName) || tName.includes(awayTeam) || (sCode && awayTeam.includes(sCode))) { isAway = true; }
+
+                        if (isHome || isAway) {
+                            let homeScore = parseInt(matchRow[5], 10) || 0;
+                            let awayScore = parseInt(matchRow[7], 10) || 0;
+                            let outcome = "D";
+
+                            if (homeScore === awayScore) { outcome = "D"; }
+                            else if (isHome) { outcome = homeScore > awayScore ? "W" : "L"; }
+                            else if (isAway) { outcome = awayScore > homeScore ? "W" : "L"; }
+
+                            matchingMatches.push({ week: parseInt(matchRow[0], 10) || 0, outcome: outcome });
+                        }
+                    }
+
+                    if(matchingMatches.length > 0) {
+                        matchingMatches.sort((a, b) => a.week - b.week);
+                        let pills = matchingMatches.map(m => {
+                            let cls = m.outcome.toLowerCase();
+                            return `<div class="form-pill form-${cls}">${m.outcome}</div>`;
+                        }).join('');
+                        formHTML = `<div class="form-container">FORM: ${pills}</div>`;
+                    }
+                } catch (formErr) {
+                    console.error("Form calculation encountered an error:", formErr);
+                }
+
                 const rosterLines = await fetchCSV(CSV_ROSTERS);
                 let teamPlayers = [];
                 let totalSalarySum = 0;
@@ -286,7 +341,7 @@
                     }
                 }
 
-                renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum, teamLogoUrl);
+                renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum, teamLogoUrl, formHTML);
 
             } catch (err) {
                 console.error(err);
@@ -294,7 +349,7 @@
             }
         }
 
-        function renderDashboard(name, code, manager, players, budgetSum, logoUrl) {
+        function renderDashboard(name, code, manager, players, budgetSum, logoUrl, formHTML) {
             const capLimit = 50000;
             const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
             const isOverBudget = budgetSum > capLimit;
@@ -338,6 +393,7 @@
                         <div class="team-title-block">
                             <h1>${name} <span class="team-pill">${code || 'HCL'}</span></h1>
                             <div class="manager-label">Team Manager: <strong>${manager}</strong></div>
+                            ${formHTML}
                         </div>
                     </div>
                     <div class="budget-tracker ${isOverBudget ? 'budget-warning' : ''}">
