@@ -184,6 +184,7 @@
         .status-upcoming-badge { background: #fef3c7; color: var(--status-upcoming); }
         .status-finalised-badge { background: #dcfce7; color: var(--status-finalised); }
         .status-live-badge { background: #dcfce7; color: var(--status-live); font-weight: 800; }
+        .status-unconfirmed-badge { background: #fee2e2; color: #ef4444; }
 
         .match-countdown-banner {
             display: flex; justify-content: center; align-items: center; background: #fffbeb; border: 1px solid #fef3c7;
@@ -539,7 +540,7 @@
                     highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr, homeScore: homeScore, awayScore: awayScore });
                 }
 
-                if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed") {
+                if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed" || status.includes("CONFIRM")) {
                     bucketUnconfirmed.push(payload);
                 } else if (dateStr === todayLabel) {
                     bucketToday.push(payload);
@@ -554,26 +555,33 @@
             function makeScheduleRowHTML(m) {
                 const matchTimeObj = getMatchDateTime(m.date, m.time);
                 const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                const isFinishedOrActive = (m.status === "FINALISED" || isTimePassed);
+                const isFinishedOrActive = isTimePassed;
 
                 let badgeClass = "status-upcoming-badge";
                 let labelStatus = m.status.toLowerCase();
                 
-                if (m.status === "FINALISED") {
-                    badgeClass = "status-finalised-badge";
+                if (m.status.includes("CONFIRM")) {
+                    badgeClass = "status-unconfirmed-badge";
+                } else if (m.status === "FINALISED") {
+                    if (isTimePassed) {
+                        badgeClass = "status-finalised-badge";
+                    } else {
+                        badgeClass = "status-upcoming-badge";
+                        labelStatus = "upcoming";
+                    }
                 } else if (isTimePassed) {
                     badgeClass = "status-live-badge";
                     labelStatus = "live / ended";
                 }
 
                 let centerVs = `<span class="team-vs-upcoming">VS</span>`;
-                if (m.status === "FINALISED") { 
+                if (m.status === "FINALISED" && isTimePassed) { 
                     centerVs = `<span class="team-vs-score">${m.homeScore} - ${m.awayScore}</span>`; 
                 }
 
                 let matchYtId = parseYoutubeId(m.rawYtLink);
                 let scheduleReplayBtn = "";
-                if (m.status === "FINALISED" && matchYtId) {
+                if (m.status === "FINALISED" && isTimePassed && matchYtId) {
                     scheduleReplayBtn = `<a href="https://www.youtube.com/watch?v=${matchYtId}" target="_blank" class="schedule-replay-btn">🎬 Replay</a>`;
                 }
 
@@ -585,7 +593,7 @@
                                            m.home.toUpperCase().includes("TBA") || 
                                            m.away.toUpperCase().includes("TBA");
 
-                if (!isFinishedOrActive && !isPlaceholderMatch) {
+                if (!isFinishedOrActive && !isPlaceholderMatch && !m.status.includes("CONFIRM")) {
                     const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
                     const isRealAwayTeam = m.away in LADDER_POINTS_MAP;
 
@@ -608,7 +616,7 @@
                     }
                 }
 
-                if (!isFinishedOrActive && matchTimeObj) {
+                if (!isFinishedOrActive && matchTimeObj && !m.status.includes("CONFIRM")) {
                     const uniqueClockId = `clock-${m.week}-${m.idx}`;
                     countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
                     
@@ -679,22 +687,27 @@
             if(tickerMatches.length === 0) {
                 tickerMount.innerHTML = `<div class="loading-text" style="padding:10px 0; font-size:0.8rem;">No matches scheduled for today.</div>`;
             } else {
-                tickerMount.innerHTML = tickerMatches.map((m, i) => `
-                    <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
-                        <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${m.status.toLowerCase()}</span></div>
-                        <div class="ticker-teams">
-                            <a href="team.html?name=${encodeURIComponent(m.home)}" class="ticker-team-item">
-                                <img src="${getLocalTeamLogo(m.homeCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
-                                <span>${m.homeCode}</span>
-                            </a>
-                            <span style="color:var(--text-muted); font-size:0.8rem;">${m.status === 'FINALISED' ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
-                            <a href="team.html?name=${encodeURIComponent(m.away)}" class="ticker-team-item">
-                                <span>${m.awayCode}</span>
-                                <img src="${getLocalTeamLogo(m.awayCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
-                            </a>
+                tickerMount.innerHTML = tickerMatches.map((m, i) => {
+                    const matchTimeObj = getMatchDateTime(m.date, m.time);
+                    const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
+                    const showTickerScore = (m.status === 'FINALISED' && isTimePassed);
+                    return `
+                        <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
+                            <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
+                            <div class="ticker-teams">
+                                <a href="team.html?name=${encodeURIComponent(m.home)}" class="ticker-team-item">
+                                    <img src="${getLocalTeamLogo(m.homeCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
+                                    <span>${m.homeCode}</span>
+                                </a>
+                                <span style="color:var(--text-muted); font-size:0.8rem;">${showTickerScore ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
+                                <a href="team.html?name=${encodeURIComponent(m.away)}" class="ticker-team-item">
+                                    <span>${m.awayCode}</span>
+                                    <img src="${getLocalTeamLogo(m.awayCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
 
             document.getElementById('highlights-heading').innerText = `Week ${CURRENT_SELECTED_WEEK} Replays`;
@@ -706,7 +719,7 @@
                 videoGrid.innerHTML = highlightMatches.map((match, idx) => {
                     const matchTimeObj = getMatchDateTime(match.date, match.time);
                     const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                    const isAccessible = (match.status === "FINALISED" || isTimePassed);
+                    const isAccessible = isTimePassed;
 
                     let mediaBlock = `<div class="no-video-placeholder"><span style="font-size:1.4rem;">🎬</span><div>Match Replay Processing</div></div>`;
                     if (!isAccessible) {
