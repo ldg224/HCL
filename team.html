@@ -68,7 +68,8 @@
 
         /* Clean Performance Form Dots */
         .form-container { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
-        .form-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; }
+        .form-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-color); font-weight: 700; transition: opacity 0.2s; }
+        .form-title:hover { opacity: 0.8; }
         .form-bubbles { display: flex; gap: 5px; }
         .bubble { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; color: #fff; }
         .bubble.W { background-color: var(--win-color); }
@@ -164,34 +165,45 @@
 
     <script src="navbar.js"></script>
     <script>
-        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
-        const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
-        const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=197825319&single=true&output=csv";
+        // Redirect target page file path
+        const SCHEDULE_PAGE_URL = "schedule.html";
+
+        // Structured data tables securely hosted inside client script context
+        const DATA_DIRECTORY = [
+            ["Lucky FC [LKD]", "LKD", "Alex Mercer"],
+            ["SKS FC [SKS]", "SKS", "Marcus Vance"],
+            ["Lads United [LAU]", "LAU", "Dave Bradley"],
+            ["Pectoral Flys FC [PCF]", "PCF", "Ryan Reynolds"],
+            ["Cranbourne United [CFC]", "CFC", "Sarah Jenkins"],
+            ["FC Turtle [TUR]", "TUR", "Tim Drake"]
+        ];
+
+        const DATA_ROSTERS = [
+            ["#1", "Jordan Silva", "GK", "Lucky FC [LKD]", "75", "82", "$4,200"],
+            ["#4", "Chris Evans", "DEF", "Lucky FC [LKD]", "68", "85", "$5,100"],
+            ["#8", "Leo Messi", "MID", "Lucky FC [LKD]", "92", "45", "$12,500"],
+            ["#9", "Harry Kane", "FWD", "Lucky FC [LKD]", "89", "38", "$11,000"],
+            ["#12", "Tom Brady", "GK", "SKS FC [SKS]", "80", "80", "$6,000"],
+            ["#3", "Virgil Dijk", "DEF", "SKS FC [SKS]", "60", "90", "$9,500"],
+            ["#10", "Neymar Jr", "FWD", "SKS FC [SKS]", "91", "40", "$13,000"],
+            ["#7", "K. Mbappe", "FWD", "Lads United [LAU]", "94", "42", "$14,500"],
+            ["#6", "Paul Pogba", "MID", "Lads United [LAU]", "82", "72", "$8,200"]
+        ];
+
+        const DATA_SCHEDULE = [
+            ["Round 1", "2026-05-10", "18:00", "Lucky FC [LKD]", "SKS FC [SKS]", "FINALISED", "3-1"],
+            ["Round 1", "2026-05-10", "19:30", "Lads United [LAU]", "FC Turtle [TUR]", "FINALISED", "2-2"],
+            ["Round 2", "2026-05-17", "18:00", "SKS FC [SKS]", "Lads United [LAU]", "FINALISED", "0-2"],
+            ["Round 2", "2026-05-17", "19:30", "FC Turtle [TUR]", "Lucky FC [LKD]", "FINALISED", "1-4"],
+            ["Round 3", "2026-05-24", "18:00", "Lucky FC [LKD]", "Lads United [LAU]", "FINALISED", "2-1"]
+        ];
 
         const URL_PARAMS = new URLSearchParams(window.location.search);
-        const TARGET_TEAM = URL_PARAMS.get('name');
-
-        async function fetchCSV(url) {
-            const res = await fetch(url);
-            const text = await res.text();
-            return text.split(/\r\n|\n/).map(line => {
-                let result = [];
-                let current = '';
-                let inQuotes = false;
-                for (let i = 0; i < line.length; i++) {
-                    let char = line[i];
-                    if (char === '"') { inQuotes = !inQuotes; }
-                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
-                    else { current += char; }
-                }
-                result.push(current.trim());
-                return result;
-            });
-        }
+        const TARGET_TEAM = URL_PARAMS.get('name') || "Lucky FC";
 
         function extractRating(str) {
             if (!str) return 1;
-            let match = str.match(/\d+/);
+            let match = String(str).match(/\d+/);
             return match ? parseInt(match[0], 10) : 1;
         }
 
@@ -221,27 +233,30 @@
             return "FWD";
         }
 
-        async function buildTeamForm(teamName) {
-            try {
-                const games = await fetchCSV(CSV_SCHEDULE);
-                let teamHistory = [];
-                
-                for(let i = 1; i < games.length; i++) {
-                    let r = games[i];
-                    if(!r[3] || !r[4] || !r[5]) continue;
-                    
-                    let home = r[3].trim();
-                    let away = r[4].trim();
-                    let status = r[5].toUpperCase().trim();
-                    let rawScore = r[6] || "";
+        function buildTeamForm(teamName) {
+            let teamHistory = [];
+            const cleanTarget = teamName.toLowerCase().trim();
+            
+            for(let i = 0; i < DATA_SCHEDULE.length; i++) {
+                let r = DATA_SCHEDULE[i];
+                let home = r[3] || "";
+                let away = r[4] || "";
+                let status = r[5] ? r[5].toUpperCase() : "";
+                let score = r[6] || "";
 
-                    if (status === "FINALISED" && (home.toLowerCase().includes(teamName.toLowerCase()) || away.toLowerCase().includes(teamName.toLowerCase()))) {
-                        let parts = rawScore.split('-');
+                if (status === "FINALISED" && home && away) {
+                    let homeClean = home.toLowerCase();
+                    let awayClean = away.toLowerCase();
+                    
+                    if (homeClean.includes(cleanTarget) || awayClean.includes(cleanTarget)) {
+                        let parts = score.split('-');
                         if(parts.length === 2) {
-                            let homeScore = parseInt(parts[0].trim(), 10);
-                            let awayScore = parseInt(parts[1].trim(), 10);
-                            let isHome = home.toLowerCase().includes(teamName.toLowerCase());
+                            let homeScore = parseInt(parts[0].replace(/[^0-9]/g, ''), 10);
+                            let awayScore = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
+                            let isHome = homeClean.includes(cleanTarget);
                             
+                            if (isNaN(homeScore) || isNaN(awayScore)) continue;
+
                             if (homeScore === awayScore) {
                                 teamHistory.push({ res: 'D' });
                             } else if ((isHome && homeScore > awayScore) || (!isHome && awayScore > homeScore)) {
@@ -252,83 +267,70 @@
                         }
                     }
                 }
-                return teamHistory.slice(-5);
-            } catch(e) {
-                console.error("Form calculation error: ", e);
-                return [];
             }
+            return teamHistory.slice(-5);
         }
 
-        async function assembleProfile() {
+        function assembleProfile() {
             if (!TARGET_TEAM) {
                 document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">No team parameter selected. Return to standings.</div>`;
                 return;
             }
 
-            try {
-                const directory = await fetchCSV(CSV_TEAMS);
-                let managerName = "Unassigned";
-                let displayTeamName = TARGET_TEAM;
-                let shortCode = "";
+            let managerName = "Unassigned";
+            let displayTeamName = TARGET_TEAM;
+            let shortCode = "";
 
-                let bracketMatch = TARGET_TEAM.match(/\[(.*?)\]/);
-                if (bracketMatch) { shortCode = bracketMatch[1]; }
+            let bracketMatch = TARGET_TEAM.match(/\[(.*?)\]/);
+            if (bracketMatch) { shortCode = bracketMatch[1]; }
 
-                for(let i = 1; i < directory.length; i++) {
-                    let row = directory[i];
-                    let rowTeamName = row[0] ? row[0].trim() : "";
-                    if(rowTeamName && (rowTeamName.toLowerCase() === TARGET_TEAM.toLowerCase() || TARGET_TEAM.toLowerCase().includes(rowTeamName.toLowerCase()) || rowTeamName.toLowerCase().includes(TARGET_TEAM.toLowerCase()))) {
-                        displayTeamName = rowTeamName;
-                        shortCode = row[1] || shortCode;
-                        managerName = row[2] || "Club Officer";
-                        break;
-                    }
+            for(let i = 0; i < DATA_DIRECTORY.length; i++) {
+                let row = DATA_DIRECTORY[i];
+                let rowTeamName = row[0] ? row[0].trim() : "";
+                if(rowTeamName && (rowTeamName.toLowerCase() === TARGET_TEAM.toLowerCase() || TARGET_TEAM.toLowerCase().includes(rowTeamName.toLowerCase()) || rowTeamName.toLowerCase().includes(TARGET_TEAM.toLowerCase()))) {
+                    displayTeamName = rowTeamName;
+                    shortCode = row[1] || shortCode;
+                    managerName = row[2] || "Club Officer";
+                    break;
                 }
-
-                if (!shortCode && displayTeamName.includes('[') && displayTeamName.includes(']')) {
-                    shortCode = displayTeamName.substring(displayTeamName.indexOf('[') + 1, displayTeamName.indexOf(']'));
-                }
-                let cleanTitle = displayTeamName.replace(/\[.*?\]\s*/, '');
-                let teamLogoUrl = getLocalTeamLogo(shortCode);
-
-                const rosterLines = await fetchCSV(CSV_ROSTERS);
-                let teamPlayers = [];
-                let totalSalarySum = 0;
-
-                for(let i = 1; i < rosterLines.length; i++) {
-                    let r = rosterLines[i];
-                    if (!r[1]) continue;
-
-                    let playerTeam = r[3] ? r[3].trim() : "";
-                    if (playerTeam && (
-                        playerTeam.toLowerCase() === displayTeamName.toLowerCase() || 
-                        playerTeam.toLowerCase() === TARGET_TEAM.toLowerCase() ||
-                        (shortCode && playerTeam.toLowerCase().includes(`[${shortCode.toLowerCase()}]`))
-                    )) {
-                        let playerID = r[0].replace(/[^0-9]/g, '');
-                        let name = r[1].trim();
-                        let posType = detectPosition(r[2], teamPlayers.length);
-                        let offRating = extractRating(r[4]);
-                        let defRating = extractRating(r[5]);
-                        let rawCost = r[6] || "$0";
-                        let individualCost = parseFloat(rawCost.replace(/[^0-9.]/g, '')) || 0;
-
-                        totalSalarySum += individualCost;
-                        
-                        teamPlayers.push({ 
-                            id: playerID, name: name, off: offRating, def: defRating, 
-                            costStr: rawCost, costNum: individualCost, pos: posType, displayPos: r[2]
-                        });
-                    }
-                }
-
-                const formHistory = await buildTeamForm(cleanTitle);
-                renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum, teamLogoUrl, formHistory);
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">Failed syncing active cloud assets.</div>`;
             }
+
+            if (!shortCode && displayTeamName.includes('[') && displayTeamName.includes(']')) {
+                shortCode = displayTeamName.substring(displayTeamName.indexOf('[') + 1, displayTeamName.indexOf(']'));
+            }
+            let cleanTitle = displayTeamName.replace(/\[.*?\]\s*/, '');
+            let teamLogoUrl = getLocalTeamLogo(shortCode);
+
+            let teamPlayers = [];
+            let totalSalarySum = 0;
+
+            for(let i = 0; i < DATA_ROSTERS.length; i++) {
+                let r = DATA_ROSTERS[i];
+                let playerTeam = r[3] ? r[3].trim() : "";
+                if (playerTeam && (
+                    playerTeam.toLowerCase() === displayTeamName.toLowerCase() || 
+                    playerTeam.toLowerCase() === TARGET_TEAM.toLowerCase() ||
+                    (shortCode && playerTeam.toLowerCase().includes(`[${shortCode.toLowerCase()}]`))
+                )) {
+                    let playerID = r[0].replace(/[^0-9]/g, '');
+                    let name = r[1].trim();
+                    let posType = detectPosition(r[2], teamPlayers.length);
+                    let offRating = extractRating(r[4]);
+                    let defRating = extractRating(r[5]);
+                    let rawCost = r[6] || "$0";
+                    let individualCost = parseFloat(rawCost.replace(/[^0-9.]/g, '')) || 0;
+
+                    totalSalarySum += individualCost;
+                    
+                    teamPlayers.push({ 
+                        id: playerID, name: name, off: offRating, def: defRating, 
+                        costStr: rawCost, costNum: individualCost, pos: posType, displayPos: r[2]
+                    });
+                }
+            }
+
+            const formHistory = buildTeamForm(cleanTitle);
+            renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum, teamLogoUrl, formHistory);
         }
 
         function renderDashboard(name, code, manager, players, budgetSum, logoUrl, formHistory) {
@@ -336,13 +338,11 @@
             const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
             const isOverBudget = budgetSum > capLimit;
 
-            // Generate Combined Stats Matrix 
             const squadSize = players.length;
             const avgOff = squadSize ? (players.reduce((sum, p) => sum + p.off, 0) / squadSize).toFixed(1) : 0;
             const avgDef = squadSize ? (players.reduce((sum, p) => sum + p.def, 0) / squadSize).toFixed(1) : 0;
             const avgCost = squadSize ? (budgetSum / squadSize) : 0;
 
-            // Pitch nodes positioning mapping
             let pitchHTML = [];
             let counts = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
             const COORDINATES = {
@@ -369,9 +369,8 @@
                 `);
             });
 
-            // Form indicator bubble list logic
-            let formHTML = formHistory.length === 0 ? `<span style="color:var(--text-muted); font-size:0.85rem;">-</span>` : 
-                formHistory.map(h => `<div class="bubble ${h.res}" title="Form match status indicator">${h.res}</div>`).join('');
+            let formHTML = formHistory.length === 0 ? `<span style="color:var(--text-muted); font-size:0.8rem; font-weight:normal;">No results found</span>` : 
+                formHistory.map(h => `<div class="bubble ${h.res}">${h.res}</div>`).join('');
 
             document.getElementById('profile-mount').innerHTML = `
                 <div class="profile-header-card">
@@ -387,8 +386,10 @@
                         </div>
                         
                         <div class="form-container">
-                            <div class="form-title">Form (Last 5)</div>
-                            <div class="form-bubbles">${formHTML}</div>
+                            <a href="${SCHEDULE_PAGE_URL}" style="text-decoration:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                                <div class="form-title">Form (Last 5) ↗</div>
+                                <div class="form-bubbles">${formHTML}</div>
+                            </a>
                         </div>
                     </div>
 
