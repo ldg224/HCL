@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCL Hub | Standings</title>
+    <link rel="icon" type="image/png" href="logo_hcl_main.png">
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-color: #0066cc;
+            --accent-bg: rgba(0, 102, 204, 0.05);
+            --highlight-row: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Corner Graphics */
+        .corner-graphic {
+            position: fixed;
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .corner-top-right { top: 40px; right: 0; }
+        .corner-bottom-left { bottom: 0; left: 0; transform: rotate(180deg); }
+
+        main, footer {
+            position: relative;
+            z-index: 10;
+        }
+
+        main {
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            margin: 0 0 6px 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .page-header p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        /* Standings Table Wrapper */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            backdrop-filter: blur(8px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+
+        th {
+            background: #fafafa;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+
+        /* Column Specific Formatting */
+        .col-rank { font-family: monospace; font-weight: 700; color: var(--text-muted); width: 40px; }
+        .col-team { font-weight: 700; }
+        .col-team a {
+            color: var(--text-main);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.15s;
+        }
+        .col-team a:hover {
+            color: var(--accent-color);
+        }
+        .team-pill {
+            font-size: 0.72rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .col-num { text-align: center; color: var(--text-muted); width: 45px; }
+        .col-gd { text-align: center; font-weight: 600; width: 50px; }
+        .col-pts {
+            text-align: center;
+            font-weight: 700;
+            color: var(--accent-color);
+            background: var(--accent-bg);
+            width: 60px;
+        }
+
+        /* Table Footer / Notices Zone */
+        .table-footer-notice {
+            padding: 16px;
+            background: #fafafa;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .loading-text {
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding: 60px 0;
+            font-weight: 500;
+        }
+
+        footer {
+            margin-top: auto; padding: 24px 20px; color: var(--text-muted); font-size: 0.78rem; text-align: center;
+            border-top: 1px solid var(--border-color); width: 100%; max-width: 1200px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .hide-mobile { display: none; }
+            th, td { padding: 12px 10px; font-size: 0.85rem; }
+            .corner-graphic { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-top-right">
+    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-bottom-left">
+
+    <main>
+        <div class="page-header">
+            <h1>Championship Standings</h1>
+            <p>Live ladder updates, performance forms, and statistical tie-breakers.</p>
+        </div>
+
+        <div class="table-container">
+            <table id="standings-table">
+                <thead>
+                    <tr>
+                        <th class="col-rank">Pos</th>
+                        <th>Team</th>
+                        <th class="col-num">P</th>
+                        <th class="col-num hide-mobile">W</th>
+                        <th class="col-num hide-mobile">D</th>
+                        <th class="col-num hide-mobile">L</th>
+                        <th class="col-num hide-mobile">GF</th>
+                        <th class="col-num hide-mobile">GA</th>
+                        <th class="col-num">GD</th>
+                        <th class="col-pts">Pts</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body-mount">
+                    <tr>
+                        <td colspan="10" class="loading-text">Syncing database assets...</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="table-notice-mount"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div>&copy; 2026 Heineken C League (HCL). All Rights Reserved.</div>
+        <img src="logo_hcl_main.png" alt="HCL Logo" style="height:20px; opacity:0.5;">
+    </footer>
+
+    <script src="navbar.js"></script>
+    <script>
+        // Data Configuration Endpoints
+        const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
+        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+
+        let TEAM_LOOKUP_MAP = {};
+
+        // Parser Utility Handling Quotation Wrappers
+        async function fetchCSV(url) {
+            const res = await fetch(url);
+            const text = await res.text();
+            return text.split(/\r\n|\n/).map(line => {
+                let result = [];
+                let current = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') { inQuotes = !inQuotes; }
+                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                    else { current += char; }
+                }
+                result.push(current.trim());
+                return result;
+            });
+        }
+
+        async function initStandings() {
+            try {
+                // 1. Map Team codes out first for layout tags
+                const teamData = await fetchCSV(CSV_TEAMS);
+                teamData.forEach((row, i) => {
+                    if(i === 0 || !row[0]) return;
+                    TEAM_LOOKUP_MAP[row[0]] = row[1] || row[0].substring(0,3).toUpperCase();
+                });
+
+                // 2. Process and map structural Standings Data rows
+                const standingsData = await fetchCSV(CSV_STANDINGS);
+                renderTable(standingsData);
+
+            } catch (err) {
+                console.error("Standings Processing Error:", err);
+                document.getElementById('table-body-mount').innerHTML = `
+                    <tr><td colspan="10" class="loading-text" style="color:#ef4444;">Error mapping cloud database records.</td></tr>
+                `;
+            }
+        }
+
+        function renderTable(rows) {
+            const bodyMount = document.getElementById('table-body-mount');
+            const noticeMount = document.getElementById('table-notice-mount');
+            
+            let tableHTML = [];
+            let footerNotice = "";
+
+            for(let i = 1; i < rows.length; i++) {
+                let row = rows[i];
+                
+                // If a row starts with an asterisk or separator flag, divert it to footer messages
+                if (row[0] && (row[0].startsWith('*') || row[0].toLowerCase().includes('notice'))) {
+                    footerNotice = row.join(' ').replace(/,+/g, ' ').trim();
+                    continue;
+                }
+
+                // Skip blank buffer entries
+                if (!row[0] || !row[1]) continue;
+
+                let pos = row[0];
+                let teamName = row[1];
+                let played = row[2] || "0";
+                let won = row[3] || "0";
+                let drawn = row[4] || "0";
+                let lost = row[5] || "0";
+                let gf = row[6] || "0";
+                let ga = row[7] || "0";
+                let gd = row[8] || "0";
+                let pts = row[9] || "0";
+
+                let shortCode = TEAM_LOOKUP_MAP[teamName] || teamName.substring(0,3).toUpperCase();
+
+                tableHTML.push(`
+                    <tr>
+                        <td class="col-rank">${pos}</td>
+                        <td class="col-team">
+                            <a href="team.html?name=${encodeURIComponent(teamName)}">
+                                <span>${teamName}</span>
+                                <span class="team-pill">${shortCode}</span>
+                            </a>
+                        </td>
+                        <td class="col-num">${played}</td>
+                        <td class="col-num hide-mobile">${won}</td>
+                        <td class="col-num hide-mobile">${drawn}</td>
+                        <td class="col-num hide-mobile">${lost}</td>
+                        <td class="col-num hide-mobile">${gf}</td>
+                        <td class="col-num hide-mobile">${ga}</td>
+                        <td class="col-gd">${gd}</td>
+                        <td class="col-pts">${pts}</td>
+                    </tr>
+                `);
+            }
+
+            bodyMount.innerHTML = tableHTML.join('');
+
+            // If an dynamic footnote row was caught, render it nicely at the base container
+            if (footerNotice) {
+                noticeMount.innerHTML = `
+                    <div class="table-footer-notice">
+                        <span>ℹ️</span> <span>${footerNotice}</span>
+                    </div>
+                `;
+            }
+        }
+
+        initStandings();
+    </script>
+</body>
+</html>
