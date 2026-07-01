@@ -52,9 +52,12 @@
             padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 20px;
             margin-bottom: 24px; backdrop-filter: blur(8px);
         }
-        .identity-row { display: flex; justify-content: space-between; align-items: flex-start; }
-        .team-title-block h1 { margin: 0 0 4px 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.8px; }
-        .team-pill { font-size: 0.8rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); font-weight: 700; margin-left: 8px; vertical-align: middle; }
+        .identity-row { display: flex; align-items: center; gap: 20px; }
+        .team-logo-frame { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
+        .team-logo-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .team-title-block h1 { margin: 0 0 4px 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.8px; display: flex; align-items: center; gap: 8px; }
+        .team-pill { font-size: 0.8rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); font-weight: 700; vertical-align: middle; }
         .manager-label { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
         .manager-label strong { color: var(--text-main); }
 
@@ -180,6 +183,22 @@
             return match ? parseInt(match[0], 10) : 1;
         }
 
+        // Transforms standard Google Drive web links into direct-render raw image URLs
+        function formatDriveImageUrl(driveUrl) {
+            if (!driveUrl || !driveUrl.includes('drive.google.com')) return 'logo_hcl_main.png';
+            try {
+                let fileId = '';
+                if (driveUrl.includes('id=')) {
+                    fileId = driveUrl.split('id=')[1].split('&')[0];
+                } else if (driveUrl.includes('/d/')) {
+                    fileId = driveUrl.split('/d/')[1].split('/')[0];
+                }
+                return fileId ? `https://docs.google.com/uc?export=download&id=${fileId}` : 'logo_hcl_main.png';
+            } catch(e) {
+                return 'logo_hcl_main.png';
+            }
+        }
+
         function detectPosition(posStr, currentCount) {
             let s = posStr ? posStr.toUpperCase() : "";
             if (s.includes("GK") || s.includes("GOAL")) return "GK";
@@ -204,12 +223,14 @@
                 let managerName = "Unassigned";
                 let displayTeamName = TARGET_TEAM;
                 let shortCode = "";
+                let driveLogoUrl = "logo_hcl_main.png";
 
                 let bracketMatch = TARGET_TEAM.match(/\[(.*?)\]/);
                 if (bracketMatch) {
                     shortCode = bracketMatch[1];
                 }
 
+                // Match layout row and check column index 3 (or wherever your logo column falls)
                 for(let i = 1; i < directory.length; i++) {
                     let rowTeamName = directory[i][0] ? directory[i][0].trim() : "";
                     
@@ -217,6 +238,10 @@
                         displayTeamName = rowTeamName;
                         shortCode = directory[i][1] || shortCode;
                         managerName = directory[i][2] || "Club Officer";
+                        // Reads drive link field if populated in the row layout
+                        if (directory[i][3]) {
+                            driveLogoUrl = formatDriveImageUrl(directory[i][3].trim());
+                        }
                         break;
                     }
                 }
@@ -264,7 +289,7 @@
                     }
                 }
 
-                renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum);
+                renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum, driveLogoUrl);
 
             } catch (err) {
                 console.error(err);
@@ -272,7 +297,7 @@
             }
         }
 
-        function renderDashboard(name, code, manager, players, budgetSum) {
+        function renderDashboard(name, code, manager, players, budgetSum, logoUrl) {
             const capLimit = 50000;
             const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
             const isOverBudget = budgetSum > capLimit;
@@ -310,6 +335,9 @@
             document.getElementById('profile-mount').innerHTML = `
                 <div class="profile-header-card">
                     <div class="identity-row">
+                        <div class="team-logo-frame">
+                            <img src="${logoUrl}" alt="${name} Crest" onerror="this.src='logo_hcl_main.png';">
+                        </div>
                         <div class="team-title-block">
                             <h1>${name} <span class="team-pill">${code || 'HCL'}</span></h1>
                             <div class="manager-label">Team Manager: <strong>${manager}</strong></div>
