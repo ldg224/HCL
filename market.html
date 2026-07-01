@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCL Hub | Transfer Market</title>
+    <link rel="icon" type="image/png" href="logo_hcl_main.png">
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-color: #0066cc;
+            --accent-bg: rgba(0, 102, 204, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Decorations */
+        .corner-graphic {
+            position: fixed;
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .corner-top-right { top: 40px; right: 0; }
+        .corner-bottom-left { bottom: 0; left: 0; transform: rotate(180deg); }
+
+        main, footer { position: relative; z-index: 10; width: 100%; max-width: 1200px; box-sizing: border-box; }
+        main { padding: 40px 20px; }
+
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { margin: 0 0 6px 0; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px; }
+        .page-header p { margin: 0; font-size: 0.95rem; color: var(--text-muted); }
+
+        .section-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 35px 0 16px 0; letter-spacing: -0.2px; }
+
+        /* Split Scouting Leaderboards */
+        .scouting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .leaderboard-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); backdrop-filter: blur(8px); }
+        .card-header-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin: 0 0 12px 0; letter-spacing: 0.5px; }
+
+        /* Free Agency Full Layout Wrapper */
+        .market-container { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03); backdrop-filter: blur(8px); }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { background: #fafafa; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-weight: 500; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: rgba(0, 0, 0, 0.005); }
+
+        .player-row-item { display: flex; flex-direction: column; }
+        .player-sub-team { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .player-sub-team a { color: var(--accent-color); text-decoration: none; font-weight: 600; }
+
+        .stat-badge { font-weight: 700; font-family: monospace; text-align: center; width: 45px; }
+        .stat-badge.off { color: #ef4444; }
+        .stat-badge.def { color: #0066cc; }
+        .cost-col { font-family: monospace; font-weight: 600; text-align: right; }
+
+        .loading-text { text-align: center; font-size: 0.95rem; color: var(--text-muted); padding: 50px 0; font-weight: 500; width: 100%; }
+
+        footer {
+            margin-top: auto; padding: 24px 20px; color: var(--text-muted); font-size: 0.78rem; text-align: center;
+            border-top: 1px solid var(--border-color); width: 100%; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .scouting-grid { grid-template-columns: 1fr; }
+            .corner-graphic { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-top-right">
+    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-bottom-left">
+
+    <main>
+        <div class="page-header">
+            <h1>Scouting & Player Market</h1>
+            <p>Analyze individual talent capabilities, defensive statistical pillars, and available free agents.</p>
+        </div>
+
+        <div class="scouting-grid">
+            <div class="leaderboard-card">
+                <h3 class="card-header-title">🔥 Top Attacking Powerhouses</h3>
+                <table id="top-attackers-table">
+                    <thead>
+                        <tr><th>Player</th><th style="text-align:center; width:60px;">OFF</th></tr>
+                    </thead>
+                    <tbody id="attack-mount"><tr><td colspan="2" class="loading-text" style="padding:20px 0;">Loading stats...</td></tr></tbody>
+                </table>
+            </div>
+
+            <div class="leaderboard-card">
+                <h3 class="card-header-title">🛡️ Top Defensive Anchors</h3>
+                <table id="top-defenders-table">
+                    <thead>
+                        <tr><th>Player</th><th style="text-align:center; width:60px;">DEF</th></tr>
+                    </thead>
+                    <tbody id="defense-mount"><tr><td colspan="2" class="loading-text" style="padding:20px 0;">Loading stats...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-title">Available Free Agents</div>
+        <div class="market-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player Name</th>
+                        <th style="text-align:center; width:70px;">OFF</th>
+                        <th style="text-align:center; width:70px;">DEF</th>
+                        <th style="text-align:right; width:140px;">Market Value</th>
+                    </tr>
+                </thead>
+                <tbody id="free-agency-mount">
+                    <tr><td colspan="4" class="loading-text">Scanning market registry entries...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <div>&copy; 2026 Heineken C League (HCL). All Rights Reserved.</div>
+        <img src="logo_hcl_main.png" alt="HCL Logo" style="height:20px; opacity:0.5;">
+    </footer>
+
+    <script src="navbar.js"></script>
+    <script>
+        const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
+
+        async function fetchCSV(url) {
+            const res = await fetch(url);
+            const text = await res.text();
+            return text.split(/\r\n|\n/).map(line => {
+                let result = [];
+                let current = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') { inQuotes = !inQuotes; }
+                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                    else { current += char; }
+                }
+                result.push(current.trim());
+                return result;
+            });
+        }
+
+        async function initMarket() {
+            try {
+                const rosterData = await fetchCSV(CSV_ROSTERS);
+                let allPlayers = [];
+                let freeAgents = [];
+
+                // Parse and map clean objects from rows (Skipping Header Index 0)
+                for(let i = 1; i < rosterData.length; i++) {
+                    let r = rosterData[i];
+                    if(!r[1]) continue; // Skip blank rows
+
+                    let assignedTeam = r[0] ? r[0].trim() : "";
+                    let name = r[1].trim();
+                    let offRating = parseInt(r[2]) || 1;
+                    let defRating = parseInt(r[3]) || 1;
+                    let rawCost = r[4] || "$0";
+                    let numericalCost = parseFloat(rawCost.replace(/[^0-9.]/g, '')) || 0;
+
+                    let item = { team: assignedTeam, name: name, off: offRating, def: defRating, costStr: rawCost, costNum: numericalCost };
+
+                    allPlayers.push(item);
+
+                    // Sort criteria for Free Agency pool
+                    if(assignedTeam === "" || assignedTeam.toLowerCase() === "unassigned" || assignedTeam.toLowerCase() === "free agent") {
+                        freeAgents.push(item);
+                    }
+                }
+
+                // Compile Top Attackers (Sorted by Offense rating descending)
+                let powerAttackers = [...allPlayers].sort((a, b) => b.off - a.off).slice(0, 5);
+                // Compile Top Defenders (Sorted by Defense rating descending)
+                let anchorDefenders = [...allPlayers].sort((a, b) => b.def - a.def).slice(0, 5);
+
+                renderLeaderboards(powerAttackers, anchorDefenders);
+                renderFreeAgents(freeAgents);
+
+            } catch (err) {
+                console.error("Market Module Sync Broken:", err);
+                let errorRow = `<tr><td colspan="4" class="loading-text" style="color:#ef4444;">Error mapping database registries.</td></tr>`;
+                document.getElementById('free-agency-mount').innerHTML = errorRow;
+            }
+        }
+
+        function renderLeaderboards(attackers, defenders) {
+            document.getElementById('attack-mount').innerHTML = attackers.map(p => {
+                let teamContext = p.team ? `In Squad: <a href="team.html?name=${encodeURIComponent(p.team)}">${p.team}</a>` : `Free Agent`;
+                return `
+                    <tr>
+                        <td>
+                            <div class="player-row-item">
+                                <span style="font-weight:700;">${p.name}</span>
+                                <span class="player-sub-team">${teamContext}</span>
+                            </div>
+                        </td>
+                        <td class="stat-badge off">${p.off}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('defense-mount').innerHTML = defenders.map(p => {
+                let teamContext = p.team ? `In Squad: <a href="team.html?name=${encodeURIComponent(p.team)}">${p.team}</a>` : `Free Agent`;
+                return `
+                    <tr>
+                        <td>
+                            <div class="player-row-item">
+                                <span style="font-weight:700;">${p.name}</span>
+                                <span class="player-sub-team">${teamContext}</span>
+                            </div>
+                        </td>
+                        <td class="stat-badge def">${p.def}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderFreeAgents(agents) {
+            const mount = document.getElementById('free-agency-mount');
+            if(agents.length === 0) {
+                mount.innerHTML = `<tr><td colspan="4" class="loading-text">No free agents are listed on the open market right now.</td></tr>`;
+                return;
+            }
+
+            mount.innerHTML = agents.map(p => `
+                <tr>
+                    <td style="font-weight:700; color:var(--text-main);">${p.name}</td>
+                    <td class="stat-badge off" style="text-align:center;">${p.off}</td>
+                    <td class="stat-badge def" style="text-align:center;">${p.def}</td>
+                    <td class="cost-col">$${p.costNum.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        initMarket();
+    </script>
+</body>
+</html>
