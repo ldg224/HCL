@@ -362,21 +362,21 @@
             let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
             let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
 
-            let homeWin = 38 + (homePts - awayPts) * 2.5;
-            let awayWin = 34 + (awayPts - homePts) * 2.5;
-            let draw = 28;
+            let baseWinChance = 35; 
+            let drawChance = 30;
 
-            let seed = (homeTeam.length + awayTeam.length) % 7;
-            homeWin += (seed - 3);
-            awayWin -= (seed - 3);
+            let ptsDiff = homePts - awayPts;
 
-            if(homeWin < 15) { homeWin = 15; }
-            if(awayWin < 15) { awayWin = 15; }
+            let homeWin = baseWinChance + (ptsDiff * 2);
+            let awayWin = baseWinChance - (ptsDiff * 2);
+
+            if (homeWin < 10) homeWin = 10;
+            if (awayWin < 10) awayWin = 10;
             
-            let total = homeWin + awayWin + draw;
+            let total = homeWin + awayWin + drawChance;
             homeWin = Math.round((homeWin / total) * 100);
             awayWin = Math.round((awayWin / total) * 100);
-            draw = 100 - (homeWin + awayWin);
+            let draw = 100 - (homeWin + awayWin);
 
             return { home: homeWin, draw: draw, away: awayWin };
         }
@@ -436,14 +436,31 @@
 
         function determineActiveWeek() {
             let now = new Date();
-            let matchedWeek = 1;
-
+            let todayLabel = `${now.getDate()}/${now.getMonth() + 1}`;
+            
+            let todaysWeeks = [];
             for (let i = 0; i < RAW_SCHEDULE_LINES.length; i++) {
                 let row = RAW_SCHEDULE_LINES[i];
-                let mTime = getMatchDateTime(row[1], row[2]);
-                if (mTime && now >= mTime) {
+                let dateStr = row[1] ? row[1].trim() : "";
+                if (dateStr === todayLabel) {
                     let w = parseInt(row[0], 10);
-                    if (w > matchedWeek) matchedWeek = w;
+                    if (!isNaN(w)) {
+                        todaysWeeks.push(w);
+                    }
+                }
+            }
+
+            let matchedWeek = 1;
+            if (todaysWeeks.length > 0) {
+                matchedWeek = Math.min(...todaysWeeks);
+            } else {
+                for (let i = 0; i < RAW_SCHEDULE_LINES.length; i++) {
+                    let row = RAW_SCHEDULE_LINES[i];
+                    let mTime = getMatchDateTime(row[1], row[2]);
+                    if (mTime && now >= mTime) {
+                        let w = parseInt(row[0], 10);
+                        if (!isNaN(w) && w > matchedWeek) matchedWeek = w;
+                    }
                 }
             }
             ACTIVE_REAL_WEEK = matchedWeek;
