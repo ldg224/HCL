@@ -36,7 +36,6 @@
             position: relative;
         }
 
-        /* Ambient Corner Graphics */
         .corner-graphic {
             position: fixed;
             width: 280px;
@@ -46,20 +45,10 @@
             pointer-events: none;
             z-index: 0;
         }
-        .corner-top-right {
-            top: 40px;
-            right: 0;
-        }
-        .corner-bottom-left {
-            bottom: 0;
-            left: 0;
-            transform: rotate(180deg);
-        }
+        .corner-top-right { top: 40px; right: 0; }
+        .corner-bottom-left { bottom: 0; left: 0; transform: rotate(180deg); }
 
-        .today-ticker-container, main, footer {
-            position: relative;
-            z-index: 10;
-        }
+        .today-ticker-container, main, footer { position: relative; z-index: 10; }
 
         /* 1. Today's Live Ticker Component */
         .today-ticker-container {
@@ -77,8 +66,7 @@
         .ticker-match-card {
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px;
             padding: 14px 16px; min-width: 260px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            backdrop-filter: blur(8px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02); backdrop-filter: blur(8px);
             animation: fadeInUp 0.5s ease forwards;
         }
         .ticker-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
@@ -96,8 +84,7 @@
         .dashboard-panel {
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 24px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between;
-            backdrop-filter: blur(8px);
-            animation: fadeInUp 0.6s ease forwards;
+            backdrop-filter: blur(8px); animation: fadeInUp 0.6s ease forwards;
         }
 
         .welcome-block h1 { margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
@@ -124,22 +111,18 @@
         main { width: 100%; max-width: 1200px; padding: 0 20px 40px 20px; box-sizing: border-box; }
         .section-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 35px 0 16px 0; letter-spacing: -0.2px; }
 
-        /* Schedule Separator & Sections Styling */
         .schedule-section-heading {
             font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
             color: var(--accent-color); margin: 24px 0 12px 6px; display: flex; align-items: center; gap: 8px;
         }
-        .schedule-section-heading::after {
-            content: ''; flex-grow: 1; height: 1px; background: linear-gradient(90deg, var(--border-color), transparent);
-        }
+        .schedule-section-heading::after { content: ''; flex-grow: 1; height: 1px; background: linear-gradient(90deg, var(--border-color), transparent); }
 
         /* 3. Highlights Component Layout */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
         .video-card {
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
-            backdrop-filter: blur(8px);
-            animation: fadeInUp 0.5s ease forwards;
+            backdrop-filter: blur(8px); animation: fadeInUp 0.5s ease forwards;
         }
         .video-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: #cbd5e1; }
         .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; background: #0f172a; }
@@ -172,8 +155,7 @@
         .timetable-row {
             display: flex; flex-direction: column; background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 12px; padding: 16px 20px; box-sizing: border-box; gap: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.01);
-            backdrop-filter: blur(8px);
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            backdrop-filter: blur(8px); transition: transform 0.2s ease, border-color 0.2s ease;
             animation: fadeInUp 0.4s ease forwards;
         }
         .timetable-row:hover { transform: translateX(2px); border-color: #cbd5e1; }
@@ -206,18 +188,21 @@
         .schedule-status { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; padding: 5px 12px; border-radius: 6px; text-align: center; min-width: 100px; flex-shrink: 0; letter-spacing: 0.3px; }
         .status-upcoming-badge { background: #fef3c7; color: var(--status-upcoming); }
         .status-finalised-badge { background: #dcfce7; color: var(--status-finalised); }
+        .status-live-badge { background: #dcfce7; color: var(--status-live); font-weight: 800; }
+
+        /* Match Countdown Extension Clock Banner styling */
+        .match-countdown-banner {
+            display: flex; justify-content: center; align-items: center; background: #fffbeb; border: 1px solid #fef3c7;
+            border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; color: #b45309; margin-top: 4px; gap: 6px;
+        }
 
         /* Google Predictor Bar Component styling */
         .predictor-container {
             display: flex; flex-direction: column; gap: 5px; width: 100%; border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 2px;
         }
-        .predictor-labels {
-            display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 0 2px;
-        }
-        .predictor-bar {
-            height: 8px; width: 100%; border-radius: 4px; display: flex; overflow: hidden; background: #e2e8f0;
-        }
-        .predictor-segment height: 100%; transition: width 0.3s ease; }
+        .predictor-labels { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 0 2px; }
+        .predictor-bar { height: 8px; width: 100%; border-radius: 4px; display: flex; overflow: hidden; background: #e2e8f0; }
+        .predictor-segment { height: 100%; transition: width 0.3s ease; }
         .predictor-segment.home-win { background-color: var(--color-home); }
         .predictor-segment.draw { background-color: var(--color-draw); }
         .predictor-segment.away-win { background-color: var(--color-away); }
@@ -232,10 +217,7 @@
 
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 900px) {
             .hero-dashboard { grid-template-columns: 1fr; }
@@ -318,12 +300,23 @@
         let RAW_SCHEDULE_LINES = [];
         let TEAM_LOOKUP_MAP = {};
         let LADDER_POINTS_MAP = {}; 
+        let COUNTDOWN_INTERVALS = [];
 
         function parseYoutubeId(url) {
             if (!url) return null;
             let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             let match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function getMatchDateTime(dateStr, timeStr) {
+            if (!dateStr || dateStr.toLowerCase() === 'tba' || dateStr.toLowerCase() === 'unconfirmed') return null;
+            const [day, month] = dateStr.split('/').map(num => parseInt(num, 10));
+            let hours = 0, minutes = 0;
+            if (timeStr && timeStr.includes(':')) {
+                [hours, minutes] = timeStr.split(':').map(num => parseInt(num, 10));
+            }
+            return new Date(2026, month - 1, day, hours, minutes);
         }
 
         async function fetchCSV(url) {
@@ -430,7 +423,41 @@
             `;
         }
 
+        function initLiveCountdown(elementId, targetTimestamp) {
+            function updateClock() {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+
+                const diff = targetTimestamp - new Date().getTime();
+
+                if (diff <= 0) {
+                    el.innerHTML = `⏱️ Match Active / In Progress`;
+                    el.style.color = 'var(--status-live)';
+                    el.style.background = 'rgba(34, 197, 94, 0.08)';
+                    el.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                let output = "⏱️ Kick-off in: ";
+                if (days > 0) output += `${days}d `;
+                if (hours > 0 || days > 0) output += `${hours}h `;
+                output += `${mins}m`;
+
+                el.innerText = output;
+            }
+            updateClock();
+            const interval = setInterval(updateClock, 60000); // Check once every minute
+            COUNTDOWN_INTERVALS.push(interval);
+        }
+
         function renderActiveViews() {
+            COUNTDOWN_INTERVALS.forEach(clearInterval);
+            COUNTDOWN_INTERVALS = [];
+
             let todayObj = new Date();
             let tomorrowObj = new Date();
             tomorrowObj.setDate(todayObj.getDate() + 1);
@@ -474,8 +501,7 @@
 
                 if (weekNum === CURRENT_SELECTED_WEEK) {
                     let matchTitle = `${homeTeam} vs ${awayTeam}`;
-                    let scoreLine = (status === "FINALISED") ? `FT: ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}` : "Match Upcoming";
-                    highlightMatches.push({ title: matchTitle, ytId: matchYtId, score: scoreLine, status: status });
+                    highlightMatches.push({ title: matchTitle, ytId: matchYtId, status: status, date: dateStr, time: timeStr });
                 }
 
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed") {
@@ -495,22 +521,35 @@
             });
 
             function makeScheduleRowHTML(m) {
-                let badgeClass = (m.status === "FINALISED") ? "status-finalised-badge" : "status-upcoming-badge";
+                const matchTimeObj = getMatchDateTime(m.date, m.time);
+                const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
+                const isFinishedOrActive = (m.status === "FINALISED" || isTimePassed);
+
+                let badgeClass = "status-upcoming-badge";
+                let labelStatus = m.status.toLowerCase();
+                
+                if (m.status === "FINALISED") {
+                    badgeClass = "status-finalised-badge";
+                } else if (isTimePassed) {
+                    badgeClass = "status-live-badge";
+                    labelStatus = "live / ended";
+                }
+
                 let centerVs = `<span class="team-vs-upcoming">VS</span>`;
-                if (m.status === "FINALISED") { centerVs = `<span class="team-vs-score">${m.homeScore} - ${m.awayScore}</span>`; }
+                if (m.status === "FINALISED") { 
+                    centerVs = `<span class="team-vs-score">${m.homeScore} - ${m.awayScore}</span>`; 
+                }
 
                 let matchYtId = parseYoutubeId(m.rawYtLink);
                 let scheduleReplayBtn = "";
                 if (m.status === "FINALISED" && matchYtId) {
-                    scheduleReplayBtn = `
-                        <a href="https://www.youtube.com/watch?v=${matchYtId}" target="_blank" class="schedule-replay-btn">
-                            🎬 Replay
-                        </a>
-                    `;
+                    scheduleReplayBtn = `<a href="https://www.youtube.com/watch?v=${matchYtId}" target="_blank" class="schedule-replay-btn">🎬 Replay</a>`;
                 }
 
                 let predictorHTML = "";
-                if (m.status !== "FINALISED") {
+                let countdownHTML = "";
+
+                if (!isFinishedOrActive) {
                     const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
                     const isRealAwayTeam = m.away in LADDER_POINTS_MAP;
 
@@ -530,6 +569,11 @@
                                 </div>
                             </div>
                         `;
+                    }
+                    if (matchTimeObj) {
+                        const uniqueClockId = `clock-${m.week}-${m.idx}`;
+                        countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
+                        setTimeout(() => initLiveCountdown(uniqueClockId, matchTimeObj.getTime()), 10);
                     }
                 }
 
@@ -552,10 +596,11 @@
                             </div>
                             <div class="schedule-actions-wrapper">
                                 ${scheduleReplayBtn}
-                                <div class="schedule-status ${badgeClass}">${m.status.toLowerCase()}</div>
+                                <div class="schedule-status ${badgeClass}">${labelStatus}</div>
                             </div>
                         </div>
                         ${predictorHTML}
+                        ${countdownHTML}
                     </div>
                 `;
             }
@@ -613,16 +658,32 @@
                 videoGrid.innerHTML = `<div class="loading-text">No matches recorded for this segment.</div>`;
             } else {
                 videoGrid.innerHTML = highlightMatches.map((match, idx) => {
+                    const matchTimeObj = getMatchDateTime(match.date, match.time);
+                    const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
+                    const isAccessible = (match.status === "FINALISED" || isTimePassed);
+
                     let mediaBlock = `
                         <div class="no-video-placeholder">
                             <span style="font-size:1.4rem;">🎬</span>
                             <div>Match Replay Processing</div>
                         </div>
                     `;
-                    if (match.status !== "FINALISED") {
+                    
+                    if (!isAccessible) {
                         mediaBlock = `<div class="no-video-placeholder"><span style="font-size:1.4rem;">⏳</span><div>Match Upcoming</div></div>`;
                     } else if (match.ytId) {
                         mediaBlock = `<iframe src="https://www.youtube.com/embed/${match.ytId}?rel=0&modestbranding=1" allowfullscreen></iframe>`;
+                    }
+
+                    let scoreContainerHTML = `<div class="loading-text" style="padding:5px 0; font-size:0.85rem;">Match details unlock at kick-off</div>`;
+                    if (isAccessible) {
+                        let scoreDisplayLine = (match.status === 'FINALISED') ? 'Reveal Score' : 'Match Live / Ended';
+                        let rawScoreLine = (match.status === 'FINALISED') ? `FT: ${match.title}` : 'Scores Syncing...';
+                        
+                        scoreContainerHTML = `
+                            <button class="reveal-btn" onclick="revealScore(this)" ${match.status !== 'FINALISED' ? 'disabled' : ''}>${scoreDisplayLine}</button>
+                            <div class="score-display">${rawScoreLine}</div>
+                        `;
                     }
 
                     return `
@@ -630,10 +691,7 @@
                             <div class="video-wrapper">${mediaBlock}</div>
                             <div class="video-info">
                                 <h3 class="video-title">${match.title}</h3>
-                                <div class="score-container">
-                                    <button class="reveal-btn" onclick="revealScore(this)" ${match.status !== 'FINALISED' ? 'disabled' : ''}>${match.status !== 'FINALISED' ? 'Upcoming Match' : 'Reveal Score'}</button>
-                                    <div class="score-display">${match.score}</div>
-                                </div>
+                                <div class="score-container">${scoreContainerHTML}</div>
                             </div>
                         </div>
                     `;
