@@ -217,7 +217,7 @@
         .predictor-bar {
             height: 8px; width: 100%; border-radius: 4px; display: flex; overflow: hidden; background: #e2e8f0;
         }
-        .predictor-segment { height: 100%; transition: width 0.3s ease; }
+        .predictor-segment height: 100%; transition: width 0.3s ease; }
         .predictor-segment.home-win { background-color: var(--color-home); }
         .predictor-segment.draw { background-color: var(--color-draw); }
         .predictor-segment.away-win { background-color: var(--color-away); }
@@ -358,22 +358,18 @@
             }
         }
 
-        // Logic to simulate a Google Predictor based on ladder points status
         function calculatePredictorPercentages(homeTeam, awayTeam) {
             let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
             let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
 
-            // Base probabilities with default home advantage
             let homeWin = 38 + (homePts - awayPts) * 2.5;
             let awayWin = 34 + (awayPts - homePts) * 2.5;
             let draw = 28;
 
-            // Generate deterministic fluctuations based on character strings to keep it consistent
             let seed = (homeTeam.length + awayTeam.length) % 7;
             homeWin += (seed - 3);
             awayWin -= (seed - 3);
 
-            // Cap boundaries
             if(homeWin < 15) { homeWin = 15; }
             if(awayWin < 15) { awayWin = 15; }
             
@@ -394,7 +390,6 @@
                 });
 
                 const standingsData = await fetchCSV(CSV_STANDINGS);
-                // Extract and store team ladder points inside state map
                 for(let i = 1; i < standingsData.length; i++) {
                     if(standingsData[i][1]) {
                         LADDER_POINTS_MAP[standingsData[i][1]] = standingsData[i][9] || "0";
@@ -412,12 +407,11 @@
         function buildMiniStandings(rows) {
             const mount = document.getElementById('mini-standings-mount');
             let topTeams = [];
-            let count = 0;
             
             for(let i = 1; i < rows.length; i++) {
-                if(!rows[i][1] || count >= 3) break;
+                if(topTeams.length >= 3) break;
+                if(!rows[i][1]) continue; 
                 topTeams.push({ rank: rows[i][0], name: rows[i][1], pts: rows[i][9] || "0" });
-                count++;
             }
 
             mount.innerHTML = `
@@ -447,13 +441,11 @@
             let tickerMatches = [];
             let highlightMatches = [];
 
-            // Categorized schedule arrays
             let bucketToday = [];
             let bucketTomorrow = [];
             let bucketWeeks = {}; 
             let bucketUnconfirmed = [];
 
-            // Initialize structural week objects 1-10
             for (let w = 1; w <= 10; w++) { bucketWeeks[w] = []; }
 
             RAW_SCHEDULE_LINES.forEach((row, idx) => {
@@ -486,7 +478,6 @@
                     highlightMatches.push({ title: matchTitle, ytId: matchYtId, score: scoreLine, status: status });
                 }
 
-                // Sorting timeline items into layout buckets
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed") {
                     bucketUnconfirmed.push(payload);
                 } else if (dateStr === todayLabel) {
@@ -503,7 +494,6 @@
                 }
             });
 
-            // Reusable row generator layout engine
             function makeScheduleRowHTML(m) {
                 let badgeClass = (m.status === "FINALISED") ? "status-finalised-badge" : "status-upcoming-badge";
                 let centerVs = `<span class="team-vs-upcoming">VS</span>`;
@@ -519,24 +509,28 @@
                     `;
                 }
 
-                // Predictor injection block layout if match isn't finalized
                 let predictorHTML = "";
-                if (m.status !== "FINALISED" && m.away !== "TBA") {
-                    let probs = calculatePredictorPercentages(m.home, m.away);
-                    predictorHTML = `
-                        <div class="predictor-container">
-                            <div class="predictor-labels">
-                                <span style="color:var(--color-home)">Home Win: ${probs.home}%</span>
-                                <span style="color:var(--color-draw)">Draw: ${probs.draw}%</span>
-                                <span style="color:var(--color-away)">Away Win: ${probs.away}%</span>
+                if (m.status !== "FINALISED") {
+                    const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
+                    const isRealAwayTeam = m.away in LADDER_POINTS_MAP;
+
+                    if (isRealHomeTeam && isRealAwayTeam) {
+                        let probs = calculatePredictorPercentages(m.home, m.away);
+                        predictorHTML = `
+                            <div class="predictor-container">
+                                <div class="predictor-labels">
+                                    <span style="color:var(--color-home)">Home Win: ${probs.home}%</span>
+                                    <span style="color:var(--color-draw)">Draw: ${probs.draw}%</span>
+                                    <span style="color:var(--color-away)">Away Win: ${probs.away}%</span>
+                                </div>
+                                <div class="predictor-bar">
+                                    <div class="predictor-segment home-win" style="width: ${probs.home}%"></div>
+                                    <div class="predictor-segment draw" style="width: ${probs.draw}%"></div>
+                                    <div class="predictor-segment away-win" style="width: ${probs.away}%"></div>
+                                </div>
                             </div>
-                            <div class="predictor-bar">
-                                <div class="predictor-segment home-win" style="width: ${probs.home}%"></div>
-                                <div class="predictor-segment draw" style="width: ${probs.draw}%"></div>
-                                <div class="predictor-segment away-win" style="width: ${probs.away}%"></div>
-                            </div>
-                        </div>
-                    `;
+                        `;
+                    }
                 }
 
                 return `
@@ -566,7 +560,6 @@
                 `;
             }
 
-            // Constructing categorized segmented view outputs
             let layoutHTML = [];
 
             if (bucketToday.length > 0) {
