@@ -298,6 +298,7 @@
         let TEAM_LOOKUP_MAP = {};
         let LADDER_POINTS_MAP = {}; 
         let COUNTDOWN_INTERVALS = [];
+        let TIMEOUT_TRACKERS = [];
 
         function parseYoutubeId(url) {
             if (!url) return null;
@@ -307,11 +308,19 @@
         }
 
         function getMatchDateTime(dateStr, timeStr) {
-            if (!dateStr || dateStr.toLowerCase() === 'tba' || dateStr.toLowerCase() === 'unconfirmed') return null;
-            const [day, month] = dateStr.split('/').map(num => parseInt(num, 10));
+            if (!dateStr || dateStr.toLowerCase().trim() === 'tba' || dateStr.toLowerCase().trim() === 'unconfirmed') return null;
+            
+            const segments = dateStr.split('/');
+            if (segments.length < 2) return null;
+            
+            const day = parseInt(segments[0].trim(), 10);
+            const month = parseInt(segments[1].trim(), 10);
+            
             let hours = 0, minutes = 0;
             if (timeStr && timeStr.includes(':')) {
-                [hours, minutes] = timeStr.split(':').map(num => parseInt(num, 10));
+                const timeSegments = timeStr.split(':');
+                hours = parseInt(timeSegments[0].trim(), 10);
+                minutes = parseInt(timeSegments[1].trim(), 10);
             }
             return new Date(2026, month - 1, day, hours, minutes);
         }
@@ -482,6 +491,8 @@
         function renderActiveViews() {
             COUNTDOWN_INTERVALS.forEach(clearInterval);
             COUNTDOWN_INTERVALS = [];
+            TIMEOUT_TRACKERS.forEach(clearTimeout);
+            TIMEOUT_TRACKERS = [];
 
             let todayObj = new Date();
             let tomorrowObj = new Date();
@@ -569,7 +580,12 @@
                 let predictorHTML = "";
                 let countdownHTML = "";
 
-                if (!isFinishedOrActive) {
+                const isPlaceholderMatch = m.home.toUpperCase().includes("WINNER") || 
+                                           m.away.toUpperCase().includes("WINNER") || 
+                                           m.home.toUpperCase().includes("TBA") || 
+                                           m.away.toUpperCase().includes("TBA");
+
+                if (!isFinishedOrActive && !isPlaceholderMatch) {
                     const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
                     const isRealAwayTeam = m.away in LADDER_POINTS_MAP;
 
@@ -590,11 +606,15 @@
                             </div>
                         `;
                     }
-                    if (matchTimeObj) {
-                        const uniqueClockId = `clock-${m.week}-${m.idx}`;
-                        countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
-                        setTimeout(() => initLiveCountdown(uniqueClockId, matchTimeObj.getTime()), 10);
-                    }
+                }
+
+                if (!isFinishedOrActive && matchTimeObj) {
+                    const uniqueClockId = `clock-${m.week}-${m.idx}`;
+                    countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
+                    
+                    // Push structured tracker safely without causing internal interval races
+                    let tracker = setTimeout(() => initLiveCountdown(uniqueClockId, matchTimeObj.getTime()), 5);
+                    TIMEOUT_TRACKERS.push(tracker);
                 }
 
                 return `
