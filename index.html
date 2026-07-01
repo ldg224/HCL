@@ -19,6 +19,10 @@
             --status-upcoming: #b45309;
             --status-finalised: #16a34a;
             --status-live: #22c55e;
+
+            --color-home: #3b82f6;
+            --color-draw: #94a3b8;
+            --color-away: #ef4444;
         }
 
         body {
@@ -52,7 +56,6 @@
             transform: rotate(180deg);
         }
 
-        /* Ensure interactive contents layer beautifully above background decorations */
         .today-ticker-container, main, footer {
             position: relative;
             z-index: 10;
@@ -81,7 +84,6 @@
         .ticker-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
         .ticker-teams { display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
         
-        /* Interactive ticker link layouts */
         .ticker-team-item { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-main); transition: color 0.15s; }
         .ticker-team-item:hover { color: var(--accent-color); }
         .ticker-mini-logo { width: 18px; height: 18px; object-fit: contain; }
@@ -122,6 +124,15 @@
         main { width: 100%; max-width: 1200px; padding: 0 20px 40px 20px; box-sizing: border-box; }
         .section-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 35px 0 16px 0; letter-spacing: -0.2px; }
 
+        /* Schedule Separator & Sections Styling */
+        .schedule-section-heading {
+            font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+            color: var(--accent-color); margin: 24px 0 12px 6px; display: flex; align-items: center; gap: 8px;
+        }
+        .schedule-section-heading::after {
+            content: ''; flex-grow: 1; height: 1px; background: linear-gradient(90deg, var(--border-color), transparent);
+        }
+
         /* 3. Highlights Component Layout */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
         .video-card {
@@ -157,15 +168,17 @@
         }
 
         /* 4. Timetable Component Layout */
-        .timetable-list { display: flex; flex-direction: column; gap: 8px; }
+        .timetable-list { display: flex; flex-direction: column; gap: 10px; }
         .timetable-row {
-            display: flex; align-items: center; background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 12px 20px; box-sizing: border-box; gap: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.01);
+            display: flex; flex-direction: column; background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 16px 20px; box-sizing: border-box; gap: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.01);
             backdrop-filter: blur(8px);
             transition: transform 0.2s ease, border-color 0.2s ease;
             animation: fadeInUp 0.4s ease forwards;
         }
         .timetable-row:hover { transform: translateX(2px); border-color: #cbd5e1; }
+
+        .schedule-main-line { display: flex; align-items: center; width: 100%; gap: 20px; }
 
         .schedule-week { font-weight: 700; color: var(--text-muted); font-size: 0.8rem; width: 45px; flex-shrink: 0; }
         .schedule-datetime { display: flex; flex-direction: column; gap: 1px; color: var(--text-muted); font-size: 0.8rem; width: 90px; flex-shrink: 0; }
@@ -194,6 +207,21 @@
         .status-upcoming-badge { background: #fef3c7; color: var(--status-upcoming); }
         .status-finalised-badge { background: #dcfce7; color: var(--status-finalised); }
 
+        /* Google Predictor Bar Component styling */
+        .predictor-container {
+            display: flex; flex-direction: column; gap: 5px; width: 100%; border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 2px;
+        }
+        .predictor-labels {
+            display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 0 2px;
+        }
+        .predictor-bar {
+            height: 8px; width: 100%; border-radius: 4px; display: flex; overflow: hidden; background: #e2e8f0;
+        }
+        .predictor-segment { height: 100%; transition: width 0.3s ease; }
+        .predictor-segment.home-win { background-color: var(--color-home); }
+        .predictor-segment.draw { background-color: var(--color-draw); }
+        .predictor-segment.away-win { background-color: var(--color-away); }
+
         .loading-text { text-align: center; font-size: 0.9rem; color: var(--text-muted); width: 100%; padding: 30px 0; font-weight: 500; }
 
         footer {
@@ -202,7 +230,6 @@
             display: flex; justify-content: space-between; align-items: center;
         }
 
-        /* Keyframe Animations */
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeInUp {
@@ -215,7 +242,7 @@
             .corner-graphic { display: none; }
         }
         @media (max-width: 768px) {
-            .timetable-row { flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px; }
+            .schedule-main-line { flex-direction: column; align-items: flex-start; gap: 12px; }
             .schedule-teams-container { width: 100%; justify-content: space-between; }
             .team-link { width: 45%; }
             .team-link.home { justify-content: flex-start; text-align: left; flex-direction: row-reverse; }
@@ -283,17 +310,15 @@
 
     <script src="navbar.js"></script>
     <script>
-        // Data Configuration URLs
         const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
         const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
 
-        // Global State Variables
         let CURRENT_SELECTED_WEEK = "2";
         let RAW_SCHEDULE_LINES = [];
         let TEAM_LOOKUP_MAP = {};
+        let LADDER_POINTS_MAP = {}; 
 
-        // Utility: Extract YouTube Video ID from full URLs
         function parseYoutubeId(url) {
             if (!url) return null;
             let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -301,7 +326,6 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        // Utility: Fetch and parse CSV rows neatly while handling quotation wrapping
         async function fetchCSV(url) {
             const res = await fetch(url);
             const text = await res.text();
@@ -320,7 +344,6 @@
             });
         }
 
-        // Standardized File Asset Routing Handler (Fixed Shortcode Designations)
         function getLocalTeamLogo(code) {
             if (!code) return 'logo_hcl_main.png';
             const cleanCode = code.toUpperCase().trim();
@@ -335,21 +358,50 @@
             }
         }
 
-        // Execution Controller Hub
+        // Logic to simulate a Google Predictor based on ladder points status
+        function calculatePredictorPercentages(homeTeam, awayTeam) {
+            let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
+            let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
+
+            // Base probabilities with default home advantage
+            let homeWin = 38 + (homePts - awayPts) * 2.5;
+            let awayWin = 34 + (awayPts - homePts) * 2.5;
+            let draw = 28;
+
+            // Generate deterministic fluctuations based on character strings to keep it consistent
+            let seed = (homeTeam.length + awayTeam.length) % 7;
+            homeWin += (seed - 3);
+            awayWin -= (seed - 3);
+
+            // Cap boundaries
+            if(homeWin < 15) { homeWin = 15; }
+            if(awayWin < 15) { awayWin = 15; }
+            
+            let total = homeWin + awayWin + draw;
+            homeWin = Math.round((homeWin / total) * 100);
+            awayWin = Math.round((awayWin / total) * 100);
+            draw = 100 - (homeWin + awayWin);
+
+            return { home: homeWin, draw: draw, away: awayWin };
+        }
+
         async function initPortal() {
             try {
-                // 1. Build Team Directory Map (Names to Short codes)
                 const teamData = await fetchCSV(CSV_TEAMS);
                 teamData.forEach((row, i) => {
                     if(i === 0 || !row[0]) return;
                     TEAM_LOOKUP_MAP[row[0]] = row[1] || row[0].substring(0,3).toUpperCase();
                 });
 
-                // 2. Build Mini Standings Widget
                 const standingsData = await fetchCSV(CSV_STANDINGS);
+                // Extract and store team ladder points inside state map
+                for(let i = 1; i < standingsData.length; i++) {
+                    if(standingsData[i][1]) {
+                        LADDER_POINTS_MAP[standingsData[i][1]] = standingsData[i][9] || "0";
+                    }
+                }
                 buildMiniStandings(standingsData);
 
-                // 3. Keep Schedule rows in memory and generate schedule views
                 const scheduleData = await fetchCSV(CSV_SCHEDULE);
                 RAW_SCHEDULE_LINES = scheduleData.filter((r, i) => i > 0 && r[0]);
                 renderActiveViews();
@@ -386,27 +438,43 @@
 
         function renderActiveViews() {
             let todayObj = new Date();
+            let tomorrowObj = new Date();
+            tomorrowObj.setDate(todayObj.getDate() + 1);
+
             let todayLabel = `${todayObj.getDate()}/${todayObj.getMonth() + 1}`;
+            let tomorrowLabel = `${tomorrowObj.getDate()}/${tomorrowObj.getMonth() + 1}`;
 
             let tickerMatches = [];
             let highlightMatches = [];
-            let fullScheduleHTML = [];
+
+            // Categorized schedule arrays
+            let bucketToday = [];
+            let bucketTomorrow = [];
+            let bucketWeeks = {}; 
+            let bucketUnconfirmed = [];
+
+            // Initialize structural week objects 1-10
+            for (let w = 1; w <= 10; w++) { bucketWeeks[w] = []; }
 
             RAW_SCHEDULE_LINES.forEach((row, idx) => {
                 let weekNum = row[0];
-                let dateStr = row[1];
-                let timeStr = row[2];
+                let dateStr = row[1] ? row[1].trim() : "";
+                let timeStr = row[2] ? row[2].trim() : "";
                 let status = row[3].toUpperCase();
                 let homeTeam = row[4];
                 let homeScore = row[5] || "";
                 let awayTeam = row[6] || "TBA";
                 let awayScore = row[7] || "";
-                let rawYtLink = row[8] || ""; // Fetches full link from column index 8
+                let rawYtLink = row[8] || "";
 
                 let homeCode = TEAM_LOOKUP_MAP[homeTeam] || "HME";
                 let awayCode = TEAM_LOOKUP_MAP[awayTeam] || "AWY";
 
-                let payload = { week: weekNum, date: dateStr, time: timeStr, status: status, home: homeTeam, away: awayTeam, homeScore: homeScore, awayScore: awayScore, homeCode: homeCode, awayCode: awayCode };
+                let payload = { 
+                    idx, week: weekNum, date: dateStr, time: timeStr, status: status, 
+                    home: homeTeam, away: awayTeam, homeScore: homeScore, awayScore: awayScore, 
+                    homeCode: homeCode, awayCode: awayCode, rawYtLink: rawYtLink 
+                };
 
                 if (dateStr === todayLabel) { tickerMatches.push(payload); }
 
@@ -418,13 +486,32 @@
                     highlightMatches.push({ title: matchTitle, ytId: matchYtId, score: scoreLine, status: status });
                 }
 
-                let badgeClass = (status === "FINALISED") ? "status-finalised-badge" : "status-upcoming-badge";
-                let centerVs = `<span class="team-vs-upcoming">VS</span>`;
-                if (status === "FINALISED") { centerVs = `<span class="team-vs-score">${homeScore} - ${awayScore}</span>`; }
+                // Sorting timeline items into layout buckets
+                if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed") {
+                    bucketUnconfirmed.push(payload);
+                } else if (dateStr === todayLabel) {
+                    bucketToday.push(payload);
+                } else if (dateStr === tomorrowLabel) {
+                    bucketTomorrow.push(payload);
+                } else {
+                    let wKey = parseInt(weekNum);
+                    if (bucketWeeks[wKey]) {
+                        bucketWeeks[wKey].push(payload);
+                    } else {
+                        bucketUnconfirmed.push(payload);
+                    }
+                }
+            });
 
-                // Timetable replay link construction
+            // Reusable row generator layout engine
+            function makeScheduleRowHTML(m) {
+                let badgeClass = (m.status === "FINALISED") ? "status-finalised-badge" : "status-upcoming-badge";
+                let centerVs = `<span class="team-vs-upcoming">VS</span>`;
+                if (m.status === "FINALISED") { centerVs = `<span class="team-vs-score">${m.homeScore} - ${m.awayScore}</span>`; }
+
+                let matchYtId = parseYoutubeId(m.rawYtLink);
                 let scheduleReplayBtn = "";
-                if (status === "FINALISED" && matchYtId) {
+                if (m.status === "FINALISED" && matchYtId) {
                     scheduleReplayBtn = `
                         <a href="https://www.youtube.com/watch?v=${matchYtId}" target="_blank" class="schedule-replay-btn">
                             🎬 Replay
@@ -432,29 +519,77 @@
                     `;
                 }
 
-                fullScheduleHTML.push(`
-                    <div class="timetable-row" style="animation-delay: ${(idx % 10) * 40}ms;">
-                        <div class="schedule-week">W${weekNum}</div>
-                        <div class="schedule-datetime">
-                            <span class="schedule-time">${timeStr}</span>
-                            <span>${dateStr}</span>
+                // Predictor injection block layout if match isn't finalized
+                let predictorHTML = "";
+                if (m.status !== "FINALISED" && m.away !== "TBA") {
+                    let probs = calculatePredictorPercentages(m.home, m.away);
+                    predictorHTML = `
+                        <div class="predictor-container">
+                            <div class="predictor-labels">
+                                <span style="color:var(--color-home)">Home Win: ${probs.home}%</span>
+                                <span style="color:var(--color-draw)">Draw: ${probs.draw}%</span>
+                                <span style="color:var(--color-away)">Away Win: ${probs.away}%</span>
+                            </div>
+                            <div class="predictor-bar">
+                                <div class="predictor-segment home-win" style="width: ${probs.home}%"></div>
+                                <div class="predictor-segment draw" style="width: ${probs.draw}%"></div>
+                                <div class="predictor-segment away-win" style="width: ${probs.away}%"></div>
+                            </div>
                         </div>
-                        <div class="schedule-teams-container">
-                            <a href="team.html?name=${encodeURIComponent(homeTeam)}" class="team-link home">
-                                <span>${homeTeam}</span> <span class="team-pill">${homeCode}</span>
-                            </a>
-                            <div class="vs-block">${centerVs}</div>
-                            <a href="team.html?name=${encodeURIComponent(awayTeam)}" class="team-link away">
-                                <span class="team-pill">${awayCode}</span> <span>${awayTeam}</span>
-                            </a>
+                    `;
+                }
+
+                return `
+                    <div class="timetable-row" style="animation-delay: ${(m.idx % 10) * 40}ms;">
+                        <div class="schedule-main-line">
+                            <div class="schedule-week">W${m.week}</div>
+                            <div class="schedule-datetime">
+                                <span class="schedule-time">${m.time || 'TBA'}</span>
+                                <span>${m.date}</span>
+                            </div>
+                            <div class="schedule-teams-container">
+                                <a href="team.html?name=${encodeURIComponent(m.home)}" class="team-link home">
+                                    <span>${m.home}</span> <span class="team-pill">${m.homeCode}</span>
+                                </a>
+                                <div class="vs-block">${centerVs}</div>
+                                <a href="team.html?name=${encodeURIComponent(m.away)}" class="team-link away">
+                                    <span class="team-pill">${m.awayCode}</span> <span>${m.away}</span>
+                                </a>
+                            </div>
+                            <div class="schedule-actions-wrapper">
+                                ${scheduleReplayBtn}
+                                <div class="schedule-status ${badgeClass}">${m.status.toLowerCase()}</div>
+                            </div>
                         </div>
-                        <div class="schedule-actions-wrapper">
-                            ${scheduleReplayBtn}
-                            <div class="schedule-status ${badgeClass}">${status.toLowerCase()}</div>
-                        </div>
+                        ${predictorHTML}
                     </div>
-                `);
-            });
+                `;
+            }
+
+            // Constructing categorized segmented view outputs
+            let layoutHTML = [];
+
+            if (bucketToday.length > 0) {
+                layoutHTML.push(`<div class="schedule-section-heading">📅 Matches Today</div>`);
+                bucketToday.forEach(m => layoutHTML.push(makeScheduleRowHTML(m)));
+            }
+
+            if (bucketTomorrow.length > 0) {
+                layoutHTML.push(`<div class="schedule-section-heading">⏳ Matches Tomorrow</div>`);
+                bucketTomorrow.forEach(m => layoutHTML.push(makeScheduleRowHTML(m)));
+            }
+
+            for (let w = 1; w <= 10; w++) {
+                if (bucketWeeks[w].length > 0) {
+                    layoutHTML.push(`<div class="schedule-section-heading">Week ${w} Schedule</div>`);
+                    bucketWeeks[w].forEach(m => layoutHTML.push(makeScheduleRowHTML(m)));
+                }
+            }
+
+            if (bucketUnconfirmed.length > 0) {
+                layoutHTML.push(`<div class="schedule-section-heading">❓ Unconfirmed / TBA Matches</div>`);
+                bucketUnconfirmed.forEach(m => layoutHTML.push(makeScheduleRowHTML(m)));
+            }
 
             const tickerMount = document.getElementById('live-ticker-mount');
             if(tickerMatches.length === 0) {
@@ -512,7 +647,7 @@
                 }).join('');
             }
 
-            document.getElementById('timetable-container').innerHTML = fullScheduleHTML.join('');
+            document.getElementById('timetable-container').innerHTML = layoutHTML.length > 0 ? layoutHTML.join('') : `<div class="loading-text">No schedule items configured.</div>`;
         }
 
         function switchWeek(val) { CURRENT_SELECTED_WEEK = val; renderActiveViews(); }
