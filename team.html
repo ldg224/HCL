@@ -1,334 +1,232 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCL Hub | Team Profile</title>
-    <link rel="icon" type="image/png" href="logo_hcl_main.png">
+// Data Sync Endpoints
+const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
 
-    <style>
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --accent-color: #0066cc;
-            --accent-bg: rgba(0, 102, 204, 0.05);
-            --pitch-green: #ffffff;
-            --pitch-lines: #cbd5e1;
+// Extract Targeted Profile Target from URL parameter
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const TARGET_TEAM = URL_PARAMS.get('name'); // e.g., "[LKD] Lucky FC" or "Lucky FC"
+
+async function fetchCSV(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return text.split(/\r\n|\n/).map(line => {
+        let result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            let char = line[i];
+            if (char === '"') { inQuotes = !inQuotes; }
+            else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+            else { current += char; }
+        }
+        result.push(current.trim());
+        return result;
+    });
+}
+
+// Utility to cleanly extract digits out of strings like "(9) Nine"
+function extractRating(str) {
+    if (!str) return 1;
+    let match = str.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 1;
+}
+
+// Cleanly extracts position types from string data like "[GK] Goalkeeper"
+function detectPosition(posStr, currentCount) {
+    let s = posStr ? posStr.toUpperCase() : "";
+    if (s.includes("GK") || s.includes("GOAL")) return "GK";
+    if (s.includes("DEF") || s.includes("DEFENDER")) return "DEF";
+    if (s.includes("MID") || s.includes("MIDFIELDER")) return "MID";
+    if (s.includes("FWD") || s.includes("FORWARD")) return "FWD";
+    
+    // Fallback order assignment engine
+    if (currentCount === 0) return "GK";
+    if (currentCount <= 4) return "DEF";
+    if (currentCount <= 7) return "MID";
+    return "FWD";
+}
+
+async function assembleProfile() {
+    if (!TARGET_TEAM) {
+        document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">No team parameter selected. Return to standings.</div>`;
+        return;
+    }
+
+    try {
+        // 1. Fetch metadata context from Master Directory
+        const directory = await fetchCSV(CSV_TEAMS);
+        let managerName = "Unassigned";
+        let displayTeamName = TARGET_TEAM;
+        let shortCode = "";
+
+        // Try to pull shortcode out of brackets if it exists in the URL name parameter
+        let bracketMatch = TARGET_TEAM.match(/\[(.*?)\]/);
+        if (bracketMatch) {
+            shortCode = bracketMatch[1];
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Ambient Background Decorations */
-        .corner-graphic {
-            position: fixed;
-            width: 280px;
-            height: 280px;
-            object-fit: contain;
-            opacity: 0.12;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .corner-top-right { top: 40px; right: 0; }
-        .corner-bottom-left { bottom: 0; left: 0; transform: rotate(180deg); }
-
-        main, footer { position: relative; z-index: 10; width: 100%; max-width: 1200px; box-sizing: border-box; }
-        main { padding: 40px 20px; }
-
-        /* Dynamic Profile Header */
-        .profile-header-card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px;
-            padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 20px;
-            margin-bottom: 24px; backdrop-filter: blur(8px);
-        }
-        .identity-row { display: flex; justify-content: space-between; align-items: flex-start; }
-        .team-title-block h1 { margin: 0 0 4px 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.8px; }
-        .team-pill { font-size: 0.8rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); font-weight: 700; margin-left: 8px; vertical-align: middle; }
-        .manager-label { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
-        .manager-label strong { color: var(--text-main); }
-
-        /* Financial Cap Progress Tracker */
-        .budget-tracker { display: flex; flex-direction: column; gap: 6px; background: var(--bg-color); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); }
-        .budget-meta { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .budget-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-        .budget-bar-fill { height: 100%; width: 0%; background: var(--accent-color); border-radius: 4px; transition: width 0.6s ease; }
-        .budget-warning { background: #fee2e2 !important; color: #ef4444; border-color: #fca5a5; }
-        .budget-warning .budget-bar-fill { background: #ef4444; }
-
-        /* Two-Column Grid Setup */
-        .profile-layout-grid { display: grid; grid-template-columns: 1fr 480px; gap: 24px; }
-
-        /* Elegant Minimalist 2D Soccer Pitch Layout */
-        .pitch-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; }
-        .pitch-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); width: 100%; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin: 0 0 20px 0; letter-spacing: 0.5px; }
-        
-        .pitch-canvas {
-            width: 100%; max-width: 420px; aspect-ratio: 1 / 1.35; background: var(--pitch-green);
-            border: 2px solid var(--pitch-lines); border-radius: 8px; position: relative; box-sizing: border-box; overflow: hidden;
-        }
-        /* Pitch Line Markings */
-        .pitch-center-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--pitch-lines); }
-        .pitch-center-circle { position: absolute; top: 50%; left: 50%; width: 80px; height: 80px; border: 2px solid var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
-        .pitch-penalty-top { position: absolute; top: 0; left: 50%; width: 160px; height: 60px; border: 2px solid var(--pitch-lines); border-top: none; transform: translateX(-50%); }
-        .pitch-penalty-bottom { position: absolute; bottom: 0; left: 50%; width: 160px; height: 60px; border: 2px solid var(--pitch-lines); border-bottom: none; transform: translateX(-50%); }
-
-        /* Tactical Player Node Badges */
-        .player-node {
-            position: absolute; display: flex; flex-direction: column; align-items: center;
-            transform: translate(-50%, -50%); width: 75px; text-align: center; z-index: 20;
-        }
-        .player-avatar {
-            width: 32px; height: 32px; background: #0f172a; border: 2px solid #ffffff;
-            border-radius: 50%; color: #fff; font-size: 0.75rem; font-weight: 700;
-            display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .player-name {
-            font-size: 0.72rem; font-weight: 700; color: var(--text-main); margin-top: 4px;
-            background: rgba(255,255,255,0.9); padding: 1px 4px; border-radius: 3px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85px;
-        }
-        /* Split Matrix Rating Pill above head */
-        .rating-pill-matrix {
-            display: flex; font-size: 0.6rem; font-weight: 800; border-radius: 4px;
-            overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            margin-bottom: -2px; background: #fff; position: relative; z-index: 25;
-        }
-        .rating-pill-matrix span { padding: 1px 3px; }
-        .matrix-off { background: #ef4444; color: #fff; }
-        .matrix-def { background: #0066cc; color: #fff; }
-
-        /* Standardized List Roster Panel */
-        .roster-list-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
-        .roster-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left; }
-        .roster-table th { color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid var(--border-color); }
-        .roster-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-weight: 500; }
-        .roster-table tr:last-child td { border-bottom: none; }
-        .badge-pos { font-size: 0.68rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #f1f5f9; color: var(--text-muted); }
-        .badge-pos.GK { background: #fef3c7; color: #d97706; }
-        .badge-pos.DEF { background: #dbeafe; color: #2563eb; }
-        .badge-pos.MID { background: #dcfce7; color: #16a34a; }
-        .badge-pos.FWD { background: #fce7f3; color: #db2777; }
-
-        .loading-text { text-align: center; font-size: 0.95rem; color: var(--text-muted); padding: 60px 0; width: 100%; font-weight: 500; }
-
-        footer {
-            margin-top: auto; padding: 24px 20px; color: var(--text-muted); font-size: 0.78rem; text-align: center;
-            border-top: 1px solid var(--border-color); width: 100%; box-sizing: border-box;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        @media (max-width: 968px) {
-            .profile-layout-grid { grid-template-columns: 1fr; }
-            .corner-graphic { display: none; }
-        }
-    </style>
-</head>
-<body>
-
-    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-top-right">
-    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-bottom-left">
-
-    <main id="profile-mount">
-        <div class="loading-text">Synchronizing team telemetry data...</div>
-    </main>
-
-    <footer>
-        <div>&copy; 2026 Heineken C League (HCL). All Rights Reserved.</div>
-        <img src="logo_hcl_main.png" alt="HCL Logo" style="height:20px; opacity:0.5;">
-    </footer>
-
-    <script src="navbar.js"></script>
-    <script>
-        // Data Sync Endpoints
-        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
-        const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
-
-        // Extract Targeted Profile Target from URL parameter
-        const URL_PARAMS = new URLSearchParams(window.location.search);
-        const TARGET_TEAM = URL_PARAMS.get('name');
-
-        async function fetchCSV(url) {
-            const res = await fetch(url);
-            const text = await res.text();
-            return text.split(/\r\n|\n/).map(line => {
-                let result = [];
-                let current = '';
-                let inQuotes = false;
-                for (let i = 0; i < line.length; i++) {
-                    let char = line[i];
-                    if (char === '"') { inQuotes = !inQuotes; }
-                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
-                    else { current += char; }
-                }
-                result.push(current.trim());
-                return result;
-            });
-        }
-
-        async function assembleProfile() {
-            if (!TARGET_TEAM) {
-                document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">No team parameter selected. Return to standings.</div>`;
-                return;
-            }
-
-            try {
-                // 1. Fetch metadata context from Master Directory
-                const directory = await fetchCSV(CSV_TEAMS);
-                let managerName = "Unassigned";
-                let shortCode = TARGET_TEAM.substring(0,3).toUpperCase();
-
-                for(let i=1; i<directory.length; i++) {
-                    if(directory[i][0] && directory[i][0].toLowerCase() === TARGET_TEAM.toLowerCase()) {
-                        shortCode = directory[i][1] || shortCode;
-                        managerName = directory[i][2] || "Club Officer";
-                        break;
-                    }
-                }
-
-                // 2. Extract and compile roster components
-                const rosterLines = await fetchCSV(CSV_ROSTERS);
-                let teamPlayers = [];
-                let totalSalarySum = 0;
-
-                // Headers mapping: Team, Player, Off, Def, Cost
-                for(let i=1; i<rosterLines.length; i++) {
-                    let r = rosterLines[i];
-                    if (r[0] && r[0].toLowerCase() === TARGET_TEAM.toLowerCase()) {
-                        let offRating = parseInt(r[2]) || 1;
-                        let defRating = parseInt(r[3]) || 1;
-                        let individualCost = parseFloat((r[4] || "0").replace(/[^0-9.]/g, '')) || 0;
-
-                        totalSalarySum += individualCost;
-                        teamPlayers.push({ name: r[1], off: offRating, def: defRating, cost: individualCost, pos: detectPosition(teamPlayers.length) });
-                    }
-                }
-
-                renderDashboard(TARGET_TEAM, shortCode, managerName, teamPlayers, totalSalarySum);
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">Failed syncing active cloud assets.</div>`;
+        for(let i=1; i<directory.length; i++) {
+            let rowTeamName = directory[i][0] ? directory[i][0].trim() : "";
+            
+            // Loose matching to handle variations with or without brackets
+            if(rowTeamName && (rowTeamName.toLowerCase() === TARGET_TEAM.toLowerCase() || TARGET_TEAM.toLowerCase().includes(rowTeamName.toLowerCase()) || rowTeamName.toLowerCase().includes(TARGET_TEAM.toLowerCase()))) {
+                displayTeamName = rowTeamName;
+                shortCode = directory[i][1] || shortCode;
+                managerName = directory[i][2] || "Club Officer";
+                break;
             }
         }
 
-        // Automatic uniform 4-3-3 classification layer based on contract assignment index
-        function detectPosition(idx) {
-            if (idx === 0) return "GK";
-            if (idx >= 1 && idx <= 4) return "DEF";
-            if (idx >= 5 && idx <= 7) return "MID";
-            return "FWD";
+        // Clean up title name display if brackets are embedded inside it
+        if (!shortCode && displayTeamName.includes('[') && displayTeamName.includes(']')) {
+            shortCode = displayTeamName.substring(displayTeamName.indexOf('[')+1, displayTeamName.indexOf(']'));
         }
+        let cleanTitle = displayTeamName.replace(/\[.*?\]\s*/, '');
 
-        function renderDashboard(name, code, manager, players, budgetSum) {
-            const capLimit = 50000;
-            const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
-            const isOverBudget = budgetSum > capLimit;
+        // 2. Extract and compile roster components
+        const rosterLines = await fetchCSV(CSV_ROSTERS);
+        let teamPlayers = [];
+        let totalSalarySum = 0;
 
-            // Generate structured 4-3-3 visual pitch placements
-            let pitchHTML = [];
-            let counts = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+        for(let i=1; i<rosterLines.length; i++) {
+            let r = rosterLines[i];
+            if (!r[1]) continue; // Skip blanks
 
-            // Spatial Percentage Coordinates Engine for custom Minimal Top-Down Grid Map
-            const COORDINATES = {
-                GK:  [{ x: 50, y: 91 }],
-                DEF: [{ x: 15, y: 73 }, { x: 38, y: 76 }, { x: 62, y: 76 }, { x: 85, y: 73 }],
-                MID: [{ x: 20, y: 50 }, { x: 50, y: 52 }, { x: 80, y: 50 }],
-                FWD: [{ x: 18, y: 24 }, { x: 50, y: 18 }, { x: 82, y: 24 }]
-            };
+            let playerTeam = r[3] ? r[3].trim() : "";
 
-            players.forEach(p => {
-                let posType = p.pos;
-                let coordArray = COORDINATES[posType];
-                let trackingIndex = counts[posType];
-                let coords = coordArray[trackingIndex] || { x: 50, y: 50 };
+            // Structural check to match player row to team row context
+            if (playerTeam && (
+                playerTeam.toLowerCase() === displayTeamName.toLowerCase() || 
+                playerTeam.toLowerCase() === TARGET_TEAM.toLowerCase() ||
+                (shortCode && playerTeam.toLowerCase().includes(`[${shortCode.toLowerCase()}]`))
+            )) {
+                let playerID = r[0].trim();
+                let name = r[1].trim();
+                let posType = detectPosition(r[2], teamPlayers.length);
+                let offRating = extractRating(r[4]);
+                let defRating = extractRating(r[5]);
+                let rawCost = r[6] || "$0";
+                let individualCost = parseFloat(rawCost.replace(/[^0-9.]/g, '')) || 0;
+
+                totalSalarySum += individualCost;
                 
-                counts[posType]++;
-
-                // Generate visual circle badge node strings
-                pitchHTML.push(`
-                    <div class="player-node" style="left: ${coords.x}%; top: ${coords.y}%;">
-                        <div class="rating-pill-matrix">
-                            <span class="matrix-off">${p.off}</span>
-                            <span class="matrix-def">${p.def}</span>
-                        </div>
-                        <div class="player-avatar">${p.name.substring(0,2).toUpperCase()}</div>
-                        <div class="player-name">${p.name}</div>
-                    </div>
-                `);
-            });
-
-            document.getElementById('profile-mount').innerHTML = `
-                <div class="profile-header-card">
-                    <div class="identity-row">
-                        <div class="team-title-block">
-                            <h1>${name} <span class="team-pill">${code}</span></h1>
-                            <div class="manager-label">Team Manager: <strong>${manager}</strong></div>
-                        </div>
-                    </div>
-                    <div class="budget-tracker ${isOverBudget ? 'budget-warning' : ''}">
-                        <div class="budget-meta">
-                            <span>Squad Cap Management</span>
-                            <span>$${budgetSum.toLocaleString()} / $${capLimit.toLocaleString()}</span>
-                        </div>
-                        <div class="budget-bar-bg">
-                            <div class="budget-bar-fill" style="width: ${capPercentage}%;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="profile-layout-grid">
-                    <div class="roster-list-card">
-                        <h3 class="pitch-title">Squad Contract Inventory</h3>
-                        <table class="roster-table">
-                            <thead>
-                                <tr>
-                                    <th>Player</th>
-                                    <th>Pos</th>
-                                    <th style="text-align:center;">OFF</th>
-                                    <th style="text-align:center;">DEF</th>
-                                    <th style="text-align:right;">Salary valuation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${players.map(p => `
-                                    <tr>
-                                        <td style="font-weight:700;">${p.name}</td>
-                                        <td><span class="badge-pos ${p.pos}">${p.pos}</span></td>
-                                        <td style="text-align:center; font-weight:700; color:#ef4444;">${p.off}</td>
-                                        <td style="text-align:center; font-weight:700; color:#0066cc;">${p.def}</td>
-                                        <td style="text-align:right; font-family:monospace; font-weight:600;">$${p.cost.toLocaleString()}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="pitch-card">
-                        <h3 class="pitch-title">Tactical Field Formation (4-3-3)</h3>
-                        <div class="pitch-canvas">
-                            <div class="pitch-center-line"></div>
-                            <div class="pitch-center-circle"></div>
-                            <div class="pitch-penalty-top"></div>
-                            <div class="pitch-penalty-bottom"></div>
-                            ${pitchHTML.join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
+                teamPlayers.push({ 
+                    id: playerID, 
+                    name: name, 
+                    off: offRating, 
+                    def: defRating, 
+                    costStr: rawCost, 
+                    costNum: individualCost, 
+                    pos: posType 
+                    displayPos: r[2]
+                });
+            }
         }
 
-        assembleProfile();
-    </script>
-</body>
-</html>
+        renderDashboard(cleanTitle, shortCode, managerName, teamPlayers, totalSalarySum);
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById('profile-mount').innerHTML = `<div class="loading-text" style="color:#ef4444">Failed syncing active cloud assets.</div>`;
+    }
+}
+
+function renderDashboard(name, code, manager, players, budgetSum) {
+    const capLimit = 50000;
+    const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
+    const isOverBudget = budgetSum > capLimit;
+
+    let pitchHTML = [];
+    let counts = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+
+    // Spatial Coordinates for clean tactical field mapping
+    const COORDINATES = {
+        GK:  [{ x: 50, y: 91 }],
+        DEF: [{ x: 15, y: 73 }, { x: 38, y: 76 }, { x: 62, y: 76 }, { x: 85, y: 73 }],
+        MID: [{ x: 25, y: 50 }, { x: 50, y: 53 }, { x: 75, y: 50 }],
+        FWD: [{ x: 18, y: 24 }, { x: 50, y: 18 }, { x: 82, y: 24 }]
+    };
+
+    players.forEach(p => {
+        let posType = p.pos;
+        let coordArray = COORDINATES[posType];
+        let trackingIndex = counts[posType];
+        let coords = coordArray[trackingIndex] || { x: 50, y: 50 };
+        
+        counts[posType]++;
+
+        // Uses your accurate database Player ID for the inner numbers
+        pitchHTML.push(`
+            <div class="player-node" style="left: ${coords.x}%; top: ${coords.y}%;">
+                <div class="rating-pill-matrix">
+                    <span class="matrix-off">${p.off}</span>
+                    <span class="matrix-def">${p.def}</span>
+                </div>
+                <div class="player-avatar">${parseInt(p.id, 10)}</div>
+                <div class="player-name">${p.name.split(' ').pop()}</div>
+            </div>
+        `);
+    });
+
+    document.getElementById('profile-mount').innerHTML = `
+        <div class="profile-header-card">
+            <div class="identity-row">
+                <div class="team-title-block">
+                    <h1>${name} <span class="team-pill">${code}</span></h1>
+                    <div class="manager-label">Team Manager: <strong>${manager}</strong></div>
+                </div>
+            </div>
+            <div class="budget-tracker ${isOverBudget ? 'budget-warning' : ''}">
+                <div class="budget-meta">
+                    <span>Squad Cap Management</span>
+                    <span>$${budgetSum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} / $${capLimit.toLocaleString()}</span>
+                </div>
+                <div class="budget-bar-bg">
+                    <div class="budget-bar-fill" style="width: ${capPercentage}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-layout-grid">
+            <div class="roster-list-card">
+                <h3 class="pitch-title">Squad Contract Inventory</h3>
+                <table class="roster-table">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Pos</th>
+                            <th style="text-align:center;">OFF</th>
+                            <th style="text-align:center;">DEF</th>
+                            <th style="text-align:right;">Salary valuation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${players.length === 0 ? `<tr><td colspan="5" class="loading-text" style="padding: 20px 0;">No active contracts assigned to this squad roster yet.</td></tr>` : 
+                        players.map(p => `
+                            <tr>
+                                <td style="font-weight:700;">#${p.id} ${p.name}</td>
+                                <td><span class="badge-pos ${p.pos}">${p.displayPos || p.pos}</span></td>
+                                <td style="text-align:center; font-weight:700; color:#ef4444;">${p.off}</td>
+                                <td style="text-align:center; font-weight:700; color:#0066cc;">${p.def}</td>
+                                <td style="text-align:right; font-family:monospace; font-weight:600;">${p.costStr}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pitch-card">
+                <h3 class="pitch-title">Tactical Field Formation (4-3-3)</h3>
+                <div class="pitch-canvas">
+                    <div class="pitch-center-line"></div>
+                    <div class="pitch-center-circle"></div>
+                    <div class="pitch-penalty-top"></div>
+                    <div class="pitch-penalty-bottom"></div>
+                    ${pitchHTML.join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+assembleProfile();
