@@ -542,6 +542,7 @@
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed") {
                     bucketUnconfirmed.push(payload);
                 } else if (dateStr === todayLabel) {
+                    // Absolute alignment security: match day values force layout grouping automatically
                     bucketToday.push(payload);
                 } else if (dateStr === tomorrowLabel) {
                     bucketTomorrow.push(payload);
@@ -612,7 +613,6 @@
                     const uniqueClockId = `clock-${m.week}-${m.idx}`;
                     countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
                     
-                    // Push structured tracker safely without causing internal interval races
                     let tracker = setTimeout(() => initLiveCountdown(uniqueClockId, matchTimeObj.getTime()), 5);
                     TIMEOUT_TRACKERS.push(tracker);
                 }
