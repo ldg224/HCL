@@ -78,7 +78,12 @@
             backdrop-filter: blur(8px);
         }
         .ticker-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
-        .ticker-teams { display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
+        .ticker-teams { display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
+        
+        /* Interactive ticker link layouts */
+        .ticker-team-item { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-main); transition: color 0.15s; }
+        .ticker-team-item:hover { color: var(--accent-color); }
+        .ticker-mini-logo { width: 18px; height: 18px; object-fit: contain; }
 
         /* 2. Split Dashboard Hero Layout */
         .hero-dashboard {
@@ -185,7 +190,7 @@
 
         @media (max-width: 900px) {
             .hero-dashboard { grid-template-columns: 1fr; }
-            .corner-graphic { display: none; } /* Clear screen clutter on tablets/mobile */
+            .corner-graphic { display: none; }
         }
         @media (max-width: 768px) {
             .timetable-row { flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px; }
@@ -289,6 +294,21 @@
                 result.push(current.trim());
                 return result;
             });
+        }
+
+        // Standardized File Asset Routing Handler (Fixed Shortcode Designations)
+        function getLocalTeamLogo(code) {
+            if (!code) return 'logo_hcl_main.png';
+            const cleanCode = code.toUpperCase().trim();
+            switch(cleanCode) {
+                case 'LKD': return 'logo_lucky_fc_V3.png';
+                case 'SKS': return 'logo_sks_fc.png';
+                case 'LAU': return 'logo_lads_united.png';
+                case 'PCF': return 'logo_pectoral_flys.png';
+                case 'CFC': return 'logo_cranbourne_united.png'; // Fixed shortcode
+                case 'TUR': return 'logo_fc_turtle.png';         // Fixed shortcode
+                default: return 'logo_hcl_main.png';
+            }
         }
 
         // Execution Controller Hub
@@ -408,7 +428,17 @@
                 tickerMount.innerHTML = tickerMatches.map(m => `
                     <div class="ticker-match-card">
                         <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${m.status.toLowerCase()}</span></div>
-                        <div class="ticker-teams"><span>${m.homeCode}</span> <span style="color:var(--text-muted); font-size:0.8rem;">${m.status === 'FINALISED' ? m.homeScore+' - '+m.awayScore : 'vs'}</span> <span>${m.awayCode}</span></div>
+                        <div class="ticker-teams">
+                            <a href="team.html?name=${encodeURIComponent(m.home)}" class="ticker-team-item">
+                                <img src="${getLocalTeamLogo(m.homeCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
+                                <span>${m.homeCode}</span>
+                            </a>
+                            <span style="color:var(--text-muted); font-size:0.8rem;">${m.status === 'FINALISED' ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
+                            <a href="team.html?name=${encodeURIComponent(m.away)}" class="ticker-team-item">
+                                <span>${m.awayCode}</span>
+                                <img src="${getLocalTeamLogo(m.awayCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
+                            </a>
+                        </div>
                     </div>
                 `).join('');
             }
