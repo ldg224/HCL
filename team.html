@@ -51,19 +51,20 @@
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px;
             padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 20px;
             margin-bottom: 24px; backdrop-filter: blur(8px);
+            position: relative; overflow: hidden;
         }
         .identity-row { display: flex; align-items: center; gap: 20px; }
         .team-logo-frame { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
         .team-logo-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
         
         .team-title-block h1 { margin: 0 0 4px 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.8px; display: flex; align-items: center; gap: 8px; }
-        .team-pill { font-size: 0.8rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); font-weight: 700; vertical-align: middle; }
+        .team-pill { font-size: 0.8rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); font-weight: 700; vertical-align: middle; transition: all 0.3s ease; }
         .manager-label { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
         .manager-label strong { color: var(--text-main); }
 
         /* Form indicator style elements */
         .form-container { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
-        .form-pill { width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 800; }
+        .form-pill { width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 800; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .form-w { background-color: #10b981; }
         .form-d { background-color: #64748b; }
         .form-l { background-color: #ef4444; }
@@ -103,6 +104,7 @@
             width: 32px; height: 32px; background: #0f172a; border: 2px solid #ffffff;
             border-radius: 50%; color: #fff; font-size: 0.75rem; font-weight: 700;
             display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease;
         }
         .player-name {
             font-size: 0.72rem; font-weight: 700; color: var(--text-main); margin-top: 4px;
@@ -164,8 +166,35 @@
         const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
         const CSV_RESULTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
 
+        const TEAM_COLORS = {
+            'CFC': '#57d744',
+            'TUR': '#46d2d2',
+            'LAU': '#000000',
+            'LKD': '#ffd700',
+            'PCF': '#2727aa',
+            'SKS': '#2255ff'
+        };
+
         const URL_PARAMS = new URLSearchParams(window.location.search);
         const TARGET_TEAM = URL_PARAMS.get('name');
+
+        function getMatchDateTime(dateStr, timeStr) {
+            if (!dateStr || dateStr.toLowerCase().trim() === 'tba' || dateStr.toLowerCase().trim() === 'unconfirmed') return null;
+            
+            const segments = dateStr.split('/');
+            if (segments.length < 2) return null;
+            
+            const day = parseInt(segments[0].trim(), 10);
+            const month = parseInt(segments[1].trim(), 10);
+            
+            let hours = 0, minutes = 0;
+            if (timeStr && timeStr.includes(':')) {
+                const timeSegments = timeStr.split(':');
+                hours = parseInt(timeSegments[0].trim(), 10);
+                minutes = parseInt(timeSegments[1].trim(), 10);
+            }
+            return new Date(2026, month - 1, day, hours, minutes);
+        }
 
         async function fetchCSV(url) {
             const res = await fetch(url);
@@ -191,7 +220,6 @@
             return match ? parseInt(match[0], 10) : 1;
         }
 
-        // Resolves file system references to match your direct assets exactly
         function getLocalTeamLogo(code) {
             if (!code) return 'logo_hcl_main.png';
             const cleanCode = code.toUpperCase().trim();
@@ -266,6 +294,10 @@
                         let matchRow = resultsData[i];
                         if (!matchRow[3] || matchRow[3].toUpperCase() !== "FINALISED") continue;
 
+                        // CRITICAL FIX: Ensure the match timestamp has strictly passed
+                        let matchTimeObj = getMatchDateTime(matchRow[1], matchRow[2]);
+                        if (!matchTimeObj || new Date() < matchTimeObj) continue;
+
                         let homeTeam = matchRow[4] ? matchRow[4].toLowerCase() : "";
                         let awayTeam = matchRow[6] ? matchRow[6].toLowerCase() : "";
                         
@@ -292,12 +324,17 @@
                     }
 
                     if(matchingMatches.length > 0) {
+                        // Sort matching matches chronologically and limit to the last 5 completed games
                         matchingMatches.sort((a, b) => a.week - b.week);
-                        let pills = matchingMatches.map(m => {
+                        let lastFiveMatches = matchingMatches.slice(-5);
+                        
+                        let pills = lastFiveMatches.map(m => {
                             let cls = m.outcome.toLowerCase();
                             return `<div class="form-pill form-${cls}">${m.outcome}</div>`;
                         }).join('');
-                        formHTML = `<div class="form-container">FORM: ${pills}</div>`;
+                        formHTML = `<div class="form-container">FORM GUIDE (LAST 5): ${pills}</div>`;
+                    } else {
+                        formHTML = `<div class="form-container" style="font-weight:500; font-style:italic;">No games played yet this season.</div>`;
                     }
                 } catch (formErr) {
                     console.error("Form calculation encountered an error:", formErr);
@@ -354,6 +391,11 @@
             const capPercentage = Math.min((budgetSum / capLimit) * 100, 100);
             const isOverBudget = budgetSum > capLimit;
 
+            // Resolve explicit primary team color hex
+            const teamPrimaryColor = TEAM_COLORS[code?.toUpperCase()] || 'var(--accent-color)';
+            const hasDarkBg = (code === 'LKD' || code === 'TUR' || code === 'CFC');
+            const pillTextColor = hasDarkBg ? '#1e293b' : '#ffffff';
+
             let pitchHTML = [];
             let counts = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
 
@@ -378,20 +420,20 @@
                             <span class="matrix-off">${p.off}</span>
                             <span class="matrix-def">${p.def}</span>
                         </div>
-                        <div class="player-avatar">${parseInt(p.id, 10)}</div>
+                        <div class="player-avatar" style="background-color: ${teamPrimaryColor}; color: ${pillTextColor}; border-color: #ffffff;">${parseInt(p.id, 10)}</div>
                         <div class="player-name">${p.name.split(' ').pop()}</div>
                     </div>
                 `);
             });
 
             document.getElementById('profile-mount').innerHTML = `
-                <div class="profile-header-card">
+                <div class="profile-header-card" style="border-top: 4px solid ${teamPrimaryColor};">
                     <div class="identity-row">
                         <div class="team-logo-frame">
                             <img src="${logoUrl}" alt="${name} Crest" onerror="this.src='logo_hcl_main.png';">
                         </div>
                         <div class="team-title-block">
-                            <h1>${name} <span class="team-pill">${code || 'HCL'}</span></h1>
+                            <h1>${name} <span class="team-pill" style="background-color: ${teamPrimaryColor}; color: ${pillTextColor}; border-color: ${teamPrimaryColor};">${code || 'HCL'}</span></h1>
                             <div class="manager-label">Team Manager: <strong>${manager}</strong></div>
                             ${formHTML}
                         </div>
@@ -402,14 +444,14 @@
                             <span>$${budgetSum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} / $${capLimit.toLocaleString()}</span>
                         </div>
                         <div class="budget-bar-bg">
-                            <div class="budget-bar-fill" style="width: ${capPercentage}%;"></div>
+                            <div class="budget-bar-fill" style="width: ${capPercentage}%; background-color: ${teamPrimaryColor};"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="profile-layout-grid">
                     <div class="roster-list-card">
-                        <h3 class="pitch-title">Squad Contract Inventory</h3>
+                        <h3 class="pitch-title" style="border-bottom-color: var(--border-color);">Squad Contract Inventory</h3>
                         <table class="roster-table">
                             <thead>
                                 <tr>
