@@ -162,13 +162,13 @@
         .schedule-time { color: var(--text-main); font-weight: 600; }
 
         .schedule-teams-container { display: flex; align-items: center; justify-content: flex-start; flex-grow: 1; font-size: 0.9rem; font-weight: 600; overflow: hidden; }
-        .team-link { display: flex; align-items: center; width: 40%; text-decoration: none; color: var(--text-main); transition: color 0.15s; }
+        .team-link { display: flex; align-items: center; width: 40%; text-decoration: none; color: var(--text-main); transition: color 0.15s; gap: 8px; }
         .team-link:hover { color: var(--accent-color); }
         .team-link.home { justify-content: flex-end; text-align: right; }
         .team-link.away { justify-content: flex-start; text-align: left; }
         
-        /* Updated team pill style mapping bases */
-        .team-pill { font-size: 0.72rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); font-weight: 700; margin: 0 6px; text-shadow: 0px 1px 1px rgba(0,0,0,0.15); }
+        .schedule-mini-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
+        .team-pill { font-size: 0.72rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); font-weight: 700; margin: 0 6px; text-shadow: 0px 1px 1px rgba(0,0,0,0.15); flex-shrink: 0; }
 
         .vs-block { width: 80px; text-align: center; flex-shrink: 0; font-weight: 700; margin: 0 10px; display: flex; justify-content: center; }
         .team-vs-score { background: #f1f5f9; color: var(--text-main); padding: 4px 10px; border-radius: 4px; font-family: monospace; font-size: 0.88rem; font-weight: 700; }
@@ -293,7 +293,6 @@
         const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
 
-        // Hex codes extracted from the Teams sheet mapping
         const TEAM_COLORS = {
             'CFC': '#57d744',
             'TUR': '#46d2d2',
@@ -355,7 +354,7 @@
         }
 
         function getLocalTeamLogo(code) {
-            if (!code) return 'logo_hcl_main.png';
+            if (!code) return '';
             const cleanCode = code.toUpperCase().trim();
             switch(cleanCode) {
                 case 'LKD': return 'logo_lucky_fc_V3.png';
@@ -364,7 +363,7 @@
                 case 'PCF': return 'logo_pectoral_flys.png';
                 case 'CFC': return 'logo_cranbourne_united.png';
                 case 'TUR': return 'logo_fc_turtle.png';
-                default: return 'logo_hcl_main.png';
+                default: return '';
             }
         }
 
@@ -620,13 +619,24 @@
                                            m.home.toUpperCase().includes("TBA") || 
                                            m.away.toUpperCase().includes("TBA");
 
-                // Get dynamic team colors
                 let currentHomeColor = TEAM_COLORS[m.homeCode] || 'var(--color-home)';
                 let currentAwayColor = TEAM_COLORS[m.awayCode] || 'var(--color-away)';
 
-                // Adjust text colors dynamically inside the indicators to maintain legibility depending on background shade
                 let homeTextColor = (m.homeCode === 'LKD' || m.homeCode === 'TUR' || m.homeCode === 'CFC') ? '#1e293b' : '#ffffff';
                 let awayTextColor = (m.awayCode === 'LKD' || m.awayCode === 'TUR' || m.awayCode === 'CFC') ? '#1e293b' : '#ffffff';
+
+                // Determine logos
+                let homeLogoUrl = getLocalTeamLogo(m.homeCode);
+                let awayLogoUrl = getLocalTeamLogo(m.awayCode);
+
+                // If it is a placeholder/TBA match, clear out logo fields completely
+                if (isPlaceholderMatch) {
+                    homeLogoUrl = "";
+                    awayLogoUrl = "";
+                }
+
+                let homeLogoHtml = homeLogoUrl ? `<img src="${homeLogoUrl}" onerror="this.style.display='none';" class="schedule-mini-logo">` : '';
+                let awayLogoHtml = awayLogoUrl ? `<img src="${awayLogoUrl}" onerror="this.style.display='none';" class="schedule-mini-logo">` : '';
 
                 if (!isFinishedOrActive && !isPlaceholderMatch && !m.status.includes("CONFIRM")) {
                     const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
@@ -670,11 +680,15 @@
                             </div>
                             <div class="schedule-teams-container">
                                 <a href="team.html?name=${encodeURIComponent(m.home)}" class="team-link home">
-                                    <span>${m.home}</span> <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${homeTextColor};">${m.homeCode}</span>
+                                    <span>${m.home}</span> 
+                                    <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${homeTextColor};">${m.homeCode}</span>
+                                    ${homeLogoHtml}
                                 </a>
                                 <div class="vs-block">${centerVs}</div>
                                 <a href="team.html?name=${encodeURIComponent(m.away)}" class="team-link away">
-                                    <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${awayTextColor};">${m.awayCode}</span> <span>${m.away}</span>
+                                    ${awayLogoHtml}
+                                    <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${awayTextColor};">${m.awayCode}</span> 
+                                    <span>${m.away}</span>
                                 </a>
                             </div>
                             <div class="schedule-actions-wrapper">
@@ -727,18 +741,20 @@
                     const matchTimeObj = getMatchDateTime(m.date, m.time);
                     const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
                     const showTickerScore = (m.status === 'FINALISED' && isTimePassed);
+                    let tickerHomeLogo = getLocalTeamLogo(m.homeCode);
+                    let tickerAwayLogo = getLocalTeamLogo(m.awayCode);
                     return `
                         <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
                             <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
                             <div class="ticker-teams">
                                 <a href="team.html?name=${encodeURIComponent(m.home)}" class="ticker-team-item">
-                                    <img src="${getLocalTeamLogo(m.homeCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
+                                    ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                     <span>${m.homeCode}</span>
                                 </a>
                                 <span style="color:var(--text-muted); font-size:0.8rem;">${showTickerScore ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
                                 <a href="team.html?name=${encodeURIComponent(m.away)}" class="ticker-team-item">
                                     <span>${m.awayCode}</span>
-                                    <img src="${getLocalTeamLogo(m.awayCode)}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">
+                                    ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                 </a>
                             </div>
                         </div>
