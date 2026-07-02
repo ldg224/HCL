@@ -197,9 +197,7 @@
         .predictor-labels { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 0 2px; }
         .predictor-bar { height: 8px; width: 100%; border-radius: 4px; display: flex; overflow: hidden; background: #e2e8f0; }
         .predictor-segment { height: 100%; transition: width 0.3s ease; }
-        .predictor-segment.home-win { background-color: var(--color-home); }
         .predictor-segment.draw { background-color: var(--color-draw); }
-        .predictor-segment.away-win { background-color: var(--color-away); }
 
         .loading-text { text-align: center; font-size: 0.9rem; color: var(--text-muted); width: 100%; padding: 30px 0; font-weight: 500; }
 
@@ -292,6 +290,16 @@
         const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
         const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+
+        // Hex codes extracted from the Teams sheet mapping
+        const TEAM_COLORS = {
+            'CFC': '#57d744',
+            'TUR': '#46d2d2',
+            'LAU': '#000000',
+            'LKD': '#ffd700',
+            'PCF': '#2727aa',
+            'SKS': '#2255ff'
+        };
 
         let CURRENT_SELECTED_WEEK = "1"; 
         let ACTIVE_REAL_WEEK = 1;         
@@ -616,17 +624,22 @@
 
                     if (isRealHomeTeam && isRealAwayTeam) {
                         let probs = calculatePredictorPercentages(m.home, m.away);
+                        
+                        // Dynamically fall back to default color theme variables if code isn't tracked in the list
+                        let currentHomeColor = TEAM_COLORS[m.homeCode] || 'var(--color-home)';
+                        let currentAwayColor = TEAM_COLORS[m.awayCode] || 'var(--color-away)';
+
                         predictorHTML = `
                             <div class="predictor-container">
                                 <div class="predictor-labels">
-                                    <span style="color:var(--color-home)">Home Win: ${probs.home}%</span>
+                                    <span style="color:${currentHomeColor}">Home Win: ${probs.home}%</span>
                                     <span style="color:var(--color-draw)">Draw: ${probs.draw}%</span>
-                                    <span style="color:var(--color-away)">Away Win: ${probs.away}%</span>
+                                    <span style="color:${currentAwayColor}">Away Win: ${probs.away}%</span>
                                 </div>
                                 <div class="predictor-bar">
-                                    <div class="predictor-segment home-win" style="width: ${probs.home}%"></div>
+                                    <div class="predictor-segment" style="width: ${probs.home}%; background-color: ${currentHomeColor};"></div>
                                     <div class="predictor-segment draw" style="width: ${probs.draw}%"></div>
-                                    <div class="predictor-segment away-win" style="width: ${probs.away}%"></div>
+                                    <div class="predictor-segment" style="width: ${probs.away}%; background-color: ${currentAwayColor};"></div>
                                 </div>
                             </div>
                         `;
