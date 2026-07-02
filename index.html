@@ -248,7 +248,7 @@
                     <p>Track live team rosters, view game highlights, and explore interconnected tactical performance matrices.</p>
                 </div>
                 <div class="archive-controls">
-                    <span class="archive-label">Filter Highlights Segment</span>
+                    <span class="archive-label">Filter Matches Segment</span>
                     <select class="week-dropdown" id="weekSelector" onchange="switchWeek(this.value)">
                         <option value="1">Week 1</option>
                         <option value="2">Week 2</option>
@@ -272,7 +272,7 @@
             </div>
         </div>
 
-        <div class="section-title" id="highlights-heading">Highlights</div>
+        <div class="section-title" id="highlights-heading">Matches</div>
         <div class="video-grid" id="match-video-grid"></div>
 
         <div class="section-title">Current & Upcoming Schedule</div>
@@ -538,6 +538,8 @@
 
             for (let w = 1; w <= 10; w++) { bucketWeeks[w] = []; }
 
+            let weekMatchCounts = {};
+
             RAW_SCHEDULE_LINES.forEach((row, idx) => {
                 let weekNum = row[0];
                 let dateStr = row[1] ? row[1].trim() : "";
@@ -552,10 +554,17 @@
                 let homeCode = TEAM_LOOKUP_MAP[homeTeam] || "HME";
                 let awayCode = TEAM_LOOKUP_MAP[awayTeam] || "AWY";
 
+                if (!weekMatchCounts[weekNum]) {
+                    weekMatchCounts[weekNum] = 0;
+                }
+                let currentWeekIdx = weekMatchCounts[weekNum];
+                weekMatchCounts[weekNum]++;
+
                 let payload = { 
                     idx, week: weekNum, date: dateStr, time: timeStr, status: status, 
                     home: homeTeam, away: awayTeam, homeScore: homeScore, awayScore: awayScore, 
-                    homeCode: homeCode, awayCode: awayCode, rawYtLink: rawYtLink 
+                    homeCode: homeCode, awayCode: awayCode, rawYtLink: rawYtLink,
+                    weekIdx: currentWeekIdx
                 };
 
                 if (dateStr === todayLabel) { tickerMatches.push(payload); }
@@ -563,7 +572,7 @@
                 let matchYtId = parseYoutubeId(rawYtLink);
 
                 if (weekNum === CURRENT_SELECTED_WEEK) {
-                    highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr, homeScore: homeScore, awayScore: awayScore });
+                    highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr, homeScore: homeScore, awayScore: awayScore, week: weekNum, weekIdx: currentWeekIdx });
                 }
 
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed" || status.includes("CONFIRM")) {
@@ -605,11 +614,7 @@
                     centerVs = `<span class="team-vs-score">${m.homeScore} - ${m.awayScore}</span>`; 
                 }
 
-                let matchYtId = parseYoutubeId(m.rawYtLink);
-                let scheduleReplayBtn = "";
-                if (m.status === "FINALISED" && isTimePassed && matchYtId) {
-                    scheduleReplayBtn = `<a href="https://www.youtube.com/watch?v=${matchYtId}" target="_blank" class="schedule-replay-btn">🎬 Replay</a>`;
-                }
+                let scheduleReplayBtn = `<a href="match.html?week=${m.week}&index=${m.weekIdx}" class="schedule-replay-btn">📊 Center</a>`;
 
                 let predictorHTML = "";
                 let countdownHTML = "";
@@ -744,54 +749,44 @@
                     let tickerHomeLogo = getLocalTeamLogo(m.homeCode);
                     let tickerAwayLogo = getLocalTeamLogo(m.awayCode);
                     return `
-                        <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
+                        <div class="ticker-match-card" style="animation-delay: ${i * 100}ms; cursor: pointer;" onclick="window.location.href='match.html?week=${m.week}&index=${m.weekIdx}'">
                             <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
                             <div class="ticker-teams">
-                                <a href="team.html?name=${encodeURIComponent(m.home)}" class="ticker-team-item">
+                                <div class="ticker-team-item">
                                     ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                     <span>${m.homeCode}</span>
-                                </a>
+                                </div>
                                 <span style="color:var(--text-muted); font-size:0.8rem;">${showTickerScore ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
-                                <a href="team.html?name=${encodeURIComponent(m.away)}" class="ticker-team-item">
+                                <div class="ticker-team-item">
                                     <span>${m.awayCode}</span>
                                     ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
-                                </a>
+                                </div>
                             </div>
                         </div>
                     `;
                 }).join('');
             }
 
-            document.getElementById('highlights-heading').innerText = `Week ${CURRENT_SELECTED_WEEK} Replays`;
+            document.getElementById('highlights-heading').innerText = `Week ${CURRENT_SELECTED_WEEK} Matches Matrix`;
             const videoGrid = document.getElementById('match-video-grid');
             
             if(highlightMatches.length === 0) {
                 videoGrid.innerHTML = `<div class="loading-text">No matches recorded for this segment.</div>`;
             } else {
                 videoGrid.innerHTML = highlightMatches.map((match, idx) => {
-                    const matchTimeObj = getMatchDateTime(match.date, match.time);
-                    const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                    const isAccessible = isTimePassed;
+                    let mediaBlock = `
+                        <div class="no-video-placeholder" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff;">
+                            <span style="font-size:1.8rem; margin-bottom: 4px;">⚽</span>
+                            <div style="font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 1px; color: #3b82f6;">Match Dashboard</div>
+                        </div>
+                    `;
 
-                    let mediaBlock = `<div class="no-video-placeholder"><span style="font-size:1.4rem;">🎬</span><div>Match Replay Processing</div></div>`;
-                    if (!isAccessible) {
-                        mediaBlock = `<div class="no-video-placeholder"><span style="font-size:1.4rem;">⏳</span><div>Match Upcoming</div></div>`;
-                    } else if (match.ytId) {
-                        mediaBlock = `<iframe src="https://www.youtube.com/embed/${match.ytId}?rel=0&modestbranding=1" allowfullscreen></iframe>`;
-                    }
-
-                    let scoreContainerHTML = `<div class="loading-text" style="padding:5px 0; font-size:0.85rem;">Match details unlock at kick-off</div>`;
-                    if (isAccessible) {
-                        let scoreDisplayLine = (match.status === 'FINALISED') ? 'Reveal Score' : 'Match Live / Ended';
-                        let rawScoreLine = (match.status === 'FINALISED') ? `FT: ${match.homeScore} - ${match.awayScore}` : 'Scores Syncing...';
-                        scoreContainerHTML = `
-                            <button class="reveal-btn" onclick="revealScore(this)" ${match.status !== 'FINALISED' ? 'disabled' : ''}>${scoreDisplayLine}</button>
-                            <div class="score-display">${rawScoreLine}</div>
-                        `;
-                    }
+                    let scoreContainerHTML = `
+                        <a href="match.html?week=${match.week}&index=${match.weekIdx}" class="reveal-btn" style="text-align:center; text-decoration:none; display:block; box-sizing:border-box;">Enter Match Center</a>
+                    `;
 
                     return `
-                        <div class="video-card" style="animation-delay: ${idx * 120}ms;">
+                        <div class="video-card" style="animation-delay: ${idx * 120}ms; cursor: pointer;" onclick="window.location.href='match.html?week=${match.week}&index=${match.weekIdx}'">
                             <div class="video-wrapper">${mediaBlock}</div>
                             <div class="video-info">
                                 <h3 class="video-title">${match.title}</h3>
