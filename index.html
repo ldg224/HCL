@@ -166,7 +166,9 @@
         .team-link:hover { color: var(--accent-color); }
         .team-link.home { justify-content: flex-end; text-align: right; }
         .team-link.away { justify-content: flex-start; text-align: left; }
-        .team-pill { font-size: 0.72rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); font-weight: 700; margin: 0 6px; }
+        
+        /* Updated team pill style mapping bases */
+        .team-pill { font-size: 0.72rem; background: var(--bg-color); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); font-weight: 700; margin: 0 6px; text-shadow: 0px 1px 1px rgba(0,0,0,0.15); }
 
         .vs-block { width: 80px; text-align: center; flex-shrink: 0; font-weight: 700; margin: 0 10px; display: flex; justify-content: center; }
         .team-vs-score { background: #f1f5f9; color: var(--text-main); padding: 4px 10px; border-radius: 4px; font-family: monospace; font-size: 0.88rem; font-weight: 700; }
@@ -618,16 +620,20 @@
                                            m.home.toUpperCase().includes("TBA") || 
                                            m.away.toUpperCase().includes("TBA");
 
+                // Get dynamic team colors
+                let currentHomeColor = TEAM_COLORS[m.homeCode] || 'var(--color-home)';
+                let currentAwayColor = TEAM_COLORS[m.awayCode] || 'var(--color-away)';
+
+                // Adjust text colors dynamically inside the indicators to maintain legibility depending on background shade
+                let homeTextColor = (m.homeCode === 'LKD' || m.homeCode === 'TUR' || m.homeCode === 'CFC') ? '#1e293b' : '#ffffff';
+                let awayTextColor = (m.awayCode === 'LKD' || m.awayCode === 'TUR' || m.awayCode === 'CFC') ? '#1e293b' : '#ffffff';
+
                 if (!isFinishedOrActive && !isPlaceholderMatch && !m.status.includes("CONFIRM")) {
                     const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
                     const isRealAwayTeam = m.away in LADDER_POINTS_MAP;
 
                     if (isRealHomeTeam && isRealAwayTeam) {
                         let probs = calculatePredictorPercentages(m.home, m.away);
-                        
-                        // Dynamically fall back to default color theme variables if code isn't tracked in the list
-                        let currentHomeColor = TEAM_COLORS[m.homeCode] || 'var(--color-home)';
-                        let currentAwayColor = TEAM_COLORS[m.awayCode] || 'var(--color-away)';
 
                         predictorHTML = `
                             <div class="predictor-container">
@@ -664,11 +670,11 @@
                             </div>
                             <div class="schedule-teams-container">
                                 <a href="team.html?name=${encodeURIComponent(m.home)}" class="team-link home">
-                                    <span>${m.home}</span> <span class="team-pill">${m.homeCode}</span>
+                                    <span>${m.home}</span> <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${homeTextColor};">${m.homeCode}</span>
                                 </a>
                                 <div class="vs-block">${centerVs}</div>
                                 <a href="team.html?name=${encodeURIComponent(m.away)}" class="team-link away">
-                                    <span class="team-pill">${m.awayCode}</span> <span>${m.away}</span>
+                                    <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${awayTextColor};">${m.awayCode}</span> <span>${m.away}</span>
                                 </a>
                             </div>
                             <div class="schedule-actions-wrapper">
