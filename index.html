@@ -71,7 +71,7 @@
         .ticker-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
         .ticker-teams { display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
         
-        .ticker-team-item { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-main); transition: color 0.15s; }
+        .ticker-team-item { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-main); transition: color 0.15s; cursor: pointer; }
         .ticker-team-item:hover { color: var(--accent-color); }
         .ticker-mini-logo { width: 18px; height: 18px; object-fit: contain; }
 
@@ -100,8 +100,7 @@
         .mini-ladder-card { display: flex; flex-direction: column; gap: 10px; }
         .mini-ladder-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin: 0; }
         .mini-ladder-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; font-weight: 600; padding: 4px 0; animation: fadeInUp 0.4s ease forwards; }
-        .mini-ladder-team { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); }
-        .mini-ladder-team:hover { color: var(--accent-color); }
+        .mini-ladder-team { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); cursor: default; }
         .mini-rank { font-family: monospace; color: var(--text-muted); font-weight: 700; width: 16px; }
         .mini-pts { font-weight: 700; color: var(--accent-color); background: var(--accent-bg); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
 
@@ -162,7 +161,7 @@
         .schedule-time { color: var(--text-main); font-weight: 600; }
 
         .schedule-teams-container { display: flex; align-items: center; justify-content: flex-start; flex-grow: 1; font-size: 0.9rem; font-weight: 600; overflow: hidden; }
-        .team-link { display: flex; align-items: center; width: 40%; text-decoration: none; color: var(--text-main); transition: color 0.15s; gap: 8px; }
+        .team-link { display: flex; align-items: center; width: 40%; text-decoration: none; color: var(--text-main); transition: color 0.15s; gap: 8px; cursor: pointer; }
         .team-link:hover { color: var(--accent-color); }
         .team-link.home { justify-content: flex-end; text-align: right; }
         .team-link.away { justify-content: flex-start; text-align: left; }
@@ -504,10 +503,10 @@
                     <h3 class="mini-ladder-title">League Leaderboard</h3>
                     ${topTeams.map((t, index) => `
                         <div class="mini-ladder-row" style="animation-delay: ${index * 80}ms;">
-                            <a href="team.html?name=${encodeURIComponent(t.name)}" class="mini-ladder-team">
+                            <span class="mini-ladder-team">
                                 <span class="mini-rank">${t.rank}</span>
                                 <span>${t.name}</span>
-                            </a>
+                            </span>
                             <span class="mini-pts">${t.pts} PTS</span>
                         </div>
                     `).join('')}
@@ -563,7 +562,7 @@
                 let matchYtId = parseYoutubeId(rawYtLink);
 
                 if (weekNum === CURRENT_SELECTED_WEEK) {
-                    highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr, homeScore: homeScore, awayScore: awayScore });
+                    highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr, homeScore: homeScore, awayScore: awayScore, week: weekNum, idx: idx });
                 }
 
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed" || status.includes("CONFIRM")) {
@@ -625,11 +624,9 @@
                 let homeTextColor = (m.homeCode === 'LKD' || m.homeCode === 'TUR' || m.homeCode === 'CFC') ? '#1e293b' : '#ffffff';
                 let awayTextColor = (m.awayCode === 'LKD' || m.awayCode === 'TUR' || m.awayCode === 'CFC') ? '#1e293b' : '#ffffff';
 
-                // Determine logos
                 let homeLogoUrl = getLocalTeamLogo(m.homeCode);
                 let awayLogoUrl = getLocalTeamLogo(m.awayCode);
 
-                // If it is a placeholder/TBA match, clear out logo fields completely
                 if (isPlaceholderMatch) {
                     homeLogoUrl = "";
                     awayLogoUrl = "";
@@ -679,13 +676,13 @@
                                 <span>${m.date}</span>
                             </div>
                             <div class="schedule-teams-container">
-                                <a href="team.html?name=${encodeURIComponent(m.home)}" class="team-link home">
+                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="team-link home">
                                     <span>${m.home}</span> 
                                     <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${homeTextColor};">${m.homeCode}</span>
                                     ${homeLogoHtml}
                                 </a>
                                 <div class="vs-block">${centerVs}</div>
-                                <a href="team.html?name=${encodeURIComponent(m.away)}" class="team-link away">
+                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="team-link away">
                                     ${awayLogoHtml}
                                     <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${awayTextColor};">${m.awayCode}</span> 
                                     <span>${m.away}</span>
@@ -747,12 +744,12 @@
                         <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
                             <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
                             <div class="ticker-teams">
-                                <a href="team.html?name=${encodeURIComponent(m.home)}" class="ticker-team-item">
+                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="ticker-team-item">
                                     ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                     <span>${m.homeCode}</span>
                                 </a>
                                 <span style="color:var(--text-muted); font-size:0.8rem;">${showTickerScore ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
-                                <a href="team.html?name=${encodeURIComponent(m.away)}" class="ticker-team-item">
+                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="ticker-team-item">
                                     <span>${m.awayCode}</span>
                                     ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                 </a>
