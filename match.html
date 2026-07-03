@@ -187,7 +187,7 @@
         }
 
         function buildRosterTable(players) {
-            if(players.length === 0) return `<p style="font-size:0.82rem; color:var(--text-muted); font-style:italic;">No active roster records synced.</p>`;
+            if(!players || players.length === 0) return `<p style="font-size:0.82rem; color:var(--text-muted); font-style:italic;">No active roster records synced.</p>`;
             return `
                 <table class="roster-table">
                     <thead><tr><th>#</th><th>Name</th><th>Pos</th><th>Off</th><th>Def</th></tr></thead>
@@ -208,7 +208,11 @@
 
         function buildPitchNodes(players, teamHex) {
             const lines = { 'GK': [], 'DEF': [], 'MID': [], 'FWD': [] };
-            players.forEach(p => { if (lines[p.pos]) lines[p.pos].push(p); });
+            players.forEach(p => { 
+                if (p && p.pos && lines[p.pos]) {
+                    lines[p.pos].push(p); 
+                }
+            });
 
             const rowOrder = ['FWD', 'MID', 'DEF', 'GK'];
             return rowOrder.map(posKey => `
@@ -218,7 +222,7 @@
                             <div class="player-badge" style="background-color: ${teamHex || '#475569'};">
                                 ${p.num}
                             </div>
-                            <div class="player-name-tag">${p.name.split(' ')[0]}</div>
+                            <div class="player-name-tag">${p.name ? p.name.split(' ')[0] : 'Unknown'}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -228,39 +232,43 @@
         async function initMatchCentre() {
             try {
                 const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
-                if (!week) { throw new Error("Missing URL contexts"); }
+                if (!week) { throw new Error("Missing URL parameters. Please launch from the main portal."); }
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // Map teams row configurations early for accurate cross-referencing
+                // Map teams row configurations
                 let teamsMap = {};
                 teamsRaw.forEach((row, i) => {
-                    if (i === 0 || !row[0]) return;
+                    if (i === 0 || !row || !row[0]) return;
                     teamsMap[row[0].trim().toLowerCase()] = {
-                        code: row[1] || 'TBA',
-                        hex: row[2] || '#475569',
-                        form: row[3] || 'DDDDD'
+                        code: row[1] ? row[1].trim() : 'TBA',
+                        hex: row[2] ? row[2].trim() : '#475569',
+                        form: row[3] ? row[3].trim() : 'DDDDD'
                     };
                 });
 
-                // Extract all valid schedule items (ignoring header)
-                const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row[0]);
+                // Extract schedule items securely
+                const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row && row.length > 0 && row[0]);
 
-                // Fallback Match Locator logic matching index.html url layout parameters
+                // Find Match logic
                 let matchTarget = null;
+                
                 if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
                     const targetIdx = parseInt(matchIndex, 10);
-                    matchTarget = fullScheduleItems[targetIdx];
+                    if (!isNaN(targetIdx) && fullScheduleItems[targetIdx]) {
+                        matchTarget = fullScheduleItems[targetIdx];
+                    }
                 } else if (homeCodeUrl && awayCodeUrl) {
                     matchTarget = fullScheduleItems.find(row => {
-                        const rowWeek = row[0].trim();
-                        const rowHomeName = row[4].trim().toLowerCase();
-                        const rowAwayName = row[6].trim().toLowerCase();
+                        const rowWeek = (row[0] || '').trim();
+                        const rowHomeName = (row[4] || '').trim().toLowerCase();
+                        const rowAwayName = (row[6] || '').trim().toLowerCase();
                         
-                        const mappedHomeCode = teamsMap[rowHomeName]?.code || '';
-                        const mappedAwayCode = teamsMap[rowAwayName]?.code || '';
+                        // Strict null-safe fallback (No Optional Chaining syntax)
+                        const mappedHomeCode = teamsMap[rowHomeName] ? teamsMap[rowHomeName].code : '';
+                        const mappedAwayCode = teamsMap[rowAwayName] ? teamsMap[rowAwayName].code : '';
 
                         return rowWeek === week.trim() && 
                                mappedHomeCode.toUpperCase() === homeCodeUrl.toUpperCase().trim() && 
@@ -268,35 +276,44 @@
                     });
                 }
 
-                if (!matchTarget) { throw new Error("Target match matching URL metrics not found"); }
+                if (!matchTarget) { 
+                    throw new Error("Target match metrics not found in Google Sheets data."); 
+                }
 
-                const homeTeamName = matchTarget[4];
-                const homeScore = matchTarget[5];
-                const awayTeamName = matchTarget[6];
-                const awayScore = matchTarget[7];
-                const matchTime = matchTarget[2];
-                const matchDate = matchTarget[1];
+                // Extract core stats
+                const homeTeamName = (matchTarget[4] || 'Home Team').trim();
+                const homeScore = (matchTarget[5] || '0').trim();
+                const awayTeamName = (matchTarget[6] || 'Away Team').trim();
+                const awayScore = (matchTarget[7] || '0').trim();
+                const matchTime = (matchTarget[2] || 'TBA').trim();
+                const matchDate = (matchTarget[1] || 'TBA').trim();
                 let matchStatus = matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING';
 
-                const homeTeam = teamsMap[homeTeamName.trim().toLowerCase()] || { code: 'HME', hex: '#3b82f6', form: 'DDDDD' };
-                const awayTeam = teamsMap[awayTeamName.trim().toLowerCase()] || { code: 'AWY', hex: '#ef4444', form: 'DDDDD' };
+                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', hex: '#3b82f6', form: 'DDDDD' };
+                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', hex: '#ef4444', form: 'DDDDD' };
 
                 let ladderMap = {};
                 standingsRaw.forEach((row, i) => {
-                    if (i > 0 && row[1]) {
+                    if (i > 0 && row && row[1]) {
                         ladderMap[row[1].trim().toLowerCase()] = parseInt(row[9]) || 0;
                     }
                 });
 
-                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r[3]).map(r => ({
-                    id: r[0], num: r[1], name: r[2], team: r[3].trim().toLowerCase(), pos: r[4].toUpperCase().trim(), off: parseInt(r[5]) || 0, def: parseInt(r[6]) || 0
+                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[3]).map(r => ({
+                    id: r[0] || '', 
+                    num: r[1] || '0', 
+                    name: r[2] || 'Unknown', 
+                    team: (r[3] || '').trim().toLowerCase(), 
+                    pos: (r[4] || 'MID').toUpperCase().trim(), 
+                    off: parseInt(r[5]) || 0, 
+                    def: parseInt(r[6]) || 0
                 }));
 
-                const homePlayers = allPlayers.filter(p => p.team === homeTeamName.trim().toLowerCase());
-                const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.trim().toLowerCase());
+                const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
+                const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
-                let homePts = ladderMap[homeTeamName.trim().toLowerCase()] || 0;
-                let awayPts = ladderMap[awayTeamName.trim().toLowerCase()] || 0;
+                let homePts = ladderMap[homeTeamName.toLowerCase()] || 0;
+                let awayPts = ladderMap[awayTeamName.toLowerCase()] || 0;
                 let baseChance = 35; let drawChance = 30;
                 let diff = homePts - awayPts;
                 let winHome = Math.max(10, baseChance + (diff * 2));
@@ -313,7 +330,8 @@
 
                 const isLiveOrFinalised = matchStatus === 'FINALISED' || matchStatus === 'LIVE';
 
-                document.getElementById('app-mount').innerHTML = `
+                const appMount = document.getElementById('app-mount');
+                appMount.innerHTML = `
                     <div class="scoreboard-card">
                         <div class="scoreboard-side">
                             <img src="${getLocalTeamLogo(homeTeam.code)}" onerror="this.src='logo_hcl_main.png';" class="team-logo-lg" alt="">
@@ -411,12 +429,26 @@
                 `;
 
             } catch (err) {
-                console.error(err);
-                document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding: 50px; color: #ef4444;"><h3>Error loading match details.</h3><p>Ensure URL parameters (?week=X&home=Y&away=Z) match the fixture profile.</p></div>`;
+                console.error("Match Render Error:", err);
+                const errorMount = document.getElementById('app-mount');
+                if (errorMount) {
+                    errorMount.innerHTML = `
+                        <div style="text-align:center; padding: 50px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <h3 style="color: #ef4444; margin-top:0;">Match Sync Interrupted</h3>
+                            <p style="color: #64748b; font-size: 0.9rem;">
+                                Ensure you're launching this page via a fixture card on the main hub. 
+                            </p>
+                            <p style="color: #64748b; font-size: 0.8rem; font-family: monospace; margin-top: 15px;">
+                                System Log: ${err.message}
+                            </p>
+                        </div>
+                    `;
+                }
             }
         }
 
-        initMatchCentre();
+        // Run on load
+        window.addEventListener('DOMContentLoaded', initMatchCentre);
     </script>
 </body>
 </html>
