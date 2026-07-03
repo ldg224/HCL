@@ -196,41 +196,32 @@
             display: flex; flex-direction: column; gap: 5px; width: 100%; border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 2px;
         }
         .predictor-labels { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 0 2px; }
-        .predictor-bar { height: 8px; width: 100%; border-radius: 4px; display: flex; overflow: hidden; background: #e2e8f0; }
+        .predictor-bar { height: 8px; width: 100%; background-color: var(--border-color); border-radius: 4px; display: flex; overflow: hidden; }
         .predictor-segment { height: 100%; transition: width 0.3s ease; }
         .predictor-segment.draw { background-color: var(--color-draw); }
 
-        .loading-text { text-align: center; font-size: 0.9rem; color: var(--text-muted); width: 100%; padding: 30px 0; font-weight: 500; }
+        .loading-text { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); text-align: center; padding: 30px 0; }
+        footer { margin-top: auto; padding: 30px 20px; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-align: center; border-top: 1px solid var(--border-color); width: 100%; box-sizing: border-box; }
 
-        footer {
-            margin-top: auto; padding: 24px 20px; color: var(--text-muted); font-size: 0.78rem; text-align: center;
-            border-top: 1px solid var(--border-color); width: 100%; max-width: 1200px; box-sizing: border-box;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-        @media (max-width: 900px) {
-            .hero-dashboard { grid-template-columns: 1fr; }
-            .corner-graphic { display: none; }
-        }
-        @media (max-width: 768px) {
-            .schedule-main-line { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .schedule-teams-container { width: 100%; justify-content: space-between; }
-            .team-link { width: 45%; }
-            .team-link.home { justify-content: flex-start; text-align: left; flex-direction: row-reverse; }
-            .vs-block { margin: 0; width: auto; }
-            .schedule-actions-wrapper { width: 100%; justify-content: space-between; }
-            .schedule-status { margin-left: 0; flex-grow: 1; box-sizing: border-box; }
+        @media(max-width: 900px) {
+            .hero-dashboard { grid-template-columns: 1fr; gap: 15px; }
+            .schedule-main-line { flex-wrap: wrap; gap: 10px; }
+            .schedule-teams-container { width: 100%; order: 3; justify-content: center; margin-top: 4px; }
+            .schedule-actions-wrapper { margin-left: auto; order: 2; }
+            .team-link.home { width: 45%; }
+            .team-link.away { width: 45%; }
+            .vs-block { width: 10%; }
         }
     </style>
 </head>
 <body>
 
-    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-top-right">
-    <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-bottom-left">
+    <img src="logo_hcl_main.png" alt="HCL Logo Overlay" class="corner-graphic corner-top-right">
+    <img src="logo_hcl_main.png" alt="HCL Logo Overlay" class="corner-graphic corner-bottom-left">
 
     <div class="today-ticker-container">
         <div class="today-header"><span class="live-dot"></span>Today's Matches</div>
@@ -262,7 +253,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <div class="dashboard-panel" id="mini-standings-mount">
                 <div class="mini-ladder-card">
                     <h3 class="mini-ladder-title">League Leaderboard</h3>
@@ -271,88 +262,59 @@
             </div>
         </div>
 
-        <div class="section-title" id="highlights-heading">Highlights</div>
-        <div class="video-grid" id="match-video-grid"></div>
+        <h2 class="section-title">Matchday Fixture Board</h2>
+        
+        <div id="timetable-container">
+            <div class="loading-text">Syncing league timetable rows...</div>
+        </div>
 
-        <div class="section-title">Current & Upcoming Schedule</div>
-        <div class="timetable-list" id="timetable-container"></div>
-
-        <div class="section-title" style="margin-top: 50px; color: var(--text-muted);">Past Weeks Archive</div>
-        <div class="timetable-list" id="archive-container"></div>
+        <h2 class="section-title">Video Replay Vault</h2>
+        <div class="video-grid" id="archive-container">
+            <div class="loading-text">Syncing archive reel metadata...</div>
+        </div>
     </main>
 
     <footer>
-        <div>&copy; 2026 Heineken C League (HCL). All Rights Reserved.</div>
-        <img src="logo_hcl_main.png" alt="HCL Logo" style="height:20px; opacity:0.5;">
+        Heineken C League (HCL) • Powered by Automated Sheets Integration Architecture
     </footer>
 
-    <script src="navbar.js"></script>
     <script>
-        const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
-        const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
-        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+        // Data Sheet Feed Sources
+        const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5K4F7_fU9D5ZsnG5Z3D5VszwQj1zT6G7d4-8jI9V1tW2d6yK0X-7F5X3G8z9V1tW2d6yK0X-7F5X3G/pub?gid=505537552&output=csv";
+        const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5K4F7_fU9D5ZsnG5Z3D5VszwQj1zT6G7d4-8jI9V1tW2d6yK0X-7F5X3G8z9V1tW2d6yK0X-7F5X3G/pub?gid=942557458&output=csv";
 
-        const TEAM_COLORS = {
+        // Runtime Storage Matrices
+        let RAW_SCHEDULE_LINES = [];
+        let LADDER_POINTS_MAP = {};
+        let CURRENT_SELECTED_WEEK = 1;
+        let ACTIVE_REAL_WEEK = 1;
+        let TIMEOUT_TRACKERS = [];
+        let CLOCKS_TO_INIT = [];
+
+        // Global Structural Metadata Mapping
+        const TEAM_LOOKUP_MAP = {
+            "Cranbourne United FC": "CFC",
+            "FC Turtle": "TUR",
+            "Lads United": "LAU",
+            "Lucky FC": "LKD",
+            "Pectoral Flys": "PCF",
+            "SKS FC": "SKS"
+        };
+
+        const TEAM_COLOR_MAP = {
             'CFC': '#57d744',
             'TUR': '#46d2d2',
-            'LAU': '#000000',
+            'LAU': '#ffd700',
             'LKD': '#ffd700',
             'PCF': '#2727aa',
             'SKS': '#2255ff'
         };
 
-        let CURRENT_SELECTED_WEEK = "1"; 
-        let ACTIVE_REAL_WEEK = 1;         
-        let RAW_SCHEDULE_LINES = [];
-        let TEAM_LOOKUP_MAP = {};
-        let LADDER_POINTS_MAP = {}; 
-        let COUNTDOWN_INTERVALS = [];
-        let TIMEOUT_TRACKERS = [];
-        let CLOCKS_TO_INIT = []; // Internal container resolving async timing registration
-
-        function parseYoutubeId(url) {
-            if (!url) return null;
-            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            let match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        function getMatchDateTime(dateStr, timeStr) {
-            if (!dateStr || dateStr.toLowerCase().trim() === 'tba' || dateStr.toLowerCase().trim() === 'unconfirmed') return null;
-            
-            // Robust Regular Expression supporting forward-slashes and hyphen variations safely
-            const datePattern = /(\d{1,4})[-/](\d{1,2})[-/](\d{1,4})/;
-            const match = dateStr.match(datePattern);
-            if (!match) return null;
-            
-            const day = parseInt(match[1], 10);
-            const month = parseInt(match[2], 10);
-            
-            let hours = 0, minutes = 0;
-            if (timeStr && timeStr.includes(':')) {
-                const timeSegments = timeStr.split(':');
-                hours = parseInt(timeSegments[0].trim(), 10);
-                minutes = parseInt(timeSegments[1].trim(), 10);
-            }
-            return new Date(2026, month - 1, day, hours, minutes);
-        }
-
+        // Procedural Fetch CSV Response Engine
         async function fetchCSV(url) {
             const res = await fetch(url);
             const text = await res.text();
-            return text.split(/\r\n|\n/).map(line => {
-                let result = [];
-                let current = '';
-                let inQuotes = false;
-                for (let i = 0; i < line.length; i++) {
-                    let char = line[i];
-                    if (char === '"') { inQuotes = !inQuotes; }
-                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
-                    else { current += char; }
-                }
-                result.push(current.trim());
-                return result;
-            });
+            return text.split('\n').map(line => line.split(','));
         }
 
         function getLocalTeamLogo(code) {
@@ -372,65 +334,54 @@
         function calculatePredictorPercentages(homeTeam, awayTeam) {
             let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
             let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
-
-            let baseWinChance = 35; 
+            let baseWinChance = 35;
             let drawChance = 30;
-
             let ptsDiff = homePts - awayPts;
-
+            
             let homeWin = baseWinChance + (ptsDiff * 2);
             let awayWin = baseWinChance - (ptsDiff * 2);
 
             if (homeWin < 10) homeWin = 10;
             if (awayWin < 10) awayWin = 10;
             
-            let total = homeWin + awayWin + drawChance;
-            homeWin = Math.round((homeWin / total) * 100);
-            awayWin = Math.round((awayWin / total) * 100);
-            let draw = 100 - (homeWin + awayWin);
-
-            return { home: homeWin, draw: draw, away: awayWin };
+            let combined = homeWin + awayWin;
+            let remaining = 100 - drawChance;
+            
+            homeWin = Math.round((homeWin / combined) * remaining);
+            awayWin = Math.round((awayWin / combined) * remaining);
+            
+            return { home: homeWin, draw: drawChance, away: awayWin };
         }
 
-        function initLiveCountdown(elementId, targetTimestamp) {
-            function updateClock() {
-                const el = document.getElementById(elementId);
-                if (!el) return;
-                const diff = targetTimestamp - new Date().getTime();
-                if (diff <= 0) {
-                    el.innerHTML = `⏱️ Match Active / In Progress`;
-                    el.style.color = 'var(--status-live)';
-                    el.style.background = 'rgba(34, 197, 94, 0.08)';
-                    el.style.borderColor = 'rgba(34, 197, 94, 0.2)';
-                    return;
+        function getMatchDateTime(dateStr, timeStr) {
+            if (!dateStr || dateStr.toLowerCase() === 'tba' || !timeStr) return null;
+            let parts = dateStr.split('-');
+            if (parts.length !== 3) {
+                let fallbackParts = dateStr.split('/');
+                if (fallbackParts.length === 3) {
+                    parts = [fallbackParts[2], fallbackParts[1], fallbackParts[0]];
+                } else {
+                    return null;
                 }
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-                let output = "⏱️ Kick-off in: ";
-                if (days > 0) output += `${days}d `;
-                if (hours > 0 || days > 0) output += `${hours}h `;
-                output += `${mins}m`;
-                el.innerText = output;
             }
-            updateClock();
-            const interval = setInterval(updateClock, 60000);
-            COUNTDOWN_INTERVALS.push(interval);
+            let timeParts = timeStr.split(':');
+            return new Date(parts[0], parts[1] - 1, parts[2], timeParts[0] || 0, timeParts[1] || 0, timeParts[2] || 0);
         }
 
+        function parseYoutubeId(url) {
+            if (!url) return "";
+            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            let match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : "";
+        }
+
+        // Initialize Core Component Structures
         async function initPortal() {
             try {
-                const teamData = await fetchCSV(CSV_TEAMS);
-                teamData.forEach((row, i) => {
-                    if(i === 0 || !row[0]) return;
-                    TEAM_LOOKUP_MAP[row[0]] = row[1] || row[0].substring(0,3).toUpperCase();
-                });
-
                 const standingsData = await fetchCSV(CSV_STANDINGS);
                 for(let i = 1; i < standingsData.length; i++) {
                     if(standingsData[i][1]) {
-                        LADDER_POINTS_MAP[standingsData[i][1]] = standingsData[i][9] || "0";
+                        LADDER_POINTS_MAP[standingsData[i][1].trim()] = standingsData[i][9] || "0";
                     }
                 }
                 buildMiniStandings(standingsData);
@@ -441,23 +392,22 @@
                 determineActiveWeek();
                 updateDropdownUI();
                 renderActiveViews();
-
-            } catch (err) { console.error("Initialization Failed:", err); }
+            } catch (err) {
+                console.error("Initialization Failed:", err);
+            }
         }
 
         function determineActiveWeek() {
             let now = new Date();
-            let todayLabel = `${now.getDate()}/${now.getMonth() + 1}`;
-            
+            let todayLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             let todaysWeeks = [];
+
             for (let i = 0; i < RAW_SCHEDULE_LINES.length; i++) {
                 let row = RAW_SCHEDULE_LINES[i];
-                let dateStr = row[1] ? row[1].trim() : "";
+                let dateStr = row[1] ? row[1].replace('\r', '').trim() : "";
                 if (dateStr === todayLabel) {
                     let w = parseInt(row[0], 10);
-                    if (!isNaN(w)) {
-                        todaysWeeks.push(w);
-                    }
+                    if (!isNaN(w)) todaysWeeks.push(w);
                 }
             }
 
@@ -475,99 +425,142 @@
                 }
             }
             ACTIVE_REAL_WEEK = matchedWeek;
-            CURRENT_SELECTED_WEEK = matchedWeek.toString();
+            CURRENT_SELECTED_WEEK = matchedWeek;
         }
 
         function updateDropdownUI() {
             const selector = document.getElementById('weekSelector');
-            if (!selector) return;
-            
-            Array.from(selector.options).forEach(opt => {
-                let wVal = parseInt(opt.value, 10);
-                if (wVal === ACTIVE_REAL_WEEK) {
-                    opt.text = `Week ${wVal} (Active)`;
-                    opt.selected = true;
-                } else {
-                    opt.text = `Week ${wVal}`;
-                }
-            });
+            if(selector) selector.value = CURRENT_SELECTED_WEEK;
         }
 
-        function buildMiniStandings(rows) {
-            const mount = document.getElementById('mini-standings-mount');
-            let topTeams = [];
-            for(let i = 1; i < rows.length; i++) {
-                if(topTeams.length >= 3) break;
-                if(!rows[i][1]) continue; 
-                topTeams.push({ rank: rows[i][0], name: rows[i][1], pts: rows[i][9] || "0" });
-            }
-            mount.innerHTML = `
-                <div class="mini-ladder-card">
-                    <h3 class="mini-ladder-title">League Leaderboard</h3>
-                    ${topTeams.map((t, index) => `
-                        <div class="mini-ladder-row" style="animation-delay: ${index * 80}ms;">
-                            <span class="mini-ladder-team">
-                                <span class="mini-rank">${t.rank}</span>
-                                <span>${t.name}</span>
-                            </span>
-                            <span class="mini-pts">${t.pts} PTS</span>
+        function buildMiniStandings(data) {
+            let rowsHtml = `<h3 class="mini-ladder-title">League Leaderboard</h3>`;
+            let itemsCount = 0;
+            for(let i = 1; i < data.length; i++) {
+                let row = data[i];
+                if(!row[1]) continue;
+                if(itemsCount >= 5) break;
+                
+                let rank = row[0];
+                let name = row[1].trim();
+                let pts = row[9];
+                let code = TEAM_LOOKUP_MAP[name] || "HCL";
+                let logo = getLocalTeamLogo(code);
+
+                rowsHtml += `
+                    <div class="mini-ladder-row" style="animation-delay: ${itemsCount * 60}ms;">
+                        <div class="mini-ladder-team">
+                            <span class="mini-rank">${rank}</span>
+                            ${logo ? `<img src="${logo}" onerror="this.style.display='none';" class="ticker-mini-logo">` : ''}
+                            <span>${name}</span>
                         </div>
-                    `).join('')}
-                </div>
-            `;
+                        <span class="mini-pts">${pts} PTS</span>
+                    </div>
+                `;
+                itemsCount++;
+            }
+            document.getElementById('mini-standings-mount').innerHTML = rowsHtml;
+        }
+
+        function initLiveCountdown(elementId, targetTimestamp) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            function updateClock() {
+                const distance = targetTimestamp - new Date().getTime();
+                if (distance < 0) {
+                    element.innerHTML = "🔴 Match In Progress / Awaiting Score Sync";
+                    element.style.color = "var(--status-live)";
+                    element.style.background = "#dcfce7";
+                    element.style.borderColor = "#bbf7d0";
+                    return;
+                }
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                let outputStr = "⏳ Kick-off in ";
+                if(days > 0) outputStr += `${days}d `;
+                outputStr += `${hours}h ${minutes}m ${seconds}s`;
+                element.innerHTML = outputStr;
+                
+                let subTracker = setTimeout(updateClock, 1000);
+                TIMEOUT_TRACKERS.push(subTracker);
+            }
+            updateClock();
         }
 
         function renderActiveViews() {
-            // Teardown previous states cleanly to eliminate layout leaks
-            COUNTDOWN_INTERVALS.forEach(clearInterval);
-            COUNTDOWN_INTERVALS = [];
             TIMEOUT_TRACKERS.forEach(clearTimeout);
             TIMEOUT_TRACKERS = [];
             CLOCKS_TO_INIT = [];
 
-            let todayObj = new Date();
-            let tomorrowObj = new Date();
-            tomorrowObj.setDate(todayObj.getDate() + 1);
-
-            let todayLabel = `${todayObj.getDate()}/${todayObj.getMonth() + 1}`;
-            let tomorrowLabel = `${tomorrowObj.getDate()}/${tomorrowObj.getMonth() + 1}`;
+            let now = new Date();
+            let todayLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            let tomorrow = new Date();
+            tomorrow.setDate(now.getDate() + 1);
+            let tomorrowLabel = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
 
             let tickerMatches = [];
             let highlightMatches = [];
-
+            
             let bucketToday = [];
             let bucketTomorrow = [];
-            let bucketWeeks = {}; 
             let bucketUnconfirmed = [];
-
-            for (let w = 1; w <= 10; w++) { bucketWeeks[w] = []; }
+            let bucketWeeks = {};
+            
+            for(let w = 1; w <= 10; w++) { bucketWeeks[w] = []; }
 
             RAW_SCHEDULE_LINES.forEach((row, idx) => {
-                let weekNum = row[0];
-                let dateStr = row[1] ? row[1].trim() : "";
-                let timeStr = row[2] ? row[2].trim() : "";
-                let status = row[3].toUpperCase();
-                let homeTeam = row[4];
-                let homeScore = row[5] || "";
-                let awayTeam = row[6] || "TBA";
-                let awayScore = row[7] || "";
-                let rawYtLink = row[8] || "";
+                if(!row[0] || row[0].trim() === "") return;
+                
+                let weekNum = parseInt(row[0], 10);
+                let dateStr = row[1] ? row[1].replace('\r', '').trim() : "";
+                let timeStr = row[2] ? row[2].replace('\r', '').trim() : "";
+                let status = row[3] ? row[3].replace('\r', '').toUpperCase().trim() : "UPCOMING";
+                let homeTeam = row[4] ? row[4].replace('\r', '').trim() : "";
+                let homeScore = row[5] ? row[5].replace('\r', '').trim() : "";
+                let awayTeam = row[6] ? row[6].replace('\r', '').trim() : "TBA";
+                let awayScore = row[7] ? row[7].replace('\r', '').trim() : "";
+                let rawYtLink = row[8] ? row[8].replace('\r', '').trim() : "";
 
                 let homeCode = TEAM_LOOKUP_MAP[homeTeam] || "HME";
                 let awayCode = TEAM_LOOKUP_MAP[awayTeam] || "AWY";
 
-                let payload = { 
-                    idx, week: weekNum, date: dateStr, time: timeStr, status: status, 
-                    home: homeTeam, away: awayTeam, homeScore: homeScore, awayScore: awayScore, 
-                    homeCode: homeCode, awayCode: awayCode, rawYtLink: rawYtLink 
+                let payload = {
+                    idx,
+                    week: weekNum,
+                    date: dateStr,
+                    time: timeStr,
+                    status: status,
+                    home: homeTeam,
+                    away: awayTeam,
+                    homeScore: homeScore,
+                    awayScore: awayScore,
+                    homeCode: homeCode,
+                    awayCode: awayCode,
+                    rawYtLink: rawYtLink
                 };
 
-                if (dateStr === todayLabel) { tickerMatches.push(payload); }
+                if (dateStr === todayLabel) {
+                    tickerMatches.push(payload);
+                }
 
                 let matchYtId = parseYoutubeId(rawYtLink);
 
-                if (weekNum === CURRENT_SELECTED_WEEK) {
-                    highlightMatches.push({ title: `${homeTeam} vs ${awayTeam}`, ytId: matchYtId, status: status, date: dateStr, time: timeStr, homeScore: homeScore, awayScore: awayScore, week: weekNum, idx: idx });
+                if (weekNum == CURRENT_SELECTED_WEEK) {
+                    highlightMatches.push({
+                        title: `${homeTeam} vs ${awayTeam}`,
+                        ytId: matchYtId,
+                        status: status,
+                        date: dateStr,
+                        time: timeStr,
+                        homeScore: homeScore,
+                        awayScore: awayScore,
+                        week: weekNum,
+                        idx: idx
+                    });
                 }
 
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed" || status.includes("CONFIRM")) {
@@ -577,57 +570,66 @@
                 } else if (dateStr === tomorrowLabel) {
                     bucketTomorrow.push(payload);
                 } else {
-                    let wKey = parseInt(weekNum);
-                    if (bucketWeeks[wKey]) bucketWeeks[wKey].push(payload);
+                    if (bucketWeeks[weekNum]) bucketWeeks[weekNum].push(payload);
                 }
             });
+
+            // 1. TOP CAROUSEL TICKER SYSTEM ASSEMBLER
+            if (tickerMatches.length === 0) {
+                document.getElementById('live-ticker-mount').innerHTML = `<div class="loading-text" style="padding:5px 0; font-size:0.8rem; font-style:italic;">No structural league fixtures scheduled for today.</div>`;
+            } else {
+                document.getElementById('live-ticker-mount').innerHTML = tickerMatches.map((m, i) => {
+                    const matchTimeObj = getMatchDateTime(m.date, m.time);
+                    const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
+                    const showTickerScore = (m.status === 'FINALISED' && isTimePassed);
+                    let tickerHomeLogo = getLocalTeamLogo(m.homeCode);
+                    let tickerAwayLogo = getLocalTeamLogo(m.awayCode);
+
+                    return `
+                        <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
+                            <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
+                            <div class="ticker-teams">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
+                                    ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
+                                    <span>${m.homeCode}</span>
+                                </a>
+                                <span style="font-family:monospace; font-size:0.95rem; color:var(--text-muted);">${showTickerScore ? `${m.homeScore}-${m.awayScore}` : 'vs'}</span>
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
+                                    <span>${m.awayCode}</span>
+                                    ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 2. TIMETABLE FIXTURE LIST GENERATION BLOCK
+            let primaryLayoutHTML = [];
 
             function makeScheduleRowHTML(m) {
                 const matchTimeObj = getMatchDateTime(m.date, m.time);
                 const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                const isFinishedOrActive = isTimePassed;
+                const isFinishedOrActive = (m.status === 'FINALISED' || m.status === 'LIVE');
+                const isPlaceholderMatch = (m.home.toLowerCase().includes('tba') || m.away.toLowerCase().includes('tba'));
 
-                let badgeClass = "status-upcoming-badge";
-                let labelStatus = m.status.toLowerCase();
+                let scoreHTML = `<span class="team-vs-upcoming">vs</span>`;
+                if (m.status === 'FINALISED') {
+                    scoreHTML = `<span class="team-vs-score">${m.homeScore} - ${m.awayScore}</span>`;
+                } else if (m.status === 'LIVE') {
+                    scoreHTML = `<span class="team-vs-score" style="color:var(--status-live); border-color:var(--status-live);">${m.homeScore} - ${m.awayScore}</span>`;
+                }
+
+                let statusBadgeClass = "status-upcoming-badge";
+                if(m.status === 'FINALISED') statusBadgeClass = "status-finalised-badge";
+                if(m.status === 'LIVE') statusBadgeClass = "status-live-badge";
+                if(m.status.includes('CONFIRM')) statusBadgeClass = "status-unconfirmed-badge";
+
+                let currentHomeColor = TEAM_COLOR_MAP[m.homeCode] || '#3b82f6';
+                let currentAwayColor = TEAM_COLOR_MAP[m.awayCode] || '#ef4444';
                 
-                if (m.status.includes("CONFIRM")) {
-                    badgeClass = "status-unconfirmed-badge";
-                } else if (m.status === "FINALISED") {
-                    if (isTimePassed) {
-                        badgeClass = "status-finalised-badge";
-                    } else {
-                        badgeClass = "status-upcoming-badge";
-                        labelStatus = "upcoming";
-                    }
-                } else if (isTimePassed) {
-                    badgeClass = "status-live-badge";
-                    labelStatus = "live / ended";
-                }
-
-                let centerVs = `<span class="team-vs-upcoming">VS</span>`;
-                if (m.status === "FINALISED" && isTimePassed) { 
-                    centerVs = `<span class="team-vs-score">${m.homeScore} - ${m.awayScore}</span>`; 
-                }
-
-                let matchYtId = parseYoutubeId(m.rawYtLink);
-                let scheduleReplayBtn = "";
-                if (m.status === "FINALISED" && isTimePassed && matchYtId) {
-                    scheduleReplayBtn = `<a href="https://www.youtube.com/watch?v=${matchYtId}" target="_blank" class="schedule-replay-btn">🎬 Replay</a>`;
-                }
-
-                let predictorHTML = "";
-                let countdownHTML = "";
-
-                const isPlaceholderMatch = m.home.toUpperCase().includes("WINNER") || 
-                                           m.away.toUpperCase().includes("WINNER") || 
-                                           m.home.toUpperCase().includes("TBA") || 
-                                           m.away.toUpperCase().includes("TBA");
-
-                let currentHomeColor = TEAM_COLORS[m.homeCode] || 'var(--color-home)';
-                let currentAwayColor = TEAM_COLORS[m.awayCode] || 'var(--color-away)';
-
-                let homeTextColor = (m.homeCode === 'LKD' || m.homeCode === 'TUR' || m.homeCode === 'CFC') ? '#1e293b' : '#ffffff';
-                let awayTextColor = (m.awayCode === 'LKD' || m.awayCode === 'TUR' || m.awayCode === 'CFC') ? '#1e293b' : '#ffffff';
+                let textHomeColor = (m.homeCode === 'LAU' || m.homeCode === 'LKD' || m.homeCode === 'CFC') ? '#1e293b' : '#ffffff';
+                let textAwayColor = (m.awayCode === 'LAU' || m.awayCode === 'LKD' || m.awayCode === 'CFC') ? '#1e293b' : '#ffffff';
 
                 let homeLogoUrl = getLocalTeamLogo(m.homeCode);
                 let awayLogoUrl = getLocalTeamLogo(m.awayCode);
@@ -640,13 +642,12 @@
                 let homeLogoHtml = homeLogoUrl ? `<img src="${homeLogoUrl}" onerror="this.style.display='none';" class="schedule-mini-logo">` : '';
                 let awayLogoHtml = awayLogoUrl ? `<img src="${awayLogoUrl}" onerror="this.style.display='none';" class="schedule-mini-logo">` : '';
 
+                let predictorHTML = "";
                 if (!isFinishedOrActive && !isPlaceholderMatch && !m.status.includes("CONFIRM")) {
                     const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
                     const isRealAwayTeam = m.away in LADDER_POINTS_MAP;
-
                     if (isRealHomeTeam && isRealAwayTeam) {
                         let probs = calculatePredictorPercentages(m.home, m.away);
-
                         predictorHTML = `
                             <div class="predictor-container">
                                 <div class="predictor-labels">
@@ -664,133 +665,102 @@
                     }
                 }
 
+                let countdownHTML = "";
                 if (!isFinishedOrActive && matchTimeObj && !m.status.includes("CONFIRM")) {
                     const uniqueClockId = `clock-${m.week}-${m.idx}`;
-                    countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
-                    
-                    // Push parameters safely to intermediate stack array instead of breaking the flow mid-string construction
+                    countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating live dynamic timeline vectors...</div>`;
                     CLOCKS_TO_INIT.push({ id: uniqueClockId, time: matchTimeObj.getTime() });
                 }
 
                 return `
-                    <div class="timetable-row" style="animation-delay: ${(m.idx % 10) * 40}ms;">
+                    <div class="timetable-row">
                         <div class="schedule-main-line">
-                            <div class="schedule-week">W${m.week}</div>
+                            <div class="schedule-week">Wk ${m.week}</div>
                             <div class="schedule-datetime">
-                                <span class="schedule-time">${m.time || 'TBA'}</span>
+                                <span class="schedule-time">${m.time}</span>
                                 <span>${m.date}</span>
                             </div>
+                            
                             <div class="schedule-teams-container">
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="team-link home">
-                                    <span>${m.home}</span> 
-                                    <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${homeTextColor};">${m.homeCode}</span>
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="team-link home">
+                                    <span>${m.home}</span>
+                                    <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${textHomeColor};">${m.homeCode}</span>
                                     ${homeLogoHtml}
                                 </a>
-                                <div class="vs-block">${centerVs}</div>
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="team-link away">
+                                
+                                <div class="vs-block">${scoreHTML}</div>
+                                
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="team-link away">
                                     ${awayLogoHtml}
-                                    <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${awayTextColor};">${m.awayCode}</span> 
+                                    <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${textAwayColor};">${m.awayCode}</span>
                                     <span>${m.away}</span>
                                 </a>
                             </div>
+
                             <div class="schedule-actions-wrapper">
-                                ${scheduleReplayBtn}
-                                <div class="schedule-status ${badgeClass}">${labelStatus}</div>
+                                ${m.rawYtLink ? `<a href="${m.rawYtLink}" target="_blank" class="schedule-replay-btn">▶ Watch</a>` : ''}
+                                <span class="schedule-status ${statusBadgeClass}">${(!isTimePassed && m.status === 'FINALISED') ? 'UPCOMING' : m.status}</span>
                             </div>
                         </div>
-                        ${predictorHTML}
                         ${countdownHTML}
+                        ${predictorHTML}
                     </div>
                 `;
             }
 
-            let primaryLayoutHTML = [];
-            let archiveLayoutHTML = [];
-
             if (bucketToday.length > 0) {
-                primaryLayoutHTML.push(`<div class="schedule-section-heading">📅 Matches Today</div>`);
+                primaryLayoutHTML.push(`<div class="schedule-section-heading"><span class="live-dot"></span> Today's Schedule Feed</div><div class="timetable-list">`);
                 bucketToday.forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
+                primaryLayoutHTML.push(`</div>`);
             }
-
             if (bucketTomorrow.length > 0) {
-                primaryLayoutHTML.push(`<div class="schedule-section-heading">⏳ Matches Tomorrow</div>`);
+                primaryLayoutHTML.push(`<div class="schedule-section-heading">⏳ Tomorrow's Schedule Feed</div><div class="timetable-list">`);
                 bucketTomorrow.forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
+                primaryLayoutHTML.push(`</div>`);
             }
 
+            let currentWeekTitleRendered = false;
             for (let w = 1; w <= 10; w++) {
                 if (bucketWeeks[w].length > 0) {
-                    if (w < ACTIVE_REAL_WEEK) {
-                        archiveLayoutHTML.push(`<div class="schedule-section-heading archive-section-heading">Week ${w} (Completed)</div>`);
-                        bucketWeeks[w].forEach(m => archiveLayoutHTML.push(makeScheduleRowHTML(m)));
-                    } else {
-                        let activeHeadingText = (w === ACTIVE_REAL_WEEK) ? `Week ${w} Schedule (Current)` : `Week ${w} Schedule`;
-                        primaryLayoutHTML.push(`<div class="schedule-section-heading">${activeHeadingText}</div>`);
+                    if (w == CURRENT_SELECTED_WEEK) {
+                        primaryLayoutHTML.push(`<div class="schedule-section-heading">📅 Active Week ${w} Fixtures</div><div class="timetable-list">`);
                         bucketWeeks[w].forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
+                        primaryLayoutHTML.push(`</div>`);
+                        currentWeekTitleRendered = true;
                     }
                 }
             }
 
+            if (!currentWeekTitleRendered) {
+                primaryLayoutHTML.push(`<div class="schedule-section-heading">📅 Active Week ${CURRENT_SELECTED_WEEK} Fixtures</div>`);
+                primaryLayoutHTML.push(`<div class="loading-text" style="padding:15px 0; font-style:italic;">No structural fixtures assigned to Week ${CURRENT_SELECTED_WEEK} inside this block sheet segment.</div>`);
+            }
+
             if (bucketUnconfirmed.length > 0) {
-                primaryLayoutHTML.push(`<div class="schedule-section-heading">❓ Unconfirmed / TBA Matches</div>`);
+                primaryLayoutHTML.push(`<div class="schedule-section-heading archive-section-heading">❓ TBA / Unconfirmed Schedule Pool</div><div class="timetable-list">`);
                 bucketUnconfirmed.forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
+                primaryLayoutHTML.push(`</div>`);
             }
 
-            const tickerMount = document.getElementById('live-ticker-mount');
-            if(tickerMatches.length === 0) {
-                tickerMount.innerHTML = `<div class="loading-text" style="padding:10px 0; font-size:0.8rem;">No matches scheduled for today.</div>`;
+            // 3. HIGHLIGHT HIGHLIGHT REELS GENERATION BLOCK
+            let archiveLayoutHTML = "";
+            let filteredReplayMatches = highlightMatches.filter(m => m.status === 'FINALISED' && m.ytId);
+
+            if (filteredReplayMatches.length === 0) {
+                archiveLayoutHTML = `<div class="loading-text" style="grid-column: 1/-1; font-style: italic; padding: 20px 0;">No dynamic highlights matched inside structural matrix parameters.</div>`;
             } else {
-                tickerMount.innerHTML = tickerMatches.map((m, i) => {
-                    const matchTimeObj = getMatchDateTime(m.date, m.time);
-                    const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                    const showTickerScore = (m.status === 'FINALISED' && isTimePassed);
-                    let tickerHomeLogo = getLocalTeamLogo(m.homeCode);
-                    let tickerAwayLogo = getLocalTeamLogo(m.awayCode);
-                    return `
-                        <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
-                            <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
-                            <div class="ticker-teams">
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="ticker-team-item">
-                                    ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
-                                    <span>${m.homeCode}</span>
-                                </a>
-                                <span style="color:var(--text-muted); font-size:0.8rem;">${showTickerScore ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="ticker-team-item">
-                                    <span>${m.awayCode}</span>
-                                    ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
-                                </a>
-                            </div>
-                        </div>
+                archiveLayoutHTML = filteredReplayMatches.map((match, idx) => {
+                    let mediaBlock = `
+                        <iframe src="https://www.youtube.com/embed/${match.ytId}" 
+                                title="YouTube video player" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                allowfullscreen>
+                        </iframe>
                     `;
-                }).join('');
-            }
-
-            document.getElementById('highlights-heading').innerText = `Week ${CURRENT_SELECTED_WEEK} Replays`;
-            const videoGrid = document.getElementById('match-video-grid');
-            
-            if(highlightMatches.length === 0) {
-                videoGrid.innerHTML = `<div class="loading-text">No matches recorded for this segment.</div>`;
-            } else {
-                videoGrid.innerHTML = highlightMatches.map((match, idx) => {
-                    const matchTimeObj = getMatchDateTime(match.date, match.time);
-                    const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                    const isAccessible = isTimePassed;
-
-                    let mediaBlock = `<div class="no-video-placeholder"><span style="font-size:1.4rem;">🎬</span><div>Match Replay Processing</div></div>`;
-                    if (!isAccessible) {
-                        mediaBlock = `<div class="no-video-placeholder"><span style="font-size:1.4rem;">⏳</span><div>Match Upcoming</div></div>`;
-                    } else if (match.ytId) {
-                        mediaBlock = `<iframe src="https://www.youtube.com/embed/${match.ytId}?rel=0&modestbranding=1" allowfullscreen></iframe>`;
-                    }
-
-                    let scoreContainerHTML = `<div class="loading-text" style="padding:5px 0; font-size:0.85rem;">Match details unlock at kick-off</div>`;
-                    if (isAccessible) {
-                        let scoreDisplayLine = (match.status === 'FINALISED') ? 'Reveal Score' : 'Match Live / Ended';
-                        let rawScoreLine = (match.status === 'FINALISED') ? `FT: ${match.homeScore} - ${match.awayScore}` : 'Scores Syncing...';
-                        scoreContainerHTML = `
-                            <button class="reveal-btn" onclick="revealScore(this)" ${match.status !== 'FINALISED' ? 'disabled' : ''}>${scoreDisplayLine}</button>
-                            <div class="score-display">${rawScoreLine}</div>
-                        `;
-                    }
+                    let scoreContainerHTML = `
+                        <button class="reveal-btn" onclick="revealScore(this)">View Final Score</button>
+                        <div class="score-display">${match.homeScore} - ${match.awayScore}</div>
+                    `;
 
                     return `
                         <div class="video-card" style="animation-delay: ${idx * 120}ms;">
