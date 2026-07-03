@@ -3,517 +3,382 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCL | Match Center</title>
+    <title>Match Centre | HCL</title>
+    <link rel="icon" type="image/png" href="logo_hcl_main_4.png">
     <style>
-        /* CSS Variables */
         :root {
-            --hcl-green: #006039;
-            --hcl-black: #1a1a1a;
-            --hcl-white: #ffffff;
-            --hcl-gray: #f4f4f4;
-            --hcl-gold: #d4af37;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --transition: all 0.3s ease;
-        }
-
-        /* Base Resets */
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-color: #0066cc;
+            --pitch-green: #2e7d32;
+            --pitch-lines: rgba(255, 255, 255, 0.4);
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--hcl-gray);
-            color: var(--hcl-black);
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* Layout Structure */
-        .wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        .corner-graphic {
+            position: fixed; width: 280px; height: 280px; object-fit: contain;
+            opacity: 0.12; pointer-events: none; z-index: 0;
+        }
+        .corner-top-right { top: 40px; right: 0; }
+        .corner-bottom-left { bottom: 0; left: 0; transform: rotate(180deg); }
+
+        main {
+            width: 100%; max-width: 1000px; padding: 40px 20px;
+            box-sizing: border-box; position: relative; z-index: 10;
         }
 
-        /* Navigation */
-        header {
-            background: var(--hcl-white);
-            padding: 1.5rem 0;
-            border-bottom: 3px solid var(--hcl-green);
-        }
-
-        .nav-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-logo img {
-            height: 50px;
-            width: auto;
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-
-        .nav-menu a {
-            text-decoration: none;
-            color: var(--hcl-black);
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            transition: var(--transition);
-        }
-
-        .nav-menu a:hover {
-            color: var(--hcl-green);
-        }
-
-        /* Match Hero */
-        .hero {
-            background: var(--hcl-black);
-            color: var(--hcl-white);
-            padding: 60px 0;
+        /* Match Header */
+        .match-header-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 30px; margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); backdrop-filter: blur(8px);
             text-align: center;
         }
-
-        .hero-meta {
-            color: var(--hcl-gold);
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 10px;
+        
+        .match-meta {
+            font-size: 0.8rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px;
         }
 
-        .score-display {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            margin-top: 20px;
+        .scoreboard-flex {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 20px;
         }
 
-        .team-box {
-            flex: 1;
+        .team-block {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px;
         }
 
-        .team-name {
-            font-size: 2rem;
-            font-weight: 800;
+        .team-logo-lg { width: 90px; height: 90px; object-fit: contain; }
+        .team-name-lg { font-weight: 800; font-size: 1.4rem; color: var(--text-main); }
+        
+        .form-guide { display: flex; gap: 6px; margin-top: 4px; }
+        .form-dot {
+            width: 12px; height: 12px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 0.55rem;
+            font-weight: bold; color: white;
         }
+        .form-w { background: #22c55e; }
+        .form-d { background: #94a3b8; }
+        .form-l { background: #ef4444; }
 
-        .score-val {
-            font-size: 5rem;
-            font-weight: 900;
+        .score-block {
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .score-numbers {
+            font-size: 3.5rem; font-weight: 800; font-family: monospace;
+            background: linear-gradient(45deg, #0f172a, #334155);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             line-height: 1;
         }
-
-        /* Grid System */
-        .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-            padding: 40px 0;
+        .match-status {
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: var(--text-muted);
         }
 
-        .card {
-            background: var(--hcl-white);
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: var(--shadow);
-            margin-bottom: 25px;
+        /* Predictor */
+        .predictor-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; margin-bottom: 24px;
         }
+        .predictor-title { font-size: 0.9rem; font-weight: 700; margin: 0 0 12px 0; }
+        .predictor-bar-container { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #e2e8f0; }
+        .predictor-segment { height: 100%; transition: width 0.5s ease; }
+        .predictor-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-top: 8px; }
 
-        h2 {
-            font-size: 1.25rem;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--hcl-gray);
+        /* Lineup Visualizer */
+        .pitch-container {
+            width: 100%; height: 500px; background: linear-gradient(0deg, #388e3c 0%, #2e7d32 100%);
+            border-radius: 12px; position: relative; overflow: hidden; border: 2px solid #1b5e20;
+            display: flex; flex-direction: column; justify-content: space-around; margin-bottom: 24px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
         }
-
-        /* Data Tables */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table th, .data-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        .stat-bar {
-            height: 8px;
-            background: var(--hcl-gray);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-
-        .stat-fill {
-            height: 100%;
-            background: var(--hcl-green);
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 60px 0;
-            background: var(--hcl-white);
-            border-top: 1px solid #eee;
-        }
-
-        .footer-logo {
-            height: 60px;
-            margin-bottom: 20px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-content { grid-template-columns: 1fr; }
-            .score-display { gap: 10px; }
-            .score-val { font-size: 3rem; }
-        }
-
-        /* Extended Styles to maintain length */
-        .btn {
-            padding: 10px 20px;
-            background: var(--hcl-green);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .alert-box {
-            padding: 15px;
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        .player-list {
-            list-style: none;
-        }
-
-        .player-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .commentary-item {
-            margin-bottom: 15px;
-            padding-left: 15px;
-            border-left: 3px solid var(--hcl-green);
-        }
-
-        .timestamp {
-            font-weight: 700;
-            color: var(--hcl-green);
-            margin-right: 10px;
-        }
-
-        /* Additional structural spacing */
-        .spacer { height: 50px; }
-        .text-muted { color: #666; font-size: 0.9rem; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         
-        /* Specific League Assets */
-        .team-cfc { color: #57d744; }
-        .team-tur { color: #46d2d2; }
-        .team-lau { color: #ffd700; }
-        .team-lkd { color: #ffd700; }
-        .team-pcf { color: #2727aa; }
-        .team-sks { color: #2255ff; }
+        /* Pitch markings */
+        .pitch-container::before {
+            content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px;
+            background: var(--pitch-lines); transform: translateY(-50%);
+        }
+        .pitch-container::after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 70px; height: 70px;
+            border: 2px solid var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%);
+        }
 
-        /* Document length padding - internal components */
-        .widget { padding: 20px; background: #fff; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 15px; }
-        .form-control { width: 100%; padding: 10px; margin-top: 5px; }
+        .pitch-half {
+            flex: 1; display: flex; flex-direction: column; justify-content: space-evenly;
+            position: relative; z-index: 2; padding: 20px 0;
+        }
+
+        .player-row { display: flex; justify-content: space-evenly; width: 100%; }
+
+        .player-node {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .player-dot {
+            width: 30px; height: 30px; border-radius: 50%; background: #fff;
+            border: 3px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.7rem; color: #000;
+        }
+        .player-name-label {
+            background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem;
+            padding: 2px 6px; border-radius: 4px; font-weight: 600; text-align: center;
+        }
+
+        .roster-lists {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+
+        .roster-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px;
+        }
+
+        .roster-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .roster-table th { text-align: left; border-bottom: 1px solid var(--border-color); padding: 8px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+        .roster-table td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
+        .stat-badge { font-family: monospace; font-weight: 700; width: 30px; text-align: center; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
+    <div id="nav-mount"></div>
+    <img src="hcl_graphic_corner_4.png" alt="" class="corner-graphic corner-top-right">
+    <img src="hcl_graphic_corner_4.png" alt="" class="corner-graphic corner-bottom-left">
 
-    <header>
-        <div class="wrapper nav-inner">
-            <div class="nav-logo">
-                <img src="logo_hcl_main.png" alt="HCL Logo">
-            </div>
-            <nav>
-                <ul class="nav-menu">
-                    <li><a href="index.html">Portal</a></li>
-                    <li><a href="matches.html">Matches</a></li>
-                    <li><a href="standings.html">Standings</a></li>
-                    <li><a href="market.html">Market</a></li>
-                </ul>
-            </nav>
+    <main id="app-mount">
+        <div style="text-align:center; padding: 50px; color: var(--text-muted);">
+            <h2>Syncing Match Data...</h2>
         </div>
-    </header>
-
-    <section class="hero">
-        <div class="wrapper">
-            <div class="hero-meta">Week 2 • 1/7 • 14:00</div>
-            <div class="score-display">
-                <div class="team-box">
-                    <div class="team-name" id="home-team">Lads United</div>
-                </div>
-                <div class="score-val">0 - 0</div>
-                <div class="team-box">
-                    <div class="team-name" id="away-team">Lucky FC</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <main class="wrapper main-content">
-        <section>
-            <div class="card">
-                <h2>Match Commentary</h2>
-                <div id="commentary-feed">
-                    <div class="commentary-item"><span class="timestamp">0'</span> Kickoff at the HCL Arena.</div>
-                    <div class="commentary-item"><span class="timestamp">12'</span> Yellow card issued to Lads United midfielder.</div>
-                    <div class="commentary-item"><span class="timestamp">24'</span> Lucky FC pushing forward with high possession.</div>
-                    <div class="commentary-item"><span class="timestamp">40'</span> Substitution request pending.</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Match Statistics</h2>
-                <table class="data-table">
-                    <tr>
-                        <td>Possession</td>
-                        <td>
-                            <div class="stat-bar"><div class="stat-fill" style="width: 55%;"></div></div>
-                        </td>
-                        <td>45%</td>
-                    </tr>
-                    <tr>
-                        <td>Shots on Target</td>
-                        <td>
-                            <div class="stat-bar"><div class="stat-fill" style="width: 30%;"></div></div>
-                        </td>
-                        <td>1</td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="card">
-                <h2>Tactical Notes</h2>
-                <p>Standard league tactical formations applied for this match duration.</p>
-                <div class="spacer"></div>
-            </div>
-        </section>
-
-        <aside>
-            <div class="card">
-                <h2>Win Probability</h2>
-                <div class="widget">
-                    <p>Lads United (LAU): 55%</p>
-                    <div class="stat-bar"><div class="stat-fill" style="width: 55%;"></div></div>
-                </div>
-                <div class="widget">
-                    <p>Lucky FC (LKD): 45%</p>
-                    <div class="stat-bar"><div class="stat-fill" style="width: 45%;"></div></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>League Teams</h2>
-                <div id="team-list">
-                    <!-- Data injected via Controller -->
-                </div>
-            </div>
-        </aside>
     </main>
 
-    <footer>
-        <div class="wrapper">
-            <img src="hcl_graphic_corner.png" class="footer-logo" alt="Graphic">
-            <p>&copy; 2026 Heineken C League Executive Portal</p>
-        </div>
-    </footer>
-
+    <script src="navbar.js"></script>
     <script>
-        /**
-         * HCL System Controller
-         * Reference: HCL Controller_16
-         */
-        const hclTeams = [
-            { name: "Cranbourne United FC", code: "CFC", manager: "Luke Sheppard", color: "#57d744" },
-            { name: "FC Turtle", code: "TUR", manager: "Luke Grogan", color: "#46d2d2" },
-            { name: "Lads United", code: "LAU", manager: "Oliver Jamieson", color: "#ffd700" },
-            { name: "Lucky FC", code: "LKD", manager: "Lakshman Devendran", color: "#ffd700" },
-            { name: "Pectoral Flys", code: "PCF", manager: "Jeho Ryou", color: "#2727aa" },
-            { name: "SKS FC", code: "SKS", manager: "Sreehari Kottarathil Sandeep", color: "#2255ff" }
-        ];
+        const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
+        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+        const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
 
-        function renderTeamList() {
-            const container = document.getElementById('team-list');
-            hclTeams.forEach(team => {
-                const el = document.createElement('div');
-                el.className = 'player-item';
-                el.innerHTML = `<span>${team.name}</span><strong>${team.code}</strong>`;
-                container.appendChild(el);
+        async function fetchCSV(url) {
+            const res = await fetch(url);
+            const text = await res.text();
+            return text.split(/\r\n|\n/).map(line => {
+                let result = []; let current = ''; let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                    else current += char;
+                }
+                result.push(current.trim());
+                return result;
             });
         }
 
-        renderTeamList();
-
-        /* 
-           System initialization and event listeners
-           to maintain production readiness.
-        */
-        function initMatchFeed() {
-            console.log("Match feed listener active.");
-        }
-        
-        initMatchFeed();
-
-        /*
-           Formatting Logic 
-           To ensure UI consistency across the HCL portal.
-        */
-        const formatDate = () => {
-            const date = new Date();
-            return date.toLocaleDateString();
-        };
-
-        /*
-           Data Validation Layer
-           Strict checking for match inputs.
-        */
-        function validateMatchInput(homeScore, awayScore) {
-            return (homeScore >= 0 && awayScore >= 0);
+        function extractRating(str) {
+            if (!str) return 1;
+            let match = str.match(/\d+/);
+            return match ? parseInt(match[0], 10) : 1;
         }
 
-        /*
-           UI Component Handler
-           Toggle logic for modal overlays.
-        */
-        function toggleModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.style.display = (modal.style.display === 'none') ? 'block' : 'none';
-        }
+        async function initMatchCentre() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const targetWeek = params.get('week') || "1";
+                const targetIndex = parseInt(params.get('matchindex') || 0);
 
-        /*
-           Notification System
-           Broadcast updates to the executive dashboard.
-        */
-        function broadcastUpdate(message) {
-            console.log(`[HCL SYSTEM]: ${message}`);
-        }
+                const [schedData, teamsData, rosterData] = await Promise.all([
+                    fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_TEAMS), fetchCSV(CSV_ROSTERS)
+                ]);
 
-        /*
-           Event Listener Initialization
-        */
-        document.addEventListener('DOMContentLoaded', () => {
-            broadcastUpdate('Match Center UI Ready');
-        });
+                // Map Teams Map (Hex Codes & Codes)
+                let teamsMap = {};
+                teamsData.forEach((row, i) => {
+                    if (i === 0 || !row[0]) return;
+                    teamsMap[row[0]] = {
+                        code: row[1] || "TBA",
+                        hex: row[3] || "#000000"
+                    };
+                });
 
-        /*
-           Simulation Logic
-           For predicting outcomes based on team performance.
-        */
-        function calculateWinProb(teamA, teamB) {
-            // Logic placeholder
-            return 0.5;
-        }
+                // Get Match
+                const scheduleRows = schedData.filter((r, i) => i > 0 && r[0]);
+                const weekMatches = scheduleRows.filter(r => r[0] === targetWeek);
+                const match = weekMatches[targetIndex] || scheduleRows[0]; // Fallback to first available if invalid
 
-        /*
-           Helper: Parse Query Strings
-           For deep linking into specific match events.
-        */
-        function getQueryVariable(variable) {
-            const query = window.location.search.substring(1);
-            const vars = query.split('&');
-            for (let i = 0; i < vars.length; i++) {
-                const pair = vars[i].split('=');
-                if (pair[0] == variable) { return pair[1]; }
+                if (!match) throw new Error("Match not found");
+
+                const homeTeamName = match[4];
+                const awayTeamName = match[6];
+                const homeScore = match[5] || "-";
+                const awayScore = match[7] || "-";
+                const status = match[3] || "UPCOMING";
+                const matchTime = match[2] || "TBA";
+
+                const homeTeam = teamsMap[homeTeamName] || { code: 'HME', hex: '#3b82f6' };
+                const awayTeam = teamsMap[awayTeamName] || { code: 'AWY', hex: '#ef4444' };
+
+                // Get Rosters
+                let homePlayers = [];
+                let awayPlayers = [];
+                let homePower = 0;
+                let awayPower = 0;
+
+                for (let i = 1; i < rosterData.length; i++) {
+                    let r = rosterData[i];
+                    if (!r[1] || !r[3]) continue;
+                    let p = {
+                        id: r[0], name: r[1],
+                        off: extractRating(r[4]), def: extractRating(r[5])
+                    };
+                    
+                    if (r[3] === homeTeamName) {
+                        homePlayers.push(p);
+                        homePower += (p.off + p.def);
+                    } else if (r[3] === awayTeamName) {
+                        awayPlayers.push(p);
+                        awayPower += (p.off + p.def);
+                    }
+                }
+
+                // Win Probability Logic
+                let homeWinProb = 33, awayWinProb = 33, drawProb = 34;
+                if (homePower > 0 || awayPower > 0) {
+                    let totalPower = homePower + awayPower;
+                    let baseHome = (homePower / totalPower) * 100;
+                    let baseAway = (awayPower / totalPower) * 100;
+                    
+                    homeWinProb = Math.round(baseHome * 0.85); // Allow room for draws
+                    awayWinProb = Math.round(baseAway * 0.85);
+                    drawProb = 100 - (homeWinProb + awayWinProb);
+                }
+
+                // Calculate Form (Last 5 matches)
+                function getForm(teamName) {
+                    let formMatches = scheduleRows.filter(m => (m[4] === teamName || m[6] === teamName) && m[3] === "FINALISED");
+                    return formMatches.slice(-5).map(m => {
+                        let hScore = parseInt(m[5]), aScore = parseInt(m[7]);
+                        if (isNaN(hScore)) return { res: '-', class: 'form-d' };
+                        let isHome = m[4] === teamName;
+                        if (hScore === aScore) return { res: 'D', class: 'form-d' };
+                        if (isHome) return hScore > aScore ? { res: 'W', class: 'form-w' } : { res: 'L', class: 'form-l' };
+                        return aScore > hScore ? { res: 'W', class: 'form-w' } : { res: 'L', class: 'form-l' };
+                    });
+                }
+
+                const homeForm = getForm(homeTeamName);
+                const awayForm = getForm(awayTeamName);
+                const renderForm = (formArr) => formArr.map(f => `<div class="form-dot ${f.class}">${f.res}</div>`).join('');
+
+                // Organize Pitch Visualiser Nodes (Simple Def/Off Split)
+                const buildPitchNodes = (players, color) => {
+                    let defs = players.sort((a, b) => b.def - a.def).slice(0, Math.ceil(players.length / 2));
+                    let offs = players.filter(p => !defs.includes(p)).sort((a, b) => b.off - a.off);
+                    
+                    const renderRow = (arr) => `
+                        <div class="player-row">
+                            ${arr.map(p => `
+                                <div class="player-node">
+                                    <div class="player-dot" style="border-color:${color}">${p.id}</div>
+                                    <div class="player-name-label">${p.name.split(' ')[0]}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    return `${renderRow(defs)}${renderRow(offs)}`;
+                };
+
+                const buildRosterTable = (players) => `
+                    <table class="roster-table">
+                        <thead><tr><th>Player</th><th>OFF</th><th>DEF</th></tr></thead>
+                        <tbody>
+                            ${players.map(p => `<tr><td>#${p.id} ${p.name}</td><td class="stat-badge" style="color:#ef4444">${p.off}</td><td class="stat-badge" style="color:#0066cc">${p.def}</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                // Render UI
+                document.getElementById('app-mount').innerHTML = `
+                    <div class="match-header-card">
+                        <div class="match-meta">Season 1 | Week ${match[0]} | ${matchTime}</div>
+                        
+                        <div class="scoreboard-flex">
+                            <div class="team-block">
+                                <img src="logo_hcl_main_4.png" class="team-logo-lg">
+                                <div class="team-name-lg">${homeTeamName}</div>
+                                <div class="form-guide">${renderForm(homeForm)}</div>
+                            </div>
+                            
+                            <div class="score-block">
+                                <div class="score-numbers">${homeScore} - ${awayScore}</div>
+                                <div class="match-status">${status}</div>
+                            </div>
+
+                            <div class="team-block">
+                                <img src="logo_hcl_main_4.png" class="team-logo-lg">
+                                <div class="team-name-lg">${awayTeamName}</div>
+                                <div class="form-guide">${renderForm(awayForm)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="predictor-card">
+                        <h3 class="predictor-title">Match Predictor (Based on Active Squad Strength)</h3>
+                        <div class="predictor-bar-container">
+                            <div class="predictor-segment" style="width:${homeWinProb}%; background-color:${homeTeam.hex}"></div>
+                            <div class="predictor-segment" style="width:${drawProb}%; background-color:var(--pitch-lines)"></div>
+                            <div class="predictor-segment" style="width:${awayWinProb}%; background-color:${awayTeam.hex}"></div>
+                        </div>
+                        <div class="predictor-labels">
+                            <span style="color:${homeTeam.hex}">${homeTeam.code} Win: ${homeWinProb}%</span>
+                            <span style="color:var(--text-muted)">Draw: ${drawProb}%</span>
+                            <span style="color:${awayTeam.hex}">${awayTeam.code} Win: ${awayWinProb}%</span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Tactical Lineup Visualiser</h3>
+                    <div class="pitch-container">
+                        <div class="pitch-half" style="transform: rotate(180deg);">
+                            ${buildPitchNodes(awayPlayers, awayTeam.hex)}
+                        </div>
+                        <div class="pitch-half">
+                            ${buildPitchNodes(homePlayers, homeTeam.hex)}
+                        </div>
+                    </div>
+
+                    <div class="roster-lists">
+                        <div class="roster-card">
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${homeTeam.hex}; display:inline-block; padding-bottom:4px;">${homeTeamName} Squad</h3>
+                            ${buildRosterTable(homePlayers)}
+                        </div>
+                        <div class="roster-card">
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${awayTeam.hex}; display:inline-block; padding-bottom:4px;">${awayTeamName} Squad</h3>
+                            ${buildRosterTable(awayPlayers)}
+                        </div>
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding: 50px; color: #ef4444;"><h3>Error loading match details.</h3><p>Ensure URL parameters (?week=X&matchindex=Y) are correct.</p></div>`;
             }
-            return(false);
         }
 
-        /*
-           Style Injector
-           Applying dynamic branding colors from HCL Controller_16.
-        */
-        function applyBranding() {
-            // Future feature: Dynamic CSS variable injection
-        }
-        
-        applyBranding();
-
-        /*
-           Footer Persistence
-           Ensures corporate graphics are always rendered.
-        */
-        function renderGraphic() {
-            // Logic to confirm hcl_graphic_corner.png exists
-        }
-        
-        renderGraphic();
-
-        /*
-           Safety Layer
-           Intercepting accidental window closures.
-        */
-        window.onbeforeunload = function() {
-            // return "Are you sure you want to navigate away?";
-        };
-
-        /*
-           Extended Scripting: 
-           This area handles user interaction metrics.
-        */
-        const userMetrics = {
-            clicks: 0,
-            views: 0
-        };
-        
-        document.addEventListener('click', () => {
-            userMetrics.clicks++;
-        });
-
-        /*
-           Performance Monitoring
-        */
-        const observer = new PerformanceObserver((list) => {
-            list.getEntries().forEach((entry) => {
-                // Console logging for dev debugging
-            });
-        });
-        observer.observe({ entryTypes: ['resource'] });
-
-        /*
-           Layout Sanitizer
-           Removes deprecated elements if found.
-        */
-        function sanitizeDOM() {
-            const elements = document.querySelectorAll('.deprecated');
-            elements.forEach(el => el.remove());
-        }
-
-        sanitizeDOM();
-
-        /*
-           Global Configuration Object
-        */
-        const HCL_CONFIG = {
-            version: "2.0.0",
-            env: "production",
-            api: "/api/v1"
-        };
-
-        // End of HCL Match Engine
+        initMatchCentre();
     </script>
 </body>
 </html>
