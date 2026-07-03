@@ -283,6 +283,7 @@
         const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5K4F7_fU9D5ZsnG5Z3D5VszwQj1zT6G7d4-8jI9V1tW2d6yK0X-7F5X3G8z9V1tW2d6yK0X-7F5X3G/pub?gid=505537552&output=csv";
         const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5K4F7_fU9D5ZsnG5Z3D5VszwQj1zT6G7d4-8jI9V1tW2d6yK0X-7F5X3G8z9V1tW2d6yK0X-7F5X3G/pub?gid=942557458&output=csv";
 
+        // Runtime Storage Matrices
         let RAW_SCHEDULE_LINES = [];
         let LADDER_POINTS_MAP = {};
         let CURRENT_SELECTED_WEEK = 1;
@@ -290,6 +291,7 @@
         let TIMEOUT_TRACKERS = [];
         let CLOCKS_TO_INIT = [];
 
+        // Global Structural Metadata Mapping
         const TEAM_LOOKUP_MAP = {
             "Cranbourne United FC": "CFC",
             "FC Turtle": "TUR",
@@ -308,28 +310,11 @@
             'SKS': '#2255ff'
         };
 
+        // Procedural Fetch CSV Response Engine
         async function fetchCSV(url) {
             const res = await fetch(url);
             const text = await res.text();
-            // Split rows safely and clean out hidden carriage return artifacts (\r)
-            return text.split('\n').map(line => line.replace('\r', '').trim()).filter(line => line !== "").map(line => {
-                let result = [];
-                let current = '';
-                let inQuotes = false;
-                for (let i = 0; i < line.length; i++) {
-                    let char = line[i];
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        result.push(current.trim());
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                result.push(current.trim());
-                return result;
-            });
+            return text.split('\n').map(line => line.split(','));
         }
 
         function getLocalTeamLogo(code) {
@@ -390,12 +375,13 @@
             return (match && match[2].length === 11) ? match[2] : "";
         }
 
+        // Initialize Core Component Structures
         async function initPortal() {
             try {
                 const standingsData = await fetchCSV(CSV_STANDINGS);
                 for(let i = 1; i < standingsData.length; i++) {
                     if(standingsData[i][1]) {
-                        LADDER_POINTS_MAP[standingsData[i][1]] = standingsData[i][9] || "0";
+                        LADDER_POINTS_MAP[standingsData[i][1].trim()] = standingsData[i][9] || "0";
                     }
                 }
                 buildMiniStandings(standingsData);
@@ -418,7 +404,7 @@
 
             for (let i = 0; i < RAW_SCHEDULE_LINES.length; i++) {
                 let row = RAW_SCHEDULE_LINES[i];
-                let dateStr = row[1] ? row[1].trim() : "";
+                let dateStr = row[1] ? row[1].replace('\r', '').trim() : "";
                 if (dateStr === todayLabel) {
                     let w = parseInt(row[0], 10);
                     if (!isNaN(w)) todaysWeeks.push(w);
@@ -456,7 +442,7 @@
                 if(itemsCount >= 5) break;
                 
                 let rank = row[0];
-                let name = row[1];
+                let name = row[1].trim();
                 let pts = row[9];
                 let code = TEAM_LOOKUP_MAP[name] || "HCL";
                 let logo = getLocalTeamLogo(code);
@@ -527,15 +513,17 @@
             for(let w = 1; w <= 10; w++) { bucketWeeks[w] = []; }
 
             RAW_SCHEDULE_LINES.forEach((row, idx) => {
+                if(!row[0] || row[0].trim() === "") return;
+                
                 let weekNum = parseInt(row[0], 10);
-                let dateStr = row[1] ? row[1].trim() : "";
-                let timeStr = row[2] ? row[2].trim() : "";
-                let status = row[3] ? row[3].toUpperCase().trim() : "UPCOMING";
-                let homeTeam = row[4] ? row[4].trim() : "";
-                let homeScore = row[5] || "";
-                let awayTeam = row[6] ? row[6].trim() : "TBA";
-                let awayScore = row[7] || "";
-                let rawYtLink = row[8] || "";
+                let dateStr = row[1] ? row[1].replace('\r', '').trim() : "";
+                let timeStr = row[2] ? row[2].replace('\r', '').trim() : "";
+                let status = row[3] ? row[3].replace('\r', '').toUpperCase().trim() : "UPCOMING";
+                let homeTeam = row[4] ? row[4].replace('\r', '').trim() : "";
+                let homeScore = row[5] ? row[5].replace('\r', '').trim() : "";
+                let awayTeam = row[6] ? row[6].replace('\r', '').trim() : "TBA";
+                let awayScore = row[7] ? row[7].replace('\r', '').trim() : "";
+                let rawYtLink = row[8] ? row[8].replace('\r', '').trim() : "";
 
                 let homeCode = TEAM_LOOKUP_MAP[homeTeam] || "HME";
                 let awayCode = TEAM_LOOKUP_MAP[awayTeam] || "AWY";
@@ -561,7 +549,7 @@
 
                 let matchYtId = parseYoutubeId(rawYtLink);
 
-                if (weekNum === CURRENT_SELECTED_WEEK) {
+                if (weekNum == CURRENT_SELECTED_WEEK) {
                     highlightMatches.push({
                         title: `${homeTeam} vs ${awayTeam}`,
                         ytId: matchYtId,
@@ -586,9 +574,9 @@
                 }
             });
 
-            // 1. Render Ticker
+            // 1. TOP CAROUSEL TICKER SYSTEM ASSEMBLER
             if (tickerMatches.length === 0) {
-                document.getElementById('live-ticker-mount').innerHTML = `<div class="loading-text" style="padding:5px 0; font-size:0.8rem; font-style:italic;">No matches scheduled for today.</div>`;
+                document.getElementById('live-ticker-mount').innerHTML = `<div class="loading-text" style="padding:5px 0; font-size:0.8rem; font-style:italic;">No structural league fixtures scheduled for today.</div>`;
             } else {
                 document.getElementById('live-ticker-mount').innerHTML = tickerMatches.map((m, i) => {
                     const matchTimeObj = getMatchDateTime(m.date, m.time);
@@ -601,12 +589,12 @@
                         <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
                             <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
                             <div class="ticker-teams">
-                                <a href="match.html?matchindex=${m.idx}" class="ticker-team-item">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
                                     ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                     <span>${m.homeCode}</span>
                                 </a>
                                 <span style="font-family:monospace; font-size:0.95rem; color:var(--text-muted);">${showTickerScore ? `${m.homeScore}-${m.awayScore}` : 'vs'}</span>
-                                <a href="match.html?matchindex=${m.idx}" class="ticker-team-item">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
                                     <span>${m.awayCode}</span>
                                     ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                 </a>
@@ -616,7 +604,7 @@
                 }).join('');
             }
 
-            // 2. Render Main Timetable Grid Board Layout
+            // 2. TIMETABLE FIXTURE LIST GENERATION BLOCK
             let primaryLayoutHTML = [];
 
             function makeScheduleRowHTML(m) {
@@ -680,7 +668,7 @@
                 let countdownHTML = "";
                 if (!isFinishedOrActive && matchTimeObj && !m.status.includes("CONFIRM")) {
                     const uniqueClockId = `clock-${m.week}-${m.idx}`;
-                    countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
+                    countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating live dynamic timeline vectors...</div>`;
                     CLOCKS_TO_INIT.push({ id: uniqueClockId, time: matchTimeObj.getTime() });
                 }
 
@@ -694,7 +682,7 @@
                             </div>
                             
                             <div class="schedule-teams-container">
-                                <a href="match.html?matchindex=${m.idx}" class="team-link home">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="team-link home">
                                     <span>${m.home}</span>
                                     <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${textHomeColor};">${m.homeCode}</span>
                                     ${homeLogoHtml}
@@ -702,7 +690,7 @@
                                 
                                 <div class="vs-block">${scoreHTML}</div>
                                 
-                                <a href="match.html?matchindex=${m.idx}" class="team-link away">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="team-link away">
                                     ${awayLogoHtml}
                                     <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${textAwayColor};">${m.awayCode}</span>
                                     <span>${m.away}</span>
@@ -734,7 +722,7 @@
             let currentWeekTitleRendered = false;
             for (let w = 1; w <= 10; w++) {
                 if (bucketWeeks[w].length > 0) {
-                    if (w === CURRENT_SELECTED_WEEK) {
+                    if (w == CURRENT_SELECTED_WEEK) {
                         primaryLayoutHTML.push(`<div class="schedule-section-heading">📅 Active Week ${w} Fixtures</div><div class="timetable-list">`);
                         bucketWeeks[w].forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
                         primaryLayoutHTML.push(`</div>`);
@@ -754,12 +742,12 @@
                 primaryLayoutHTML.push(`</div>`);
             }
 
-            // 3. Render Replay Video Cards
+            // 3. HIGHLIGHT HIGHLIGHT REELS GENERATION BLOCK
             let archiveLayoutHTML = "";
             let filteredReplayMatches = highlightMatches.filter(m => m.status === 'FINALISED' && m.ytId);
 
             if (filteredReplayMatches.length === 0) {
-                archiveLayoutHTML = `<div class="loading-text" style="grid-column: 1/-1; font-style: italic; padding: 20px 0;">No media links found for finalized fixtures in Week ${CURRENT_SELECTED_WEEK}.</div>`;
+                archiveLayoutHTML = `<div class="loading-text" style="grid-column: 1/-1; font-style: italic; padding: 20px 0;">No dynamic highlights matched inside structural matrix parameters.</div>`;
             } else {
                 archiveLayoutHTML = filteredReplayMatches.map((match, idx) => {
                     let mediaBlock = `
@@ -787,23 +775,17 @@
             }
 
             document.getElementById('timetable-container').innerHTML = primaryLayoutHTML.length > 0 ? primaryLayoutHTML.join('') : `<div class=\"loading-text\">No current or upcoming items.</div>`;
-            document.getElementById('archive-container').innerHTML = archiveLayoutHTML;
+            document.getElementById('archive-container').innerHTML = archiveLayoutHTML > 0 ? archiveLayoutHTML.join('') : `<div class=\"loading-text\" style=\"padding:15px 0; font-style:italic;\">No past weeks archived yet.</div>`;
 
+            // POST-RENDER ACTIVATION LOOP: safely initialize countdown clocks now that nodes are securely drawn in the DOM
             CLOCKS_TO_INIT.forEach(clock => {
                 let tracker = setTimeout(() => initLiveCountdown(clock.id, clock.time), 5);
                 TIMEOUT_TRACKERS.push(tracker);
             });
         }
 
-        function switchWeek(val) { 
-            CURRENT_SELECTED_WEEK = parseInt(val, 10); 
-            renderActiveViews(); 
-        }
-        
-        function revealScore(btn) { 
-            btn.style.display = 'none'; 
-            btn.nextElementSibling.style.display = 'block'; 
-        }
+        function switchWeek(val) { CURRENT_SELECTED_WEEK = val; renderActiveViews(); }
+        function revealScore(btn) { btn.style.display = 'none'; btn.nextElementSibling.style.display = 'block'; }
         
         initPortal();
     </script>
