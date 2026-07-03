@@ -681,13 +681,13 @@
                                 <span>${m.date}</span>
                             </div>
                             <div class="schedule-teams-container">
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="team-link home">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="team-link home">
                                     <span>${m.home}</span> 
                                     <span class="team-pill" style="background:${currentHomeColor}; border-color:${currentHomeColor}; color:${homeTextColor};">${m.homeCode}</span>
                                     ${homeLogoHtml}
                                 </a>
                                 <div class="vs-block">${centerVs}</div>
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="team-link away">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="team-link away">
                                     ${awayLogoHtml}
                                     <span class="team-pill" style="background:${currentAwayColor}; border-color:${currentAwayColor}; color:${awayTextColor};">${m.awayCode}</span> 
                                     <span>${m.away}</span>
@@ -749,12 +749,12 @@
                         <div class="ticker-match-card" style="animation-delay: ${i * 100}ms;">
                             <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
                             <div class="ticker-teams">
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="ticker-team-item">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
                                     ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                     <span>${m.homeCode}</span>
                                 </a>
                                 <span style="color:var(--text-muted); font-size:0.8rem;">${showTickerScore ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
-                                <a href="match.html?week=${m.week}&matchindex=${m.idx}" class="ticker-team-item">
+                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
                                     <span>${m.awayCode}</span>
                                     ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
                                 </a>
