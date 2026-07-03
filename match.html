@@ -229,13 +229,12 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // Filter valid match rows belonging to the requested week (whitespace and case insensitive)
-                const weekMatches = scheduleRaw.filter((row, i) => {
-                    return i > 0 && row[0] && row[0].trim().toLowerCase() === week.trim().toLowerCase();
-                });
+                // Extract all valid schedule items (ignoring header)
+                const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row[0]);
 
-                // Grab the target match using the week-relative index passed from the hub
-                const matchTarget = weekMatches[parseInt(matchIndex)];
+                // Select target using the direct spreadsheet array offset given by index.html (idx)
+                const targetIdx = parseInt(matchIndex, 10);
+                const matchTarget = fullScheduleItems[targetIdx];
                 if (!matchTarget) { throw new Error("Target item bound error"); }
 
                 const homeTeamName = matchTarget[4];
