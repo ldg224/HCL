@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -309,6 +308,7 @@
         let LADDER_POINTS_MAP = {}; 
         let COUNTDOWN_INTERVALS = [];
         let TIMEOUT_TRACKERS = [];
+        let CLOCKS_TO_INIT = []; // Internal container resolving async timing registration
 
         function parseYoutubeId(url) {
             if (!url) return null;
@@ -320,11 +320,13 @@
         function getMatchDateTime(dateStr, timeStr) {
             if (!dateStr || dateStr.toLowerCase().trim() === 'tba' || dateStr.toLowerCase().trim() === 'unconfirmed') return null;
             
-            const segments = dateStr.split('/');
-            if (segments.length < 2) return null;
+            // Robust Regular Expression supporting forward-slashes and hyphen variations safely
+            const datePattern = /(\d{1,4})[-/](\d{1,2})[-/](\d{1,4})/;
+            const match = dateStr.match(datePattern);
+            if (!match) return null;
             
-            const day = parseInt(segments[0].trim(), 10);
-            const month = parseInt(segments[1].trim(), 10);
+            const day = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10);
             
             let hours = 0, minutes = 0;
             if (timeStr && timeStr.includes(':')) {
@@ -516,10 +518,12 @@
         }
 
         function renderActiveViews() {
+            // Teardown previous states cleanly to eliminate layout leaks
             COUNTDOWN_INTERVALS.forEach(clearInterval);
             COUNTDOWN_INTERVALS = [];
             TIMEOUT_TRACKERS.forEach(clearTimeout);
             TIMEOUT_TRACKERS = [];
+            CLOCKS_TO_INIT = [];
 
             let todayObj = new Date();
             let tomorrowObj = new Date();
@@ -664,8 +668,8 @@
                     const uniqueClockId = `clock-${m.week}-${m.idx}`;
                     countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
                     
-                    let tracker = setTimeout(() => initLiveCountdown(uniqueClockId, matchTimeObj.getTime()), 5);
-                    TIMEOUT_TRACKERS.push(tracker);
+                    // Push parameters safely to intermediate stack array instead of breaking the flow mid-string construction
+                    CLOCKS_TO_INIT.push({ id: uniqueClockId, time: matchTimeObj.getTime() });
                 }
 
                 return `
@@ -802,6 +806,12 @@
 
             document.getElementById('timetable-container').innerHTML = primaryLayoutHTML.length > 0 ? primaryLayoutHTML.join('') : `<div class="loading-text">No current or upcoming items.</div>`;
             document.getElementById('archive-container').innerHTML = archiveLayoutHTML.length > 0 ? archiveLayoutHTML.join('') : `<div class="loading-text" style="padding:15px 0; font-style:italic;">No past weeks archived yet.</div>`;
+
+            // POST-RENDER ACTIVATION LOOP: safely initialize countdown clocks now that nodes are securely drawn in the DOM
+            CLOCKS_TO_INIT.forEach(clock => {
+                let tracker = setTimeout(() => initLiveCountdown(clock.id, clock.time), 5);
+                TIMEOUT_TRACKERS.push(tracker);
+            });
         }
 
         function switchWeek(val) { CURRENT_SELECTED_WEEK = val; renderActiveViews(); }
