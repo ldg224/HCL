@@ -229,9 +229,14 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // FIX: Look up the row directly from schedule lines using absolute index (accounting for header row)
-                const matchTarget = scheduleRaw[parseInt(matchIndex) + 1];
-                if (!matchTarget || matchTarget[0] !== week) { throw new Error("Target item bound error"); }
+                // Filter valid match rows belonging to the requested week (whitespace and case insensitive)
+                const weekMatches = scheduleRaw.filter((row, i) => {
+                    return i > 0 && row[0] && row[0].trim().toLowerCase() === week.trim().toLowerCase();
+                });
+
+                // Grab the target match using the week-relative index passed from the hub
+                const matchTarget = weekMatches[parseInt(matchIndex)];
+                if (!matchTarget) { throw new Error("Target item bound error"); }
 
                 const homeTeamName = matchTarget[4];
                 const homeScore = matchTarget[5];
