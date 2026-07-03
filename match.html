@@ -164,7 +164,12 @@
 
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
-            return { week: params.get('week'), matchIndex: params.get('matchindex') };
+            return { 
+                week: params.get('week'), 
+                matchIndex: params.get('matchindex'),
+                homeCodeUrl: params.get('home'),
+                awayCodeUrl: params.get('away')
+            };
         }
 
         function getLocalTeamLogo(code) {
@@ -222,29 +227,14 @@
 
         async function initMatchCentre() {
             try {
-                const { week, matchIndex } = getUrlParams();
-                if (!week || !matchIndex) { throw new Error("Missing URL contexts"); }
+                const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
+                if (!week) { throw new Error("Missing URL contexts"); }
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // Extract all valid schedule items (ignoring header)
-                const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row[0]);
-
-                // Select target using the direct spreadsheet array offset given by index.html (idx)
-                const targetIdx = parseInt(matchIndex, 10);
-                const matchTarget = fullScheduleItems[targetIdx];
-                if (!matchTarget) { throw new Error("Target item bound error"); }
-
-                const homeTeamName = matchTarget[4];
-                const homeScore = matchTarget[5];
-                const awayTeamName = matchTarget[6];
-                const awayScore = matchTarget[7];
-                const matchTime = matchTarget[2];
-                const matchDate = matchTarget[1];
-                let matchStatus = matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING';
-
+                // Map teams row configurations early for accurate cross-referencing
                 let teamsMap = {};
                 teamsRaw.forEach((row, i) => {
                     if (i === 0 || !row[0]) return;
@@ -254,6 +244,39 @@
                         form: row[3] || 'DDDDD'
                     };
                 });
+
+                // Extract all valid schedule items (ignoring header)
+                const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row[0]);
+
+                // Fallback Match Locator logic matching index.html url layout parameters
+                let matchTarget = null;
+                if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
+                    const targetIdx = parseInt(matchIndex, 10);
+                    matchTarget = fullScheduleItems[targetIdx];
+                } else if (homeCodeUrl && awayCodeUrl) {
+                    matchTarget = fullScheduleItems.find(row => {
+                        const rowWeek = row[0].trim();
+                        const rowHomeName = row[4].trim().toLowerCase();
+                        const rowAwayName = row[6].trim().toLowerCase();
+                        
+                        const mappedHomeCode = teamsMap[rowHomeName]?.code || '';
+                        const mappedAwayCode = teamsMap[rowAwayName]?.code || '';
+
+                        return rowWeek === week.trim() && 
+                               mappedHomeCode.toUpperCase() === homeCodeUrl.toUpperCase().trim() && 
+                               mappedAwayCode.toUpperCase() === awayCodeUrl.toUpperCase().trim();
+                    });
+                }
+
+                if (!matchTarget) { throw new Error("Target match matching URL metrics not found"); }
+
+                const homeTeamName = matchTarget[4];
+                const homeScore = matchTarget[5];
+                const awayTeamName = matchTarget[6];
+                const awayScore = matchTarget[7];
+                const matchTime = matchTarget[2];
+                const matchDate = matchTarget[1];
+                let matchStatus = matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING';
 
                 const homeTeam = teamsMap[homeTeamName.trim().toLowerCase()] || { code: 'HME', hex: '#3b82f6', form: 'DDDDD' };
                 const awayTeam = teamsMap[awayTeamName.trim().toLowerCase()] || { code: 'AWY', hex: '#ef4444', form: 'DDDDD' };
@@ -389,7 +412,7 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding: 50px; color: #ef4444;"><h3>Error loading match details.</h3><p>Ensure URL parameters (?week=X&matchindex=Y) are correct.</p></div>`;
+                document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding: 50px; color: #ef4444;"><h3>Error loading match details.</h3><p>Ensure URL parameters (?week=X&home=Y&away=Z) match the fixture profile.</p></div>`;
             }
         }
 
