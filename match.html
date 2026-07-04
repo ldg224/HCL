@@ -292,14 +292,22 @@
         }
 
         function parseYouTubeEmbed(url) {
-            if (!url) return null;
+            if (!url || typeof url !== 'string') return null;
             let videoId = null;
-            if (url.includes('v=')) {
-                videoId = url.split('v=')[1]?.split('&')[0];
-            } else if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1]?.split('?')[0];
-            } else if (url.includes('embed/')) {
-                videoId = url.split('embed/')[1]?.split('?')[0];
+            try {
+                if (url.includes('v=')) {
+                    videoId = url.split('v=')[1]?.split('&')[0];
+                } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                } else if (url.includes('embed/')) {
+                    videoId = url.split('embed/')[1]?.split('?')[0];
+                } else if (url.includes('/shorts/')) {
+                    videoId = url.split('/shorts/')[1]?.split('?')[0];
+                } else if (url.includes('/live/')) {
+                    videoId = url.split('/live/')[1]?.split('?')[0];
+                }
+            } catch (e) {
+                return null;
             }
             return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
         }
@@ -467,8 +475,9 @@
                 const awayScoreStr = (matchTarget[7] || '0').trim();
                 const matchTime = (matchTarget[2] || '').trim();
                 const matchDateStr = (matchTarget[1] || '').trim();
-                const spreadsheetVideoUrl = (matchTarget[8] || '').trim();
                 
+                // Fetch Link at Index 8 ("Match Video Link" column)
+                const spreadsheetVideoUrl = (matchTarget[8] || '').trim();
                 const matchTimeObj = getMatchDateTime(matchDateStr, matchTime);
                 const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
 
@@ -532,7 +541,8 @@
                 let middleUtilitySectionHTML = '';
 
                 if (finalStatus === 'finalised') {
-                    const embeddedLink = parseYouTubeEmbed(spreadsheetVideoUrl) || "https://www.youtube.com/embed/dQw4w9WgXcQ";
+                    // Try parsing real link; NO MORE dummy video fallback
+                    const embeddedLink = parseYouTubeEmbed(spreadsheetVideoUrl);
                     const relativeTimeStr = calculateTimeAgo(matchTimeObj);
                     
                     const hScoreInt = parseInt(homeScoreStr, 10) || 0;
@@ -545,11 +555,18 @@
                     const hQuoteObj = generateManagerQuote(homeTeam.manager, homeTeamName, homeResult);
                     const aQuoteObj = generateManagerQuote(awayTeam.manager, awayTeamName, awayResult);
 
+                    // Dynamic Video Block Rendering
+                    const videoBlock = embeddedLink 
+                        ? `<div class="media-player-wrapper">
+                               <iframe src="${embeddedLink}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                           </div>`
+                        : `<div style="padding: 30px 20px; text-align: center; background: rgba(0,0,0,0.03); border-radius: 12px; border: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.95rem; font-weight: 600;">
+                               Match Replay Not Available Yet
+                           </div>`;
+
                     middleUtilitySectionHTML = `
                         <div class="news-media-card">
-                            <div class="media-player-wrapper">
-                                <iframe src="${embeddedLink}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                            </div>
+                            ${videoBlock}
                             <div class="news-content">
                                 <div class="news-source-line">
                                     <span class="live-red-dot"></span> YouTube · Replay uploaded ${relativeTimeStr} · HCL Network
