@@ -156,45 +156,107 @@
         .pitch-goal-box-right { position: absolute; right: 0; top: 50%; height: 100px; width: 30px; border: 2px solid var(--pitch-lines); border-right: 0; transform: translateY(-50%); }
         .pitch-penalty-spot-right { position: absolute; right: 65px; top: 50%; width: 4px; height: 4px; background: var(--pitch-lines); border-radius: 50%; transform: translate(50%, -50%); }
 
-        .pitch-hud-label { position: absolute; top: 16px; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.6px; background: rgba(15,23,42,0.6); padding: 5px 12px; border-radius: 6px; pointer-events: none; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); }
+        .pitch-hud-label {
+            position: absolute; top: 16px; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.85);
+            text-transform: uppercase; letter-spacing: 0.6px; background: rgba(15,23,42,0.6);
+            padding: 5px 12px; border-radius: 6px; pointer-events: none; backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
         .pitch-hud-label.left-label { left: 16px; }
         .pitch-hud-label.right-label { right: 16px; }
 
-        .pitch-team-half { width: 50%; height: 100%; position: relative; display: flex; flex-direction: row; justify-content: space-around; align-items: center; box-sizing: border-box; padding: 20px 45px; z-index: 2; }
+        .pitch-team-half {
+            width: 50%; height: 100%; position: relative; display: flex;
+            flex-direction: row; justify-content: space-around; align-items: center;
+            box-sizing: border-box; padding: 20px 45px; z-index: 2;
+        }
         .pitch-team-half.home-left-side { flex-direction: row; }
         .pitch-team-half.away-right-side { flex-direction: row-reverse; }
 
-        .pitch-column-band { display: flex; flex-direction: column; justify-content: center; gap: 32px; height: 100%; align-items: center; flex-grow: 1; }
-
-        .player-node { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 70px; animation: scaleIn 0.4s ease forwards; }
-        .player-badge { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
-        .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.88); padding: 3px 8px; border-radius: 5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        /* Integrated Bottom Performance Matrix Panel */
-        .integrated-performance-hud {
-            background: rgba(15, 23, 42, 0.94); border-top: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 16px 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 45px; backdrop-filter: blur(6px); position: relative; z-index: 3;
+        .pitch-column-band {
+            display: flex; flex-direction: column; justify-content: center; gap: 32px;
+            height: 100%; align-items: center; flex-grow: 1;
         }
-        .stat-bar-block { display: flex; flex-direction: column; gap: 5px; }
-        .stat-labels { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-labels span.stat-val-highlight { color: #fff; font-family: monospace; font-size: 0.85rem; font-weight: 700; }
-        .stat-split-track { height: 7px; background: rgba(255,255,255,0.15); border-radius: 4px; display: flex; overflow: hidden; margin-top: 2px; }
 
-        /* Squad Roster Tables Grid */
+        .player-node {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            width: 70px; animation: scaleIn 0.4s ease forwards;
+        }
+        .node-shirt-circle {
+            width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-weight: 800; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid #ffffff; background-color: var(--shirt-bg, #0066cc); color: var(--shirt-txt, #fff);
+        }
+        .node-player-name {
+            font-size: 0.7rem; font-weight: 700; color: #ffffff; text-align: center;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.5);
+            background: rgba(15, 23, 42, 0.55); padding: 2px 6px; border-radius: 4px;
+            max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* Squad Team Roster Deck Layout */
         .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 650px) { .roster-lists { grid-template-columns: 1fr; } }
-        .roster-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); }
-        .roster-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-        .roster-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; text-transform: uppercase; }
-        .roster-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
-        .roster-table tr:last-child td { border-bottom: 0; }
+        .roster-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        
+        .roster-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .roster-table th { font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); padding: 8px 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .roster-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; color: var(--text-main); }
+        .roster-table tr:last-child td { border-bottom: none; }
+        
+        .badge-pos { font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .badge-pos.FWD { background: #fee2e2; color: #ef4444; }
+        .badge-pos.MID { background: #e0f2fe; color: #0284c7; }
+        .badge-pos.DEF { background: #dcfce7; color: #15803d; }
+        .badge-pos.GK { background: #fef3c7; color: #d97706; }
 
-        .loading-view { text-align: center; padding: 60px 0; color: var(--text-muted); font-weight: 500; width: 100%; }
-        @keyframes scaleIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .stat-bar-mini-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+        .stat-label-lbl { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); width: 22px; }
+        .stat-track-bar { flex-grow: 1; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; }
+        .stat-fill-bar { height: 100%; background: var(--accent-color); }
+        .stat-fill-bar.off-fill { background: #ef4444; }
+        .stat-fill-bar.def-fill { background: #0066cc; }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* MOBILE VIEWPORT RESPONSIVE SYSTEM OVERLAY */
+        @media (max-width: 768px) {
+            main { padding: 0 12px 30px 12px; gap: 16px; }
+            nav { padding: 16px 12px; }
+            
+            .scoreboard-outer-card {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 30px 20px;
+                text-align: center;
+            }
+            .score-center-block {
+                grid-row: 1; /* Pushes score to the top position dynamically on mobile layouts */
+                margin-bottom: 10px;
+            }
+            .score-row { font-size: 3rem; }
+            
+            .stadium-env-strip { flex-direction: column; gap: 6px; align-items: center; text-align: center; }
+            
+            /* Preserves pristine 2D tactical field scale via horizontal side scroll overflow container */
+            .field-grand-wrapper { overflow-x: auto; width: 100%; }
+            .pitch-container-horizontal { min-width: 760px; }
+
+            /* Splits grid decks into individual rows stacking nicely on mobile device glass */
+            .roster-lists { grid-template-columns: 1fr; gap: 16px; }
+            .roster-card { padding: 16px; }
+            
+            /* If manager quote cards are present, stacks them neatly */
+            main > div[style*="grid-template-columns:1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+        }
     </style>
 </head>
 <body>
-
     <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-top-right">
     <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-bottom-left">
 
@@ -209,51 +271,53 @@
     <script>
         const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
         const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
-        const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
-        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+        const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1152062624&single=true&output=csv";
+        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=2040902641&single=true&output=csv";
 
-        function getMatchDateTime(dateStr, timeStr) {
-            if (!dateStr || dateStr.toLowerCase().trim() === 'tba' || dateStr.toLowerCase().trim() === 'unconfirmed') return null;
-            const datePattern = /(\d{1,4})[-/](\d{1,2})[-/](\d{1,4})/;
-            const match = dateStr.match(datePattern);
-            if (!match) return null;
-            const day = parseInt(match[1], 10);
-            const month = parseInt(match[2], 10);
-            let hours = 0, minutes = 0;
-            if (timeStr && timeStr.includes(':')) {
-                const timeSegments = timeStr.split(':');
-                hours = parseInt(timeSegments[0].trim(), 10);
-                minutes = parseInt(timeSegments[1].trim(), 10);
-            }
-            return new Date(2026, month - 1, day, hours, minutes);
+        function calculateTimeAgo(dateObj) {
+            if (!dateObj) return "recently";
+            const seconds = Math.floor((new Date() - dateObj) / 1000);
+            let interval = Math.floor(seconds / 31536000);
+            if (interval >= 1) return interval + " year" + (interval > 1 ? "s" : "") + " ago";
+            interval = Math.floor(seconds / 2592000);
+            if (interval >= 1) return interval + " month" + (interval > 1 ? "s" : "") + " ago";
+            interval = Math.floor(seconds / 86400);
+            if (interval >= 1) return interval + " day" + (interval > 1 ? "s" : "") + " ago";
+            interval = Math.floor(seconds / 3600);
+            if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
+            interval = Math.floor(seconds / 60);
+            if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
+            return "just now";
         }
 
-        function calculateTimeAgo(kickoffTime) {
-            if (!kickoffTime) return "Recently";
-            const diffMs = new Date() - kickoffTime;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMins / 60);
-            const diffDays = Math.floor(diffHours / 24);
-
-            if (diffMins < 60) return `${Math.max(1, diffMins)}m ago`;
-            if (diffHours < 24) return `${diffHours} hours ago`;
-            return `${diffDays} days ago`;
+        function getMatchDateTime(dateStr, timeStr) {
+            if (!dateStr || !timeStr) return null;
+            let ISOString = dateStr.trim();
+            if (dateStr.includes('/')) {
+                const parts = dateStr.trim().split('/');
+                if (parts.length === 3) {
+                    ISOString = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
+            }
+            return new Date(`${ISOString}T${timeStr.trim()}`);
         }
 
         function generateManagerQuote(managerName, teamName, resultType) {
             const winQuotes = [
-                `"The structure held up beautifully today. We anticipated their high press lines and isolated their central defenders on counter intervals. Full credit goes to the squad."`,
-                `"Getting maximum points here was a mandatory step for our season progression. We executed the transition parameters exactly as designed on the training block."`
-            ];
-            const drawQuotes = [
-                `"A highly tactical affair. Both groups possessed solid recovery shapes, making clear looks quite rare. We take the point, reset, and look forward to the upcoming calendar lines."`,
-                `"We dominated periods of high ball circulation but lacked the critical final action in the penalty box. A draw reflects a very balanced performance."`
+                `"An excellent tactical display from the lads. We controlled the pitch channels precisely."`,
+                `"The gameplan worked exactly as intended. These three points are huge for our seasonal direction."`,
+                `"Credit to the players' fitness. Squeezing out the decisive edge under tension shows true class."`
             ];
             const lossQuotes = [
-                `"A frustrating outcome. We leaked goals on small communication lapses that simply cannot happen at this elite level. The full game video replay will guide our corrections."`,
-                `"We lacked density in our defensive recovery blocks today. We congratulate our opponents, but our concentration parameters must elevate immediately."`
+                `"We let our structural integrity slip at critical nodes. We must review film and recalibrate."`,
+                `"Margins are microscopic at this level. One error cost us the point distribution today."`,
+                `"A tough result to digest, but the baseline transition metrics look promising for next week."`
             ];
-
+            const drawQuotes = [
+                `"A balanced athletic chess match. Both setups blocked spatial progression efficiently."`,
+                `"Sharing the outcome reflects the performance parameters perfectly. Neutral ground earned."`,
+                `"We missed opportunities to alter the baseline rhythm, but our concentration parameters must elevate immediately."`
+            ];
             const collection = resultType === 'W' ? winQuotes : resultType === 'L' ? lossQuotes : drawQuotes;
             const selectedText = collection[Math.floor(Math.random() * collection.length)];
             return { manager: managerName, team: teamName, quote: selectedText };
@@ -276,12 +340,19 @@
             const res = await fetch(url);
             const text = await res.text();
             return text.split(/\r\n|\n/).map(line => {
-                let result = []; let current = ''; let inQuotes = false;
+                let result = [];
+                let current = '';
+                let inQuotes = false;
                 for (let i = 0; i < line.length; i++) {
                     let char = line[i];
-                    if (char === '"') { inQuotes = !inQuotes; }
-                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
-                    else { current += char; }
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
                 }
                 result.push(current.trim());
                 return result;
@@ -290,40 +361,45 @@
 
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
-            return { 
-                week: params.get('week'), 
-                matchIndex: params.get('matchindex'),
+            return {
+                week: params.get('week'),
+                matchIndex: params.get('matchIndex'),
                 homeCodeUrl: params.get('home'),
                 awayCodeUrl: params.get('away')
             };
         }
 
-        function getLocalTeamLogo(code) {
-            if (!code) return 'logo_hcl_main.png';
-            switch(code.toUpperCase().trim()) {
-                case 'LKD': return 'logo_lucky_fc_V3.png';
-                case 'SKS': return 'logo_sks_fc.png';
-                case 'LAU': return 'logo_lads_united.png';
-                case 'PCF': return 'logo_pectoral_flys.png';
-                case 'CFC': return 'logo_cranbourne_united.png';
-                case 'TUR': return 'logo_fc_turtle.png';
-                default: return 'logo_hcl_main.png';
-            }
-        }
-
         function buildRosterTable(players) {
-            if(!players || players.length === 0) return `<p style="font-size:0.82rem; color:var(--text-muted); font-style:italic; padding:10px;">No synced active roster listings.</p>`;
             return `
                 <table class="roster-table">
-                    <thead><tr><th>#</th><th>Name</th><th>Pos</th><th>Off</th><th>Def</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Pos</th>
+                            <th style="width:75px;">Offense</th>
+                            <th style="width:75px;">Defense</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         ${players.map(p => `
                             <tr>
-                                <td style="color:var(--text-muted); font-family:monospace;">${p.num}</td>
-                                <td>${p.name}</td>
-                                <td style="color:var(--text-muted); font-size:0.75rem;">${p.pos}</td>
-                                <td style="color:#16a34a;">${p.off}</td>
-                                <td style="color:#0066cc;">${p.def}</td>
+                                <td>
+                                    <div style="font-weight:700; color:var(--text-main);">${p.name}</div>
+                                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">#${p.id} · Cost: ${p.costStr}</div>
+                                </td>
+                                <td><span class="badge-pos ${p.pos}">${p.pos}</span></td>
+                                <td>
+                                    <div class="stat-bar-mini-row">
+                                        <span class="stat-label-lbl">${p.off}</span>
+                                        <div class="stat-track-bar"><div class="stat-fill-bar off-fill" style="width:${(p.off/10)*100}%;"></div></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="stat-bar-mini-row">
+                                        <span class="stat-label-lbl">${p.def}</span>
+                                        <div class="stat-track-bar"><div class="stat-fill-bar def-fill" style="width:${(p.def/10)*100}%;"></div></div>
+                                    </div>
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -331,46 +407,37 @@
             `;
         }
 
-        function buildHorizontalPitchNodes(players, teamHex, textColor) {
-            const lines = { 'GK': [], 'DEF': [], 'MID': [], 'FWD': [] };
-            players.forEach(p => { if (p && p.pos && lines[p.pos]) lines[p.pos].push(p); });
-            const order = ['GK', 'DEF', 'MID', 'FWD'];
-            return order.map(posKey => `
+        function buildPitchColumn(players, side) {
+            return `
                 <div class="pitch-column-band">
-                    ${lines[posKey].map(p => {
-                        const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
+                    ${players.map(p => {
+                        let shirtBg = side === 'home' ? 'var(--home-gradient-color, #3b82f6)' : 'var(--away-gradient-color, #ef4444)';
+                        let shirtTxt = '#ffffff';
                         return `
                             <div class="player-node">
-                                <div class="player-badge" style="background-color: ${teamHex}; color: ${textColor};">
-                                    ${p.num}
+                                <div class="node-shirt-circle" style="--shirt-bg:${shirtBg}; --shirt-txt:${shirtTxt};">
+                                    ${parseInt(p.id, 10)}
                                 </div>
-                                <div class="player-name-tag">${nameParts[nameParts.length - 1]}</div>
+                                <div class="node-player-name">${p.name.split(' ').pop()}</div>
                             </div>
                         `;
                     }).join('')}
                 </div>
-            `).join('');
-        }
-
-        function buildFormHTML(formArray) {
-            let nodes = [];
-            for (let i = 0; i < 5; i++) {
-                if (i < formArray.length) {
-                    nodes.push(`<span class="form-dot form-${formArray[i].toLowerCase()}">${formArray[i]}</span>`);
-                } else {
-                    nodes.push(`<span class="form-dot form-empty"></span>`);
-                }
-            }
-            return nodes.join('');
+            `;
         }
 
         async function initMatchCentre() {
             try {
                 const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
-                if (!week) { throw new Error("Missing structural URL parameters."); }
+                if (!week) {
+                    throw new Error("Missing structural URL parameters.");
+                }
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
-                    fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
+                    fetchCSV(CSV_SCHEDULE),
+                    fetchCSV(CSV_ROSTERS),
+                    fetchCSV(CSV_STANDINGS),
+                    fetchCSV(CSV_TEAMS)
                 ]);
 
                 let teamsMap = {};
@@ -382,72 +449,70 @@
                         code: row[1] ? row[1].trim().toUpperCase() : 'TBA',
                         manager: row[2] ? row[2].trim() : 'TBA',
                         hex: row[3] ? row[3].trim() : '#475569',
-                        form: [], rank: 'N/A'
+                        form: [],
+                        rank: 'N/A'
                     };
                 });
 
-                // FIXED: Robust processing of cloud standings data
                 standingsRaw.forEach((row) => {
                     if (!row || !row[1] || !row[0]) return;
-                    // Filter out comments or asterisk notice blocks
                     if (row[0].startsWith('*') || row[0].toLowerCase().includes('notice')) return;
-                    
-                    const teamNameKey = row[1].trim().toLowerCase();
-                    const rankValue = row[0].trim();
-                    
-                    if (teamsMap[teamNameKey]) {
-                        teamsMap[teamNameKey].rank = rankValue.startsWith('#') ? rankValue : `#${rankValue}`;
-                    } else {
-                        // Failsafe: search by 3-letter code if names differ slightly
-                        const shortCode = teamNameKey.substring(0,3).toUpperCase();
-                        for (let k in teamsMap) {
-                            if (teamsMap[k].code === shortCode) {
-                                teamsMap[k].rank = `#${rankValue}`;
-                                break;
-                            }
-                        }
+                    const nameKey = row[1].trim().toLowerCase();
+                    if (teamsMap[nameKey]) {
+                        teamsMap[nameKey].rank = row[0].trim();
                     }
                 });
 
-                const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row && row.length > 0 && row[0]);
+                const targetWeekNum = parseInt(week, 10);
+                let targetedRow = null;
+                let fullScheduleItems = [];
 
-                let matchTarget = null;
-                let targetRowIdx = -1;
-                if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
-                    targetRowIdx = parseInt(matchIndex, 10);
-                    if (!isNaN(targetRowIdx) && fullScheduleItems[targetRowIdx]) matchTarget = fullScheduleItems[targetRowIdx];
+                scheduleRaw.forEach((row, i) => {
+                    if (i === 0 || !row || !row[0]) return;
+                    fullScheduleItems.push(row);
+                });
+
+                let weekMatches = fullScheduleItems.filter(r => parseInt(r[0], 10) === targetWeekNum);
+
+                if (matchIndex !== null && weekMatches[parseInt(matchIndex, 10)]) {
+                    targetedRow = weekMatches[parseInt(matchIndex, 10)];
                 } else if (homeCodeUrl && awayCodeUrl) {
-                    targetRowIdx = fullScheduleItems.findIndex(row => {
-                        const rHome = (row[4] || '').trim().toLowerCase();
-                        const rAway = (row[6] || '').trim().toLowerCase();
-                        return (row[0] || '').trim() === week.trim() && 
-                               (teamsMap[rHome]?.code === homeCodeUrl.toUpperCase().trim()) && 
-                               (teamsMap[rAway]?.code === awayCodeUrl.toUpperCase().trim());
+                    targetedRow = weekMatches.find(r => {
+                        const hName = r[4].trim().toLowerCase();
+                        const aName = r[6].trim().toLowerCase();
+                        const hCode = teamsMap[hName]?.code || '';
+                        const aCode = teamsMap[aName]?.code || '';
+                        return hCode === homeCodeUrl.toUpperCase() && aCode === awayCodeUrl.toUpperCase();
                     });
-                    if (targetRowIdx !== -1) matchTarget = fullScheduleItems[targetRowIdx];
                 }
 
-                if (!matchTarget) { throw new Error("Target match metrics not found inside dataset."); }
+                if (!targetedRow && weekMatches.length > 0) {
+                    targetedRow = weekMatches[0];
+                }
 
-                const homeTeamName = (matchTarget[4] || 'Home Team').trim();
-                const homeScoreStr = (matchTarget[5] || '0').trim();
-                const awayTeamName = (matchTarget[6] || 'Away Team').trim();
-                const awayScoreStr = (matchTarget[7] || '0').trim();
-                const matchTime = (matchTarget[2] || '').trim();
-                const matchDateStr = (matchTarget[1] || '').trim();
-                const spreadsheetVideoUrl = (matchTarget[8] || '').trim();
-                
-                const matchTimeObj = getMatchDateTime(matchDateStr, matchTime);
+                if (!targetedRow) {
+                    throw new Error(`Could not track down match records matching specified criteria for Week ${week}.`);
+                }
+
+                const homeTeamName = targetedRow[4].trim();
+                const homeScoreStr = targetedRow[5] ? targetedRow[5].trim() : '';
+                const awayTeamName = targetedRow[6].trim();
+                const awayScoreStr = targetedRow[7] ? targetedRow[7].trim() : '';
+                const matchDateStr = targetedRow[1].trim();
+                const matchTimeStr = targetedRow[2].trim();
+                let finalStatus = targetedRow[3] ? targetedRow[3].toUpperCase().trim() : 'UPCOMING';
+                const spreadsheetVideoUrl = targetedRow[8] ? targetedRow[8].trim() : '';
+
+                const matchTimeObj = getMatchDateTime(matchDateStr, matchTimeStr);
                 const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-
-                let finalStatus = (matchTarget[3] || 'upcoming').toLowerCase().trim();
-                if (finalStatus === 'finalised' && !isTimePassed) {
-                    finalStatus = 'upcoming';
+                if (finalStatus === 'FINALISED' && !isTimePassed) {
+                    finalStatus = 'UPCOMING';
                 }
 
                 let dynamicFormTracker = {};
                 Object.keys(teamsMap).forEach(k => { dynamicFormTracker[k] = []; });
-                fullScheduleItems.forEach((row, idx) => {
+
+                fullScheduleItems.forEach((row) => {
                     const rDate = (row[1] || '').trim();
                     const rTime = (row[2] || '').trim();
                     const rTimeObj = getMatchDateTime(rDate, rTime);
@@ -458,37 +523,52 @@
                         const aN = (row[6] || '').trim().toLowerCase();
                         const hS = parseInt(row[5], 10) || 0;
                         const aS = parseInt(row[7], 10) || 0;
+
                         if (dynamicFormTracker[hN]) dynamicFormTracker[hN].push(hS > aS ? 'W' : hS === aS ? 'D' : 'L');
                         if (dynamicFormTracker[aN]) dynamicFormTracker[aN].push(aS > hS ? 'W' : aS === hS ? 'D' : 'L');
                     }
                 });
-                Object.keys(teamsMap).forEach(k => { teamsMap[k].form = (dynamicFormTracker[k] || []).slice(-5); });
+
+                Object.keys(teamsMap).forEach(k => {
+                    teamsMap[k].form = (dynamicFormTracker[k] || []).slice(-5);
+                });
 
                 const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: [], rank: 'N/A' };
                 const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: [], rank: 'N/A' };
 
                 const darkTeams = ['LKD', 'TUR', 'CFC'];
-                const homeTextColor = darkTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
-                const awayTextColor = darkTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
+                const homeTextColor = darkTeams.includes(homeTeam.code) ? '#0f172a' : '#ffffff';
+                const awayTextColor = darkTeams.includes(awayTeam.code) ? '#0f172a' : '#ffffff';
 
-                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[1]).map(r => {
-                    const posM = (r[2] || '').match(/\[(.*?)\]/);
-                    const offM = (r[4] || '').match(/\((\d+)\)/);
-                    const defM = (r[5] || '').match(/\((\d+)\)/);
-                    return {
-                        num: parseInt(r[0], 10) || 0, name: r[1], team: (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase(),
-                        pos: posM ? posM[1].toUpperCase().trim() : 'MID',
-                        off: offM ? parseInt(offM[1], 10) : 0, def: defM ? parseInt(defM[1], 10) : 0
-                    };
+                let parsedRoster = [];
+                rosterRaw.forEach((row, i) => {
+                    if (i === 0 || !row || row.length < 5) return;
+                    let rawTeamField = row[3] ? row[3].trim() : '';
+                    let matchedTeamName = '';
+
+                    if (rawTeamField.includes(']')) {
+                        let token = rawTeamField.split(']')[0].replace('[', '').trim().toUpperCase();
+                        let found = Object.values(teamsMap).find(t => t.code === token);
+                        if (found) matchedTeamName = found.name;
+                    } else {
+                        matchedTeamName = rawTeamField;
+                    }
+
+                    if (!matchedTeamName) return;
+
+                    parsedRoster.push({
+                        id: row[0].trim(),
+                        name: row[1].trim(),
+                        pos: row[2] ? row[2].replace('[', '').split(']')[0].trim() : 'MID',
+                        team: matchedTeamName,
+                        off: parseInt(row[4]?.replace(/\([^)]*\)/g, '')) || 5,
+                        def: parseInt(row[5]?.replace(/\([^)]*\)/g, '')) || 5,
+                        costStr: row[6] ? '$' + parseInt(row[6], 10).toLocaleString() : '$0'
+                    });
                 });
 
-                const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
-                const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
-
-                let winHome = Math.max(15, 35 + ((homePlayers.length - awayPlayers.length) * 2));
-                let winAway = Math.max(15, 35 - ((homePlayers.length - awayPlayers.length) * 2));
-                let t = winHome + winAway + 30;
-                let pHome = Math.round((winHome / t) * 100); let pAway = Math.round((winAway / t) * 100); let pDraw = 100 - (pHome + pAway);
+                const homePlayers = parsedRoster.filter(p => p.team.toLowerCase() === homeTeamName.toLowerCase());
+                const awayPlayers = parsedRoster.filter(p => p.team.toLowerCase() === awayTeamName.toLowerCase());
 
                 let avgHOff = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.off, 0) / homePlayers.length) : 0;
                 let avgHDef = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.def, 0) / homePlayers.length) : 0;
@@ -498,15 +578,13 @@
                 const displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
 
                 let middleUtilitySectionHTML = '';
-
                 if (finalStatus === 'finalised') {
                     const embeddedLink = parseYouTubeEmbed(spreadsheetVideoUrl) || "https://www.youtube.com/embed/dQw4w9WgXcQ";
                     const relativeTimeStr = calculateTimeAgo(matchTimeObj);
-                    
                     const hScoreInt = parseInt(homeScoreStr, 10) || 0;
                     const aScoreInt = parseInt(awayScoreStr, 10) || 0;
                     
-                    let homeResult = 'D'; let awayResult = 'D';
+                    let homeResult = 'D', awayResult = 'D';
                     if (hScoreInt > aScoreInt) { homeResult = 'W'; awayResult = 'L'; }
                     else if (aScoreInt > hScoreInt) { homeResult = 'L'; awayResult = 'W'; }
 
@@ -526,73 +604,116 @@
                             </div>
                         </div>
 
-                        <div class="press-quotes-deck">
-                            <div>
-                                <div class="press-quote-title">${hQuoteObj.team} Post-Match Review — ${hQuoteObj.manager}</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                            <div class="press-quotes-deck" style="border-left-color:${homeTeam.hex};">
+                                <div class="press-quote-title">${hQuoteObj.manager} — ${homeTeam.code} Manager</div>
                                 <p class="press-quote-body">${hQuoteObj.quote}</p>
                             </div>
-                            <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:12px;">
-                                <div class="press-quote-title" style="color: #f43f5e;">${aQuoteObj.team} Post-Match Review — ${aQuoteObj.manager}</div>
+                            <div class="press-quotes-deck" style="border-left-color:${awayTeam.hex};">
+                                <div class="press-quote-title">${aQuoteObj.manager} — ${awayTeam.code} Manager</div>
                                 <p class="press-quote-body">${aQuoteObj.quote}</p>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    middleUtilitySectionHTML = `
-                        <div class="predictor-bar-card">
-                            <div class="predictor-labels"><span>${homeTeam.code} Win Chance</span><span>Draw Probability</span><span>${awayTeam.code} Win Chance</span></div>
-                            <div class="predictor-track-combined">
-                                <div class="predictor-segment" style="width: ${pHome}%; background: ${homeTeam.hex};">${pHome}%</div>
-                                <div class="predictor-segment" style="width: ${pDraw}%; background: #94a3b8;">${pDraw}%</div>
-                                <div class="predictor-segment" style="width: ${pAway}%; background: ${awayTeam.hex};">${pAway}%</div>
                             </div>
                         </div>
                     `;
                 }
 
-                const baseCapacity = 38000 + (parseInt(week, 10) * 850);
-                const attendanceValue = (finalStatus === 'finalised') ? baseCapacity : Math.floor(baseCapacity * 0.94);
+                let predictorStripHTML = '';
+                if (finalStatus !== 'finalised') {
+                    let totalH = avgHOff + avgHDef;
+                    let totalA = avgAOff + avgADef;
+                    let baselineCombined = (totalH + totalA) || 1;
+                    let rawHomeProb = Math.round((totalH / baselineCombined) * 100);
+                    let rawAwayProb = Math.round((totalA / baselineCombined) * 100);
+                    let varianceOffset = 100 - (rawHomeProb + rawAwayProb);
+                    let drawPercentage = 24; 
+                    
+                    let adjustedHome = Math.round((rawHomeProb * (100 - drawPercentage)) / 100);
+                    let adjustedAway = 100 - adjustedHome - drawPercentage;
 
-                document.getElementById('app-mount').innerHTML = `
-                    <div class="scoreboard-outer-card" style="--home-gradient-color: ${homeTeam.hex}; --away-gradient-color: ${awayTeam.hex};">
+                    predictorStripHTML = `
+                        <div class="predictor-bar-card">
+                            <div class="predictor-labels">
+                                <span>${homeTeam.code} Forecast (${adjustedHome}%)</span>
+                                <span style="color:var(--text-muted);">Equilibrium (${drawPercentage}%)</span>
+                                <span>${awayTeam.code} Forecast (${adjustedAway}%)</span>
+                            </div>
+                            <div class="predictor-track-combined">
+                                <div class="predictor-segment" style="width:${adjustedHome}%; background:${homeTeam.hex}; color:${homeTextColor};">${adjustedHome}%</div>
+                                <div class="predictor-segment" style="width:${drawPercentage}%; background:#94a3b8; color:#fff;">DRAW</div>
+                                <div class="predictor-segment" style="width:${adjustedAway}%; background:${awayTeam.hex}; color:${awayTextColor};">${adjustedAway}%</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const homeGK = homePlayers.filter(p => p.pos === 'GK').slice(0, 1);
+                const homeDEF = homePlayers.filter(p => p.pos === 'DEF').slice(0, 4);
+                const homeMID = homePlayers.filter(p => p.pos === 'MID').slice(0, 3);
+                const homeFWD = homePlayers.filter(p => p.pos === 'FWD').slice(0, 3);
+
+                const awayGK = awayPlayers.filter(p => p.pos === 'GK').slice(0, 1);
+                const awayDEF = awayPlayers.filter(p => p.pos === 'DEF').slice(0, 4);
+                const awayMID = awayPlayers.filter(p => p.pos === 'MID').slice(0, 3);
+                const awayFWD = awayPlayers.filter(p => p.pos === 'FWD').slice(0, 3);
+
+                let attendanceValue = 8500 + (avgHOff * 350) + (avgAOff * 410);
+                if (attendanceValue > 42000) attendanceValue = 41850;
+
+                const appMount = document.getElementById('app-mount');
+                appMount.style.setProperty('--home-gradient-color', homeTeam.hex);
+                appMount.style.setProperty('--away-gradient-color', awayTeam.hex);
+
+                appMount.innerHTML = `
+                    <div class="scoreboard-outer-card">
                         <div class="scoreboard-bg-gradient"></div>
                         <div class="scoreboard-overlay-mesh"></div>
-                        
+
                         <div class="scoreboard-side">
                             <a href="team.html?name=${encodeURIComponent(homeTeamName)}" class="team-title-link">
-                                <img src="${getLocalTeamLogo(homeTeam.code)}" class="team-logo-lg" alt="">
+                                <img src="logo_hcl_main.png" alt="" class="team-logo-lg">
                                 <h2 class="team-name-lg">${homeTeamName}</h2>
                             </a>
                             <p class="team-manager-sm">Manager: ${homeTeam.manager}</p>
-                            <span class="team-ladder-rank">${homeTeam.rank.includes('N/A') ? 'Rank Pending' : homeTeam.rank}</span>
                             <div class="team-badge-meta-block">
                                 <span class="team-code-pill">${homeTeam.code}</span>
-                                <div class="form-string">${buildFormHTML(homeTeam.form)}</div>
+                                <span class="team-ladder-rank">Rank #${homeTeam.rank}</span>
+                            </div>
+                            <div class="form-string" style="margin-top:8px;">
+                                ${renderFormDots(homeTeam.form)}
                             </div>
                         </div>
 
                         <div class="score-center-block">
-                            <div class="score-row">${displayScore ? `${homeScoreStr} - ${awayScoreStr}` : 'VS'}</div>
-                            <span class="match-meta-badge ${finalStatus}">${finalStatus}</span>
-                            <span class="match-time-label">${matchTime}<br>${matchDateStr}</span>
+                            <span class="match-meta-badge ${finalStatus.toLowerCase()}">${finalStatus}</span>
+                            <div class="score-row">
+                                ${displayScore ? `${homeScoreStr} : ${awayScoreStr}` : `VS`}
+                            </div>
+                            <div class="match-time-label">
+                                <div>Week ${week} Fixture</div>
+                                <div style="font-size:0.75rem; margin-top:2px; font-weight:500;">${matchDateStr} @ ${matchTimeStr}</div>
+                            </div>
                         </div>
 
                         <div class="scoreboard-side">
                             <a href="team.html?name=${encodeURIComponent(awayTeamName)}" class="team-title-link">
-                                <img src="${getLocalTeamLogo(awayTeam.code)}" class="team-logo-lg" alt="">
+                                <img src="logo_hcl_main.png" alt="" class="team-logo-lg">
                                 <h2 class="team-name-lg">${awayTeamName}</h2>
                             </a>
                             <p class="team-manager-sm">Manager: ${awayTeam.manager}</p>
-                            <span class="team-ladder-rank">${awayTeam.rank.includes('N/A') ? 'Rank Pending' : awayTeam.rank}</span>
                             <div class="team-badge-meta-block">
                                 <span class="team-code-pill">${awayTeam.code}</span>
-                                <div class="form-string">${buildFormHTML(awayTeam.form)}</div>
+                                <span class="team-ladder-rank">Rank #${awayTeam.rank}</span>
+                            </div>
+                            <div class="form-string" style="margin-top:8px;">
+                                ${renderFormDots(awayTeam.form)}
                             </div>
                         </div>
                     </div>
 
+                    ${predictorStripHTML}
+
                     <div class="stadium-env-strip">
-                        <span>🏟️ Location: ${homeTeamName} Community Stadium Ground</span>
+                        <span>🏟️ Arena Tier: HCL Premium Complex Venue</span>
                         <span>👥 Crowds: ${attendanceValue.toLocaleString()} / Full Capacity</span>
                         <span>🌤️ Environment: 18°C, Overcast Sky Conditions</span>
                     </div>
@@ -604,50 +725,28 @@
                             <div class="pitch-center-line-vert"></div>
                             <div class="pitch-center-circle-middle"></div>
                             <div class="pitch-center-spot"></div>
-                            
                             <div class="pitch-penalty-box-left"></div>
                             <div class="pitch-goal-box-left"></div>
                             <div class="pitch-penalty-spot-left"></div>
-
                             <div class="pitch-penalty-box-right"></div>
                             <div class="pitch-goal-box-right"></div>
                             <div class="pitch-penalty-spot-right"></div>
 
-                            <div class="pitch-hud-label left-label">${homeTeam.code}</div>
-                            <div class="pitch-hud-label right-label">${awayTeam.code}</div>
-                            
-                            <div class="pitch-team-half home-left-side">${buildHorizontalPitchNodes(homePlayers, homeTeam.hex, homeTextColor)}</div>
-                            <div class="pitch-team-half away-right-side">${buildHorizontalPitchNodes(awayPlayers, awayTeam.hex, awayTextColor)}</div>
-                        </div>
+                            <div class="pitch-hud-label left-label" style="background:${homeTeam.hex}; color:${homeTextColor};">${homeTeam.code} Formation (4-3-3)</div>
+                            <div class="pitch-hud-label right-label" style="background:${awayTeam.hex}; color:${awayTextColor};">${awayTeam.code} Formation (4-3-3)</div>
 
-                        <div class="integrated-performance-hud">
-                            <div class="stat-bar-block">
-                                <div class="stat-labels">
-                                    <span>Attack Power Rating</span>
-                                    <div>
-                                        <span class="stat-val-highlight" style="color:${homeTeam.hex};">${avgHOff}</span>
-                                        <span style="color:rgba(255,255,255,0.4); margin:0 4px;">:</span>
-                                        <span class="stat-val-highlight" style="color:${awayTeam.hex};">${avgAOff}</span>
-                                    </div>
-                                </div>
-                                <div class="stat-split-track">
-                                    <div style="height:100%; width:${(avgHOff/(avgHOff+avgAOff||1))*100}%; background:${homeTeam.hex};"></div>
-                                    <div style="height:100%; width:${(avgAOff/(avgHOff+avgAOff||1))*100}%; background:${awayTeam.hex};"></div>
-                                </div>
+                            <div class="pitch-team-half home-left-side">
+                                ${buildPitchColumn(homeGK, 'home')}
+                                ${buildPitchColumn(homeDEF, 'home')}
+                                ${buildPitchColumn(homeMID, 'home')}
+                                ${buildPitchColumn(homeFWD, 'home')}
                             </div>
-                            <div class="stat-bar-block">
-                                <div class="stat-labels">
-                                    <span>Defence Depth Rating</span>
-                                    <div>
-                                        <span class="stat-val-highlight" style="color:${homeTeam.hex};">${avgHDef}</span>
-                                        <span style="color:rgba(255,255,255,0.4); margin:0 4px;">:</span>
-                                        <span class="stat-val-highlight" style="color:${awayTeam.hex};">${avgADef}</span>
-                                    </div>
-                                </div>
-                                <div class="stat-split-track">
-                                    <div style="height:100%; width:${(avgHDef/(avgHDef+avgADef||1))*100}%; background:${homeTeam.hex};"></div>
-                                    <div style="height:100%; width:${(avgADef/(avgHDef+avgADef||1))*100}%; background:${awayTeam.hex};"></div>
-                                </div>
+
+                            <div class="pitch-team-half away-right-side">
+                                ${buildPitchColumn(awayGK, 'away')}
+                                ${buildPitchColumn(awayDEF, 'away')}
+                                ${buildPitchColumn(awayMID, 'away')}
+                                ${buildPitchColumn(awayFWD, 'away')}
                             </div>
                         </div>
                     </div>
@@ -666,6 +765,18 @@
             } catch (err) {
                 document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding:50px;"><h3>Match Sync Interrupted</h3><p>${err.message}</p></div>`;
             }
+        }
+
+        function renderFormDots(formArray) {
+            let nodes = [];
+            for (let i = 0; i < 5; i++) {
+                if (formArray && formArray[i]) {
+                    nodes.push(`<span class="form-dot form-${formArray[i].toLowerCase()}">${formArray[i]}</span>`);
+                } else {
+                    nodes.push(`<span class="form-dot form-empty"></span>`);
+                }
+            }
+            return nodes.join('');
         }
 
         window.addEventListener('DOMContentLoaded', initMatchCentre);
