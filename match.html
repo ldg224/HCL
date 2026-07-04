@@ -242,13 +242,13 @@
     </div>
 
     <script>
-        // Reveal Score Function (Req 4)
+        // Reveal Score Function
         function revealScore(btn) { 
             btn.style.display = 'none'; 
             btn.nextElementSibling.style.display = 'block'; 
         }
 
-        // Helper: Calculate simple standings for ranking (Req 7)
+        // Calculate simple standings for ranking
         function getStandingsRankings(data) {
             let standings = data.teams.map(t => ({ name: t.name, pts: 0, gd: 0 }));
             
@@ -274,6 +274,7 @@
 
         // Build roster table helper
         function buildRosterTable(players) {
+            if (!players) return '';
             return `
                 <table>
                     <thead>
@@ -314,17 +315,20 @@
 
                 if (!targetMatch) throw new Error("Could not locate match ID in schedule.");
 
-                const homeTeam = data.teams.find(t => t.name === targetMatch.home);
-                const awayTeam = data.teams.find(t => t.name === targetMatch.away);
+                const homeTeam = data.teams.find(t => t.name === targetMatch.home) || { name: targetMatch.home, players: [] };
+                const awayTeam = data.teams.find(t => t.name === targetMatch.away) || { name: targetMatch.away, players: [] };
                 
-                // Req 7: Calculate live leaderboard positions
+                // Calculate live leaderboard positions
                 const rankings = getStandingsRankings(data);
                 const homeRank = rankings.findIndex(r => r.name === homeTeam.name) + 1;
                 const awayRank = rankings.findIndex(r => r.name === awayTeam.name) + 1;
 
-                // Req 4: Time based system to hide score
-                const matchDate = new Date(targetMatch.time || targetMatch.date).getTime();
+                // Time based system to hide score
+                const matchDateStr = targetMatch.time || targetMatch.date;
+                const matchDate = matchDateStr ? new Date(matchDateStr).getTime() : 0;
                 const isUpcoming = matchDate > Date.now();
+                
+                // Define scores safely before structural templates execute
                 const hScore = targetMatch.homeScore !== undefined ? targetMatch.homeScore : '-';
                 const aScore = targetMatch.awayScore !== undefined ? targetMatch.awayScore : '-';
 
@@ -339,18 +343,12 @@
                     scoreHTML = `<div class="score-text">${hScore} - ${aScore}</div>`;
                 }
 
-                // Render Pitch Nodes (Req 2: Ratings, Req 6: Last names)
-                // Mapping positions roughly on a 0-100% Top/Left scale. 
-                // Home Top Half (Y: 10-45%), Away Bottom Half (Y: 55-90%)
+                // Render Pitch Nodes
                 const pitchNodes = [];
-                
                 const processTeamPitch = (teamData, isHome, hexColor) => {
-                    const sortedPlayers = [...teamData.players].sort((a,b) => a.id - b.id).slice(0, 11); // Ensure starting 11
+                    const sortedPlayers = [...teamData.players].sort((a,b) => a.id - b.id).slice(0, 11);
                     sortedPlayers.forEach((p, index) => {
-                        // Req 6: Last names only
                         const lastName = p.name.split(' ').pop(); 
-                        
-                        // Fake coordinate generation based on position if true coords aren't in JSON
                         let yPos = isHome ? 15 + (index * 3) : 85 - (index * 3);
                         let xPos = 20 + ((index % 4) * 20);
 
@@ -366,8 +364,8 @@
                     });
                 };
 
-                if(homeTeam && homeTeam.players) processTeamPitch(homeTeam, true, homeTeam.hex || 'var(--color-home)');
-                if(awayTeam && awayTeam.players) processTeamPitch(awayTeam, false, awayTeam.hex || 'var(--color-away)');
+                if(homeTeam.players && homeTeam.players.length > 0) processTeamPitch(homeTeam, true, homeTeam.hex || 'var(--color-home)');
+                if(awayTeam.players && awayTeam.players.length > 0) processTeamPitch(awayTeam, false, awayTeam.hex || 'var(--color-away)');
 
                 // Inject into DOM
                 const mount = document.getElementById('app-mount');
@@ -375,7 +373,7 @@
                     <div class="scoreboard">
                         <div class="team-block">
                             <a href="team.html?name=${encodeURIComponent(homeTeam.name)}">${homeTeam.name}</a>
-                            <div class="team-rank" style="color: ${homeTeam.hex || 'var(--color-home)'}">League Rank: #${homeRank}</div>
+                            <div class="team-rank" style="color: ${homeTeam.hex || 'var(--color-home)'}">League Rank: #${homeRank || '-'}</div>
                         </div>
                         
                         <div class="score-block">
@@ -384,7 +382,7 @@
 
                         <div class="team-block">
                             <a href="team.html?name=${encodeURIComponent(awayTeam.name)}">${awayTeam.name}</a>
-                            <div class="team-rank" style="color: ${awayTeam.hex || 'var(--color-away)'}">League Rank: #${awayRank}</div>
+                            <div class="team-rank" style="color: ${awayTeam.hex || 'var(--color-away)'}">League Rank: #${awayRank || '-'}</div>
                         </div>
                     </div>
 
@@ -399,13 +397,13 @@
                         <div class="rosters-sidebar">
                             <div class="roster-card">
                                 <h3 style="border-bottom: 3px solid ${homeTeam.hex || 'var(--color-home)'}; display:inline-block;">${homeTeam.name}</h3>
-                                ${buildRosterTable(homeTeam.players || [])}
+                                ${buildRosterTable(homeTeam.players)}
                                 <div class="manager-info">👤 Manager: ${homeTeam.manager || 'Caretaker Manager'}</div>
                             </div>
 
                             <div class="roster-card">
                                 <h3 style="border-bottom: 3px solid ${awayTeam.hex || 'var(--color-away)'}; display:inline-block;">${awayTeam.name}</h3>
-                                ${buildRosterTable(awayTeam.players || [])}
+                                ${buildRosterTable(awayTeam.players)}
                                 <div class="manager-info">👤 Manager: ${awayTeam.manager || 'Caretaker Manager'}</div>
                             </div>
                         </div>
