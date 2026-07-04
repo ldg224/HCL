@@ -191,6 +191,38 @@
 
         .loading-view { text-align: center; padding: 60px 0; color: var(--text-muted); font-weight: 500; width: 100%; }
         @keyframes scaleIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- Mobile Support Additions --- */
+        @media (max-width: 768px) {
+            .scoreboard-outer-card {
+                grid-template-columns: 1fr;
+                padding: 30px 20px;
+                gap: 25px;
+            }
+            .score-center-block {
+                order: -1;
+            }
+            .integrated-performance-hud {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .field-grand-wrapper {
+                overflow-x: auto;
+            }
+            .pitch-container-horizontal {
+                min-width: 700px;
+            }
+            .team-logo-lg { 
+                width: 70px; 
+                height: 70px; 
+            }
+            .team-name-lg { 
+                font-size: 1.4rem; 
+            }
+            .score-row { 
+                font-size: 3.2rem; 
+            }
+        }
     </style>
 </head>
 <body>
