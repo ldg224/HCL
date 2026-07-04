@@ -15,7 +15,6 @@
             --accent-color: #0066cc;
             --pitch-green: #1b5e20;
             --pitch-lines: rgba(255, 255, 255, 0.45);
-            --color-draw: #94a3b8;
         }
 
         body {
@@ -52,7 +51,7 @@
             box-sizing: border-box; z-index: 10; display: flex; flex-direction: column; gap: 24px;
         }
 
-        /* Ambient Accent Gradient Scoreboard Wrapper */
+        /* Ambient Scoreboard Card Layout */
         .scoreboard-outer-card {
             background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 20px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
@@ -63,78 +62,78 @@
             position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: 0.08;
             background: linear-gradient(90deg, var(--home-gradient-color, #3b82f6) 0%, transparent 40%, transparent 60%, var(--away-gradient-color, #ef4444) 100%);
         }
-        .scoreboard-side { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-        .team-logo-lg { width: 75px; height: 75px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.06)); }
-        .team-name-lg { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.4px; margin: 0; }
+        .scoreboard-side { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+        .team-logo-lg { width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.06)); }
+        .team-name-lg { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.4px; margin: 0; }
         .team-manager-sm { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin: 0; }
-        .team-code-pill { font-size: 0.75rem; font-weight: 700; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; color: var(--text-muted); margin-top: 4px; }
+        .team-ladder-rank { font-size: 0.78rem; font-weight: 700; color: var(--accent-color); background: rgba(0,102,204,0.06); padding: 2px 8px; border-radius: 4px; margin-top: 2px; }
         
+        .team-badge-meta-block { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 4px; }
+        .team-code-pill { font-size: 0.75rem; font-weight: 700; background: #e2e8f0; padding: 3px 10px; border-radius: 6px; color: var(--text-main); text-transform: uppercase; }
+
         .score-center-block { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 160px; }
-        .score-row { font-family: -apple-system, monospace; font-size: 3.4rem; font-weight: 900; letter-spacing: -1px; color: var(--text-main); line-height: 1; }
-        .match-meta-badge { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .score-row { font-family: -apple-system, monospace; font-size: 3.6rem; font-weight: 900; letter-spacing: -1px; color: var(--text-main); line-height: 1; }
+        .match-meta-badge { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 8px; }
         .match-meta-badge.finalised { background: #dcfce7; color: #16a34a; }
         .match-meta-badge.upcoming { background: #f1f5f9; color: #475569; }
-        .match-meta-badge.live { background: #fee2e2; color: #ef4444; font-weight: 800; animation: pulse 2s infinite; }
-        .match-time-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-align: center; }
+        .match-meta-badge.live { background: #fee2e2; color: #ef4444; font-weight: 800; }
+        .match-time-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); text-align: center; line-height: 1.3; }
 
-        .details-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
-        @media (max-width: 900px) { .details-grid { grid-template-columns: 1fr; } .scoreboard-outer-card { grid-template-columns: 1fr; padding: 25px; } .score-center-block { grid-row: 1; } }
-
-        .sidebar-panel { display: flex; flex-direction: column; gap: 20px; }
-        .info-widget { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); display: flex; flex-direction: column; gap: 14px; }
-        .widget-title { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-        
-        .predictor-row { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; font-weight: 600; }
-        .predictor-meta { display: flex; justify-content: space-between; }
-        .predictor-track { height: 8px; background: #e2e8f0; border-radius: 4px; display: flex; overflow: hidden; }
-        .predictor-fill { height: 100%; transition: width 0.5s ease; }
-
-        .form-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; font-weight: 600; }
-        .form-string { display: flex; gap: 4px; font-family: monospace; font-size: 0.8rem; font-weight: 700; }
+        /* Integrated Form Row Components */
+        .form-string { display: flex; gap: 4px; font-family: monospace; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
         .form-dot { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; }
         .form-w { background: #16a34a; }
         .form-d { background: #94a3b8; }
         .form-l { background: #ef4444; }
-        .form-empty { background: transparent; border: 1px dashed var(--border-color); color: transparent; width: 16px; height: 16px; }
+        .form-empty { background: transparent; border: 1px dashed #cbd5e1; color: transparent; width: 16px; height: 16px; }
 
-        .stat-bar-block { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; }
-        .stat-labels { display: flex; justify-content: space-between; color: var(--text-muted); }
-        .stat-split-track { height: 6px; background: #e2e8f0; border-radius: 3px; display: flex; overflow: hidden; }
-        .stat-half { height: 100%; }
+        /* Sleek Combined Win Predictor Hub Bar */
+        .predictor-bar-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); }
+        .predictor-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-muted); }
+        .predictor-track-combined { height: 12px; background: #e2e8f0; border-radius: 6px; display: flex; overflow: hidden; }
+        .predictor-segment { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.65rem; font-weight: 700; font-family: monospace; }
 
-        /* HORIZONTAL FIELD OVERHAUL */
+        .dashboard-body-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+        @media (max-width: 950px) { .dashboard-body-layout { grid-template-columns: 1fr; } .scoreboard-outer-card { grid-template-columns: 1fr; padding: 25px; } .score-center-block { grid-row: 1; } }
+
+        /* HORIZONTAL FIELD CANVAS */
         .pitch-container-horizontal {
             background-color: var(--pitch-green); 
-            background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%), radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.15) 100%);
-            background-size: 40px 100%, 100% 100%;
-            border: 4px solid var(--pitch-lines); border-radius: 16px; height: 420px; position: relative;
-            display: flex; flex-direction: row; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.05);
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%), radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.12) 100%);
+            background-size: 45px 100%, 100% 100%;
+            border: 4px solid var(--pitch-lines); border-radius: 16px; height: 430px; position: relative;
+            display: flex; flex-direction: row; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
         }
         .pitch-center-line-vert { position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background: var(--pitch-lines); transform: translateX(-50%); }
         .pitch-center-circle-middle { position: absolute; top: 50%; left: 50%; width: 110px; height: 110px; border: 2px solid var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
         
-        .pitch-team-half { width: 50%; height: 100%; position: relative; display: flex; flex-direction: row; justify-content: space-around; align-items: center; box-sizing: border-box; padding: 10px 20px; }
+        /* Tactical HUD Overlay Text Strings */
+        .pitch-hud-label { position: absolute; top: 14px; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.6px; background: rgba(0,0,0,0.2); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
+        .pitch-hud-label.left-label { left: 16px; }
+        .pitch-hud-label.right-label { right: 16px; }
+
+        .pitch-team-half { width: 50%; height: 100%; position: relative; display: flex; flex-direction: row; justify-content: space-around; align-items: center; box-sizing: border-box; padding: 20px 15px; }
         .pitch-team-half.home-left-side { flex-direction: row; }
         .pitch-team-half.away-right-side { flex-direction: row-reverse; }
 
-        .pitch-column-band { display: flex; flex-direction: column; justify-content: center; gap: 20px; height: 100%; align-items: center; flex-grow: 1; }
+        .pitch-column-band { display: flex; flex-direction: column; justify-content: center; gap: 24px; height: 100%; align-items: center; flex-grow: 1; }
 
         .player-node { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 65px; animation: scaleIn 0.4s ease forwards; }
-        .player-badge { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
-        .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.75); padding: 2px 6px; border-radius: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 75px; backdrop-filter: blur(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .player-badge { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.75); padding: 2px 6px; border-radius: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 75px; }
+
+        .sidebar-right-panel { display: flex; flex-direction: column; gap: 20px; }
+        .ratings-widget { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .widget-title { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
 
         .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 650px) { .roster-lists { grid-template-columns: 1fr; } }
-        .roster-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); }
+        .roster-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; }
         .roster-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .roster-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
+        .roster-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; text-transform: uppercase; }
         .roster-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
-        .roster-table tr:last-child td { border-bottom: 0; }
 
         .loading-view { text-align: center; padding: 60px 0; color: var(--text-muted); font-weight: 500; width: 100%; }
-
-        @keyframes scaleIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     </style>
 </head>
 <body>
@@ -160,9 +159,7 @@
             const res = await fetch(url);
             const text = await res.text();
             return text.split(/\r\n|\n/).map(line => {
-                let result = [];
-                let current = '';
-                let inQuotes = false;
+                let result = []; let current = ''; let inQuotes = false;
                 for (let i = 0; i < line.length; i++) {
                     let char = line[i];
                     if (char === '"') { inQuotes = !inQuotes; }
@@ -186,8 +183,7 @@
 
         function getLocalTeamLogo(code) {
             if (!code) return 'logo_hcl_main.png';
-            const cleanCode = code.toUpperCase().trim();
-            switch(cleanCode) {
+            switch(code.toUpperCase().trim()) {
                 case 'LKD': return 'logo_lucky_fc_V3.png';
                 case 'SKS': return 'logo_sks_fc.png';
                 case 'LAU': return 'logo_lads_united.png';
@@ -199,7 +195,7 @@
         }
 
         function buildRosterTable(players) {
-            if(!players || players.length === 0) return `<p style="font-size:0.82rem; color:var(--text-muted); font-style:italic;">No active roster records synced.</p>`;
+            if(!players || players.length === 0) return `<p style="font-size:0.82rem; color:var(--text-muted); font-style:italic; padding:10px;">No synced active roster listings.</p>`;
             return `
                 <table class="roster-table">
                     <thead><tr><th>#</th><th>Name</th><th>Pos</th><th>Off</th><th>Def</th></tr></thead>
@@ -218,25 +214,20 @@
             `;
         }
 
-        function buildHorizontalPitchNodes(players, teamHex, textColor, isHome) {
+        function buildHorizontalPitchNodes(players, teamHex, textColor) {
             const lines = { 'GK': [], 'DEF': [], 'MID': [], 'FWD': [] };
-            players.forEach(p => { 
-                if (p && p.pos && lines[p.pos]) { lines[p.pos].push(p); }
-            });
-
-            // If Home: GK on left flank, FWD on right flank. If Away: reversed via row-reverse css flex wrapper setup
+            players.forEach(p => { if (p && p.pos && lines[p.pos]) lines[p.pos].push(p); });
             const order = ['GK', 'DEF', 'MID', 'FWD'];
             return order.map(posKey => `
                 <div class="pitch-column-band">
                     ${lines[posKey].map(p => {
                         const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
-                        const lastName = nameParts[nameParts.length - 1];
                         return `
                             <div class="player-node">
-                                <div class="player-badge" style="background-color: ${teamHex || '#475569'}; color: ${textColor || '#ffffff'};">
+                                <div class="player-badge" style="background-color: ${teamHex}; color: ${textColor};">
                                     ${p.num}
                                 </div>
-                                <div class="player-name-tag">${lastName}</div>
+                                <div class="player-name-tag">${nameParts[nameParts.length - 1]}</div>
                             </div>
                         `;
                     }).join('')}
@@ -244,14 +235,11 @@
             `).join('');
         }
 
-        // US Month/Day/Year Time Validation Compiler Engine
         function parseAmericanDateTime(dateStr, timeStr) {
             if (!dateStr) return 0;
             try {
-                // Handle MM/DD/YYYY parsing manually
                 const dateParts = dateStr.split('/');
                 if (dateParts.length !== 3) return 0;
-                
                 const month = parseInt(dateParts[0], 10) - 1;
                 const day = parseInt(dateParts[1], 10);
                 const year = parseInt(dateParts[2], 10);
@@ -263,22 +251,29 @@
                     let parts = cleanTime.split(':');
                     hrs = parseInt(parts[0], 10) || 12;
                     mins = parseInt(parts[1], 10) || 0;
-                    
                     if (isPM && hrs < 12) hrs += 12;
                     if (!isPM && hrs === 12) hrs = 0;
                 }
+                return new Date(year, month, day, hrs, mins, 0).getTime() || 0;
+            } catch(e) { return 0; }
+        }
 
-                const targetDate = new Date(year, month, day, hrs, mins, 0);
-                return targetDate.getTime() || 0;
-            } catch(e) {
-                return 0;
+        function buildFormHTML(formArray) {
+            let nodes = [];
+            for (let i = 0; i < 5; i++) {
+                if (i < formArray.length) {
+                    nodes.push(`<span class="form-dot form-${formArray[i].toLowerCase()}">${formArray[i]}</span>`);
+                } else {
+                    nodes.push(`<span class="form-dot form-empty"></span>`);
+                }
             }
+            return nodes.join('');
         }
 
         async function initMatchCentre() {
             try {
                 const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
-                if (!week) { throw new Error("Missing URL parameters. Please launch from the main portal."); }
+                if (!week) { throw new Error("Missing URL parameters."); }
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
@@ -293,35 +288,37 @@
                         code: row[1] ? row[1].trim().toUpperCase() : 'TBA',
                         manager: row[2] ? row[2].trim() : 'TBA',
                         hex: row[3] ? row[3].trim() : '#475569',
-                        form: []
+                        form: [], rank: 'N/A'
                     };
+                });
+
+                // Map League Ladder standings rank positions
+                standingsRaw.forEach((row, i) => {
+                    if (i > 0 && row && row[1]) {
+                        const k = row[1].trim().toLowerCase();
+                        if (teamsMap[k]) teamsMap[k].rank = `#${i}`;
+                    }
                 });
 
                 const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row && row.length > 0 && row[0]);
 
-                // Resolve Target Match lookup early to avoid upcoming result spoilers in form history
                 let matchTarget = null;
                 let targetRowIdx = -1;
                 if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
                     targetRowIdx = parseInt(matchIndex, 10);
-                    if (!isNaN(targetRowIdx) && fullScheduleItems[targetRowIdx]) {
-                        matchTarget = fullScheduleItems[targetRowIdx];
-                    }
+                    if (!isNaN(targetRowIdx) && fullScheduleItems[targetRowIdx]) matchTarget = fullScheduleItems[targetRowIdx];
                 } else if (homeCodeUrl && awayCodeUrl) {
                     targetRowIdx = fullScheduleItems.findIndex(row => {
-                        const rowWeek = (row[0] || '').trim();
-                        const rowHomeName = (row[4] || '').trim().toLowerCase();
-                        const rowAwayName = (row[6] || '').trim().toLowerCase();
-                        const mappedHomeCode = teamsMap[rowHomeName] ? teamsMap[rowHomeName].code : '';
-                        const mappedAwayCode = teamsMap[rowAwayName] ? teamsMap[rowAwayName].code : '';
-                        return rowWeek === week.trim() && 
-                               mappedHomeCode.toUpperCase() === homeCodeUrl.toUpperCase().trim() && 
-                               mappedAwayCode.toUpperCase() === awayCodeUrl.toUpperCase().trim();
+                        const rHome = (row[4] || '').trim().toLowerCase();
+                        const rAway = (row[6] || '').trim().toLowerCase();
+                        return (row[0] || '').trim() === week.trim() && 
+                               (teamsMap[rHome]?.code === homeCodeUrl.toUpperCase().trim()) && 
+                               (teamsMap[rAway]?.code === awayCodeUrl.toUpperCase().trim());
                     });
                     if (targetRowIdx !== -1) matchTarget = fullScheduleItems[targetRowIdx];
                 }
 
-                if (!matchTarget) { throw new Error("Target match metrics not found in Google Sheets data."); }
+                if (!matchTarget) { throw new Error("Target match metrics not found."); }
 
                 const homeTeamName = (matchTarget[4] || 'Home Team').trim();
                 const homeScore = (matchTarget[5] || '0').trim();
@@ -329,225 +326,147 @@
                 const awayScore = (matchTarget[7] || '0').trim();
                 const matchTime = (matchTarget[2] || '').trim();
                 const matchDateStr = (matchTarget[1] || '').trim();
-                let initialStatus = matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING';
-
-                // Determine if match target date/time has actually passed using American timestamp decoder
+                
+                // Clock validation checks
                 const matchTimestamp = parseAmericanDateTime(matchDateStr, matchTime);
                 const isClockPassed = matchTimestamp > 0 ? (Date.now() > matchTimestamp) : true;
-                
-                let finalStatus = initialStatus;
-                if (!isClockPassed) {
-                    finalStatus = 'UPCOMING';
-                }
+                const finalStatus = isClockPassed ? (matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING') : 'UPCOMING';
 
-                // Compile Form Data (Prevent showing current match outcome if locked to UPCOMING)
+                // Process Form safely without revealing future matches
                 let dynamicFormTracker = {};
                 Object.keys(teamsMap).forEach(k => { dynamicFormTracker[k] = []; });
-                
                 fullScheduleItems.forEach((row, idx) => {
-                    // Spoiling Protection: Skip processing this match item if it's currently flagged or forced as UPCOMING
-                    if (idx === targetRowIdx && finalStatus === 'UPCOMING') return;
-
-                    const status = (row[3] || '').toUpperCase().trim();
-                    if (status === 'FINALISED') {
-                        const hName = (row[4] || '').trim().toLowerCase();
-                        const aName = (row[6] || '').trim().toLowerCase();
-                        const hScore = parseInt(row[5], 10) || 0;
-                        const aScore = parseInt(row[7], 10) || 0;
-
-                        if (dynamicFormTracker[hName]) {
-                            if (hScore > aScore) dynamicFormTracker[hName].push('W');
-                            else if (hScore === aScore) dynamicFormTracker[hName].push('D');
-                            else dynamicFormTracker[hName].push('L');
-                        }
-                        if (dynamicFormTracker[aName]) {
-                            if (aScore > hScore) dynamicFormTracker[aName].push('W');
-                            else if (aScore === hScore) dynamicFormTracker[aName].push('D');
-                            else dynamicFormTracker[aName].push('L');
-                        }
+                    if (idx === targetRowIdx && finalStatus === 'UPCOMING') return; // Hide current result if upcoming
+                    if ((row[3] || '').toUpperCase().trim() === 'FINALISED') {
+                        const hN = (row[4] || '').trim().toLowerCase();
+                        const aN = (row[6] || '').trim().toLowerCase();
+                        const hS = parseInt(row[5], 10) || 0;
+                        const aS = parseInt(row[7], 10) || 0;
+                        if (dynamicFormTracker[hN]) dynamicFormTracker[hN].push(hS > aS ? 'W' : hS === aS ? 'D' : 'L');
+                        if (dynamicFormTracker[aN]) dynamicFormTracker[aN].push(aS > hS ? 'W' : aS === hS ? 'D' : 'L');
                     }
                 });
+                Object.keys(teamsMap).forEach(k => { teamsMap[k].form = (dynamicFormTracker[k] || []).slice(-5); });
 
-                Object.keys(teamsMap).forEach(k => {
-                    teamsMap[k].form = (dynamicFormTracker[k] || []).slice(-5);
-                });
+                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: [], rank: 'N/A' };
+                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: [], rank: 'N/A' };
 
-                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: [] };
-                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: [] };
+                const darkTeams = ['LKD', 'TUR', 'CFC'];
+                const homeTextColor = darkTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
+                const awayTextColor = darkTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
 
-                const darkTextTeams = ['LKD', 'TUR', 'CFC'];
-                const homeTextColor = darkTextTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
-                const awayTextColor = darkTextTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
-
-                let ladderMap = {};
-                standingsRaw.forEach((row, i) => {
-                    if (i > 0 && row && row[1]) {
-                        ladderMap[row[1].trim().toLowerCase()] = parseInt(row[9], 10) || 0;
-                    }
-                });
-
-                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r.length >= 6 && r[1]).map(r => {
-                    const posMatch = (r[2] || '').match(/\[(.*?)\]/);
-                    const pos = posMatch ? posMatch[1].toUpperCase().trim() : 'MID';
-                    const teamClean = (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase();
-                    const offMatch = (r[4] || '').match(/\((\d+)\)/);
-                    const off = offMatch ? parseInt(offMatch[1], 10) : (parseInt((r[4] || '').replace(/\D/g, ''), 10) || 0);
-                    const defMatch = (r[5] || '').match(/\((\d+)\)/);
-                    const def = defMatch ? parseInt(defMatch[1], 10) : (parseInt((r[5] || '').replace(/\D/g, ''), 10) || 0);
-                    const jerseyNum = parseInt(r[0], 10);
-
+                // Split metrics for bars
+                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[1]).map(r => {
+                    const posM = (r[2] || '').match(/\[(.*?)\]/);
+                    const offM = (r[4] || '').match(/\((\d+)\)/);
+                    const defM = (r[5] || '').match(/\((\d+)\)/);
                     return {
-                        id: r[0] || '', num: isNaN(jerseyNum) ? '0' : jerseyNum, name: r[1] || 'Unknown', team: teamClean, pos: pos, off: off, def: def
+                        num: parseInt(r[0], 10) || 0, name: r[1], team: (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase(),
+                        pos: posM ? posM[1].toUpperCase().trim() : 'MID',
+                        off: offM ? parseInt(offM[1], 10) : 0, def: defM ? parseInt(defM[1], 10) : 0
                     };
                 });
 
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
-                let homePts = ladderMap[homeTeamName.toLowerCase()] || 0;
-                let awayPts = ladderMap[awayTeamName.toLowerCase()] || 0;
-                let baseChance = 35; let drawChance = 30;
-                let diff = homePts - awayPts;
-                let winHome = Math.max(10, baseChance + (diff * 2));
-                let winAway = Math.max(10, baseChance - (diff * 2));
-                let t = winHome + winAway + drawChance;
-                let pHome = Math.round((winHome / t) * 100);
-                let pAway = Math.round((winAway / t) * 100);
-                let pDraw = 100 - (pHome + pAway);
+                let baseChance = 35;
+                let winHome = Math.max(15, baseChance + ((homePlayers.length - awayPlayers.length) * 2));
+                let winAway = Math.max(15, baseChance - ((homePlayers.length - awayPlayers.length) * 2));
+                let t = winHome + winAway + 30;
+                let pHome = Math.round((winHome / t) * 100); let pAway = Math.round((winAway / t) * 100); let pDraw = 100 - (pHome + pAway);
 
-                let avgHomeOff = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.off, 0) / homePlayers.length) : 0;
-                let avgHomeDef = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.def, 0) / homePlayers.length) : 0;
-                let avgAwayOff = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.off, 0) / awayPlayers.length) : 0;
-                let avgAwayDef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
+                let avgHOff = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.off, 0) / homePlayers.length) : 0;
+                let avgHDef = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.def, 0) / homePlayers.length) : 0;
+                let avgAOff = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.off, 0) / awayPlayers.length) : 0;
+                let avgADef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
 
                 const displayScore = (finalStatus === 'FINALISED' || finalStatus === 'LIVE');
 
-                function buildFormHTML(formArray) {
-                    let nodes = [];
-                    for (let i = 0; i < 5; i++) {
-                        if (i < formArray.length) {
-                            let char = formArray[i];
-                            nodes.push(`<span class="form-dot form-${char.toLowerCase()}">${char}</span>`);
-                        } else {
-                            nodes.push(`<span class="form-dot form-empty"></span>`);
-                        }
-                    }
-                    return nodes.join('');
-                }
-
-                const appMount = document.getElementById('app-mount');
-                appMount.innerHTML = `
+                document.getElementById('app-mount').innerHTML = `
                     <div class="scoreboard-outer-card" style="--home-gradient-color: ${homeTeam.hex}; --away-gradient-color: ${awayTeam.hex};">
                         <div class="scoreboard-bg-gradient"></div>
                         <div class="scoreboard-side">
-                            <img src="${getLocalTeamLogo(homeTeam.code)}" onerror="this.src='logo_hcl_main.png';" class="team-logo-lg" alt="">
+                            <img src="${getLocalTeamLogo(homeTeam.code)}" class="team-logo-lg" alt="">
                             <h2 class="team-name-lg">${homeTeamName}</h2>
                             <p class="team-manager-sm">Manager: ${homeTeam.manager}</p>
-                            <span class="team-code-pill">${homeTeam.code}</span>
+                            <span class="team-ladder-rank">Rank ${homeTeam.rank}</span>
+                            <div class="team-badge-meta-block">
+                                <span class="team-code-pill">${homeTeam.code}</span>
+                                <div class="form-string">${buildFormHTML(homeTeam.form)}</div>
+                            </div>
                         </div>
                         <div class="score-center-block">
                             <div class="score-row">${displayScore ? `${homeScore} - ${awayScore}` : 'VS'}</div>
                             <span class="match-meta-badge ${finalStatus.toLowerCase()}">${finalStatus.toLowerCase()}</span>
-                            <span class="match-time-label">${matchTime || 'TBA'}<br>${matchDateStr || 'TBA'}</span>
+                            <span class="match-time-label">${matchTime}<br>${matchDateStr}</span>
                         </div>
                         <div class="scoreboard-side">
-                            <img src="${getLocalTeamLogo(awayTeam.code)}" onerror="this.src='logo_hcl_main.png';" class="team-logo-lg" alt="">
+                            <img src="${getLocalTeamLogo(awayTeam.code)}" class="team-logo-lg" alt="">
                             <h2 class="team-name-lg">${awayTeamName}</h2>
                             <p class="team-manager-sm">Manager: ${awayTeam.manager}</p>
-                            <span class="team-code-pill">${awayTeam.code}</span>
+                            <span class="team-ladder-rank">Rank ${awayTeam.rank}</span>
+                            <div class="team-badge-meta-block">
+                                <span class="team-code-pill">${awayTeam.code}</span>
+                                <div class="form-string">${buildFormHTML(awayTeam.form)}</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="details-grid">
-                        <div class="sidebar-panel">
-                            <div class="info-widget">
-                                <h4 class="widget-title">Win Predictor Matrix</h4>
-                                <div class="predictor-row">
-                                    <div class="predictor-meta"><span>${homeTeamName} Chance</span><span>${pHome}%</span></div>
-                                    <div class="predictor-track"><div class="predictor-fill" style="width:${pHome}%; background:${homeTeam.hex};"></div></div>
-                                </div>
-                                <div class="predictor-row">
-                                    <div class="predictor-meta"><span>Draw Probability</span><span>${pDraw}%</span></div>
-                                    <div class="predictor-track"><div class="predictor-fill" style="width:${pDraw}%; background:var(--color-draw);"></div></div>
-                                </div>
-                                <div class="predictor-row">
-                                    <div class="predictor-meta"><span>${awayTeamName} Chance</span><span>${pAway}%</span></div>
-                                    <div class="predictor-track"><div class="predictor-fill" style="width:${pAway}%; background:${awayTeam.hex};"></div></div>
-                                </div>
-                            </div>
-
-                            <div class="info-widget">
-                                <h4 class="widget-title">Recent Form Index</h4>
-                                <div class="form-row">
-                                    <span>${homeTeam.code}</span>
-                                    <div class="form-string">${buildFormHTML(homeTeam.form)}</div>
-                                </div>
-                                <div class="form-row">
-                                    <span>${awayTeam.code}</span>
-                                    <div class="form-string">${buildFormHTML(awayTeam.form)}</div>
-                                </div>
-                            </div>
-
-                            <div class="info-widget">
-                                <h4 class="widget-title">Squad Performance Ratings</h4>
-                                <div class="stat-bar-block" style="margin-top:4px;">
-                                    <div class="stat-labels"><span>${avgHomeOff}</span><span>Average Attack</span><span>${avgAwayOff}</span></div>
-                                    <div class="stat-split-track">
-                                        <div class="stat-half" style="width:${(avgHomeOff / (avgHomeOff + avgAwayOff || 1)) * 100}%; background:${homeTeam.hex};"></div>
-                                        <div class="stat-half" style="width:${(avgAwayOff / (avgHomeOff + avgAwayOff || 1)) * 100}%; background:${awayTeam.hex};"></div>
-                                    </div>
-                                </div>
-                                <div class="stat-bar-block">
-                                    <div class="stat-labels"><span>${avgHomeDef}</span><span>Average Defence</span><span>${avgAwayDef}</span></div>
-                                    <div class="stat-split-track">
-                                        <div class="stat-half" style="width:${(avgHomeDef / (avgHomeDef + avgAwayDef || 1)) * 100}%; background:${homeTeam.hex};"></div>
-                                        <div class="stat-half" style="width:${(avgAwayDef / (avgHomeDef + avgAwayDef || 1)) * 100}%; background:${awayTeam.hex};"></div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="predictor-bar-card">
+                        <div class="predictor-labels"><span>${homeTeam.code} win</span><span>Draw</span><span>${awayTeam.code} win</span></div>
+                        <div class="predictor-track-combined">
+                            <div class="predictor-segment" style="width: ${pHome}%; background: ${homeTeam.hex};">${pHome}%</div>
+                            <div class="predictor-segment" style="width: ${pDraw}%; background: #94a3b8;">${pDraw}%</div>
+                            <div class="predictor-segment" style="width: ${pAway}%; background: ${awayTeam.hex};">${pAway}%</div>
                         </div>
+                    </div>
 
+                    <div class="dashboard-body-layout">
                         <div class="pitch-container-horizontal">
                             <div class="pitch-center-line-vert"></div>
                             <div class="pitch-center-circle-middle"></div>
+                            <div class="pitch-hud-label left-label">${homeTeam.code} FC (4-3-3)</div>
+                            <div class="pitch-hud-label right-label">${awayTeam.code} FC (4-3-3)</div>
                             
-                            <div class="pitch-team-half home-left-side">
-                                ${buildHorizontalPitchNodes(homePlayers, homeTeam.hex, homeTextColor, true)}
-                            </div>
-                            <div class="pitch-team-half away-right-side">
-                                ${buildHorizontalPitchNodes(awayPlayers, awayTeam.hex, awayTextColor, false)}
+                            <div class="pitch-team-half home-left-side">${buildHorizontalPitchNodes(homePlayers, homeTeam.hex, homeTextColor)}</div>
+                            <div class="pitch-team-half away-right-side">${buildHorizontalPitchNodes(awayPlayers, awayTeam.hex, awayTextColor)}</div>
+                        </div>
+
+                        <div class="sidebar-right-panel">
+                            <div class="ratings-widget">
+                                <h4 class="widget-title">Squad Performance Index</h4>
+                                <div class="stat-bar-block">
+                                    <div class="stat-labels"><span>${avgHOff}</span><span>Attack Power</span><span>${avgAOff}</span></div>
+                                    <div class="stat-split-track">
+                                        <div style="height:100%; width:${(avgHOff/(avgHOff+avgAOff||1))*100}%; background:${homeTeam.hex};"></div>
+                                        <div style="height:100%; width:${(avgAOff/(avgHOff+avgAOff||1))*100}%; background:${awayTeam.hex};"></div>
+                                    </div>
+                                </div>
+                                <div class="stat-bar-block" style="margin-top:10px;">
+                                    <div class="stat-labels"><span>${avgHDef}</span><span>Defence Depth</span><span>${avgADef}</span></div>
+                                    <div class="stat-split-track">
+                                        <div style="height:100%; width:${(avgHDef/(avgHDef+avgADef||1))*100}%; background:${homeTeam.hex};"></div>
+                                        <div style="height:100%; width:${(avgADef/(avgHDef+avgADef||1))*100}%; background:${awayTeam.hex};"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="roster-lists">
                         <div class="roster-card">
-                            <h3 style="margin-top:0; border-bottom: 3px solid ${homeTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800; letter-spacing:-0.2px;">${homeTeamName} Squad</h3>
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${homeTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800;">${homeTeamName} Squad</h3>
                             ${buildRosterTable(homePlayers)}
                         </div>
                         <div class="roster-card">
-                            <h3 style="margin-top:0; border-bottom: 3px solid ${awayTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800; letter-spacing:-0.2px;">${awayTeamName} Squad</h3>
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${awayTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800;">${awayTeamName} Squad</h3>
                             ${buildRosterTable(awayPlayers)}
                         </div>
                     </div>
                 `;
-
             } catch (err) {
-                console.error("Match Render Error:", err);
-                const errorMount = document.getElementById('app-mount');
-                if (errorMount) {
-                    errorMount.innerHTML = `
-                        <div style="text-align:center; padding: 50px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
-                            <h3 style="color: #ef4444; margin-top:0;">Match Sync Interrupted</h3>
-                            <p style="color: #64748b; font-size: 0.9rem;">
-                                Ensure you're launching this page via a fixture card on the main hub. 
-                            </p>
-                            <p style="color: #64748b; font-size: 0.8rem; font-family: monospace; margin-top: 15px;">
-                                System Log: ${err.message}
-                            </p>
-                        </div>
-                    `;
-                }
+                document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding:50px;"><h3>Match Sync Interrupted</h3><p>${err.message}</p></div>`;
             }
         }
 
