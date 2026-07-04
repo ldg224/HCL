@@ -68,6 +68,7 @@
         .score-row { font-family: monospace; font-size: 3.2rem; font-weight: 800; letter-spacing: -1px; color: var(--text-main); line-height: 1; }
         .match-meta-badge { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px; }
         .match-meta-badge.finalised { background: #dcfce7; color: #16a34a; }
+        .match-meta-badge.upcoming { background: #fef3c7; color: #b45309; }
         .match-meta-badge.live { background: #dcfce7; color: #22c55e; font-weight: 800; }
         .match-time-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
 
@@ -89,6 +90,7 @@
         .form-w { background: #16a34a; }
         .form-d { background: #94a3b8; }
         .form-l { background: #ef4444; }
+        .form-empty { background: transparent; border: 1px dashed var(--border-color); color: transparent; width: 16px; height: 16px; }
 
         .stat-bar-block { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; }
         .stat-labels { display: flex; justify-content: space-between; color: var(--text-muted); }
@@ -218,14 +220,20 @@
             const rowOrder = ['FWD', 'MID', 'DEF', 'GK'];
             return rowOrder.map(posKey => `
                 <div class="pitch-line-row">
-                    ${lines[posKey].map(p => `
-                        <div class="player-node">
-                            <div class="player-badge" style="background-color: ${teamHex || '#475569'}; color: ${textColor || '#ffffff'};">
-                                ${p.num}
+                    ${lines[posKey].map(p => {
+                        // Extract last name only for cleaner 2D tactical field tracking
+                        const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
+                        const lastName = nameParts[nameParts.length - 1];
+
+                        return `
+                            <div class="player-node">
+                                <div class="player-badge" style="background-color: ${teamHex || '#475569'}; color: ${textColor || '#ffffff'};">
+                                    ${p.num}
+                                </div>
+                                <div class="player-name-tag">${lastName}</div>
                             </div>
-                            <div class="player-name-tag">${p.name ? p.name.split(' ')[0] : 'Unknown'}</div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             `).join('');
         }
@@ -239,7 +247,6 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // Map teams row configurations safely matching Teams.csv layout
                 let teamsMap = {};
                 teamsRaw.forEach((row, i) => {
                     if (i === 0 || !row || !row[0]) return;
@@ -249,14 +256,12 @@
                         code: row[1] ? row[1].trim().toUpperCase() : 'TBA',
                         manager: row[2] ? row[2].trim() : 'TBA',
                         hex: row[3] ? row[3].trim() : '#475569',
-                        form: 'DDDDD' // Form calculated dynamically from schedule below
+                        form: [] // Populated dynamically
                     };
                 });
 
-                // Extract schedule items securely
                 const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row && row.length > 0 && row[0]);
 
-                // Dynamic Form History Indexer Engine
                 let dynamicFormTracker = {};
                 Object.keys(teamsMap).forEach(k => { dynamicFormTracker[k] = []; });
                 
@@ -281,15 +286,12 @@
                     }
                 });
 
-                // Finalize form histories (take last 5 matches, pad with D if brand new)
+                // Finalize form structures (Limit to last 5, leave rest empty if less than 5 matches played)
                 Object.keys(teamsMap).forEach(k => {
                     let historicalArr = dynamicFormTracker[k] || [];
-                    let last5 = historicalArr.slice(-5);
-                    while (last5.length < 5) { last5.push('D'); }
-                    teamsMap[k].form = last5.join('');
+                    teamsMap[k].form = historicalArr.slice(-5);
                 });
 
-                // Resolve Target Match lookup
                 let matchTarget = null;
                 if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
                     const targetIdx = parseInt(matchIndex, 10);
@@ -315,19 +317,39 @@
                     throw new Error("Target match metrics not found in Google Sheets data."); 
                 }
 
-                // Extract core variables
                 const homeTeamName = (matchTarget[4] || 'Home Team').trim();
                 const homeScore = (matchTarget[5] || '0').trim();
                 const awayTeamName = (matchTarget[6] || 'Away Team').trim();
                 const awayScore = (matchTarget[7] || '0').trim();
-                const matchTime = (matchTarget[2] || 'TBA').trim();
-                const matchDate = (matchTarget[1] || 'TBA').trim();
-                let matchStatus = matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING';
+                const matchTime = (matchTarget[2] || '').trim();
+                const matchDateStr = (matchTarget[1] || '').trim();
+                let initialStatus = matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING';
 
-                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: 'DDDDD' };
-                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: 'DDDDD' };
+                // TIME VALIDATION COMPILER ENGINE
+                let parsedMatchTimestamp = 0;
+                if (matchDateStr) {
+                    let combinedString = matchDateStr;
+                    if (matchTime) {
+                        let cleanTime = matchTime.replace(/(AM|PM)/i, '').trim();
+                        let isPM = matchTime.toUpperCase().includes('PM');
+                        let [hrs, mins] = cleanTime.split(':').map(n => parseInt(n, 10) || 0);
+                        if (isPM && hrs < 12) hrs += 12;
+                        if (!isPM && hrs === 12) hrs = 0;
+                        combinedString += ` ${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
+                    }
+                    parsedMatchTimestamp = Date.parse(combinedString) || 0;
+                }
 
-                // Handle dynamic text badge contrast modes matching index.html aesthetics
+                // If scheduled time is in the future, lock state to UPCOMING regardless of spreadsheet override
+                let isMatchPassed = parsedMatchTimestamp > 0 ? (Date.now() > parsedMatchTimestamp) : true;
+                let finalStatus = initialStatus;
+                if (!isMatchPassed) {
+                    finalStatus = 'UPCOMING';
+                }
+
+                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: [] };
+                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: [] };
+
                 const darkTextTeams = ['LKD', 'TUR', 'CFC'];
                 const homeTextColor = darkTextTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
                 const awayTextColor = darkTextTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
@@ -339,19 +361,14 @@
                     }
                 });
 
-                // Roster Parsing Engine addressing structural bracket requirements
                 const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r.length >= 6 && r[1]).map(r => {
                     const posMatch = (r[2] || '').match(/\[(.*?)\]/);
                     const pos = posMatch ? posMatch[1].toUpperCase().trim() : 'MID';
-
                     const teamClean = (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase();
-
                     const offMatch = (r[4] || '').match(/\((\d+)\)/);
                     const off = offMatch ? parseInt(offMatch[1], 10) : (parseInt((r[4] || '').replace(/\D/g, ''), 10) || 0);
-
                     const defMatch = (r[5] || '').match(/\((\d+)\)/);
                     const def = defMatch ? parseInt(defMatch[1], 10) : (parseInt((r[5] || '').replace(/\D/g, ''), 10) || 0);
-
                     const jerseyNum = parseInt(r[0], 10);
 
                     return {
@@ -384,7 +401,21 @@
                 let avgAwayOff = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.off, 0) / awayPlayers.length) : 0;
                 let avgAwayDef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
 
-                const isLiveOrFinalised = matchStatus === 'FINALISED' || matchStatus === 'LIVE';
+                const displayScore = (finalStatus === 'FINALISED' || finalStatus === 'LIVE');
+
+                // Render dynamic form block logic with safe empty placeholders
+                function buildFormHTML(formArray) {
+                    let nodes = [];
+                    for (let i = 0; i < 5; i++) {
+                        if (i < formArray.length) {
+                            let char = formArray[i];
+                            nodes.push(`<span class="form-dot form-${char.toLowerCase()}">${char}</span>`);
+                        } else {
+                            nodes.push(`<span class="form-dot form-empty"></span>`);
+                        }
+                    }
+                    return nodes.join('');
+                }
 
                 const appMount = document.getElementById('app-mount');
                 appMount.innerHTML = `
@@ -396,9 +427,9 @@
                             <span class="team-code-pill">${homeTeam.code}</span>
                         </div>
                         <div class="score-center-block">
-                            <div class="score-row">${isLiveOrFinalised ? `${homeScore} - ${awayScore}` : 'VS'}</div>
-                            <span class="match-meta-badge ${matchStatus.toLowerCase()}">${matchStatus.toLowerCase()}</span>
-                            <span class="match-time-label">${matchTime} | ${matchDate}</span>
+                            <div class="score-row">${displayScore ? `${homeScore} - ${awayScore}` : 'VS'}</div>
+                            <span class="match-meta-badge ${finalStatus.toLowerCase()}">${finalStatus.toLowerCase()}</span>
+                            <span class="match-time-label">${matchTime || 'TBA'} | ${matchDateStr || 'TBA'}</span>
                         </div>
                         <div class="scoreboard-side">
                             <img src="${getLocalTeamLogo(awayTeam.code)}" onerror="this.src='logo_hcl_main.png';" class="team-logo-lg" alt="">
@@ -430,15 +461,11 @@
                                 <h4 class="widget-title">Recent Form Index</h4>
                                 <div class="form-row">
                                     <span>${homeTeam.code}</span>
-                                    <div class="form-string">
-                                        ${homeTeam.form.split('').map(char => `<span class="form-dot form-${char.toLowerCase()}">${char}</span>`).join('')}
-                                    </div>
+                                    <div class="form-string">${buildFormHTML(homeTeam.form)}</div>
                                 </div>
                                 <div class="form-row">
                                     <span>${awayTeam.code}</span>
-                                    <div class="form-string">
-                                        ${awayTeam.form.split('').map(char => `<span class="form-dot form-${char.toLowerCase()}">${char}</span>`).join('')}
-                                    </div>
+                                    <div class="form-string">${buildFormHTML(awayTeam.form)}</div>
                                 </div>
                             </div>
 
