@@ -51,7 +51,7 @@
             box-sizing: border-box; z-index: 10; display: flex; flex-direction: column; gap: 24px;
         }
 
-        /* Ambient Scoreboard Card Layout */
+        /* Top Scoreboard Card Header */
         .scoreboard-outer-card {
             background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 20px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
@@ -79,7 +79,7 @@
         .match-meta-badge.live { background: #fee2e2; color: #ef4444; font-weight: 800; }
         .match-time-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); text-align: center; line-height: 1.3; }
 
-        /* Integrated Form Row Components */
+        /* Integrated Form Indicators */
         .form-string { display: flex; gap: 4px; font-family: monospace; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
         .form-dot { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; }
         .form-w { background: #16a34a; }
@@ -87,53 +87,63 @@
         .form-l { background: #ef4444; }
         .form-empty { background: transparent; border: 1px dashed #cbd5e1; color: transparent; width: 16px; height: 16px; }
 
-        /* Sleek Combined Win Predictor Hub Bar */
+        /* Win Predictor Strip Header */
         .predictor-bar-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); }
         .predictor-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-muted); }
         .predictor-track-combined { height: 12px; background: #e2e8f0; border-radius: 6px; display: flex; overflow: hidden; }
         .predictor-segment { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.65rem; font-weight: 700; font-family: monospace; }
 
-        .dashboard-body-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
-        @media (max-width: 950px) { .dashboard-body-layout { grid-template-columns: 1fr; } .scoreboard-outer-card { grid-template-columns: 1fr; padding: 25px; } .score-center-block { grid-row: 1; } }
-
-        /* HORIZONTAL FIELD CANVAS */
+        /* HORIZONTAL FIELD OVERHAUL WITH INTEGRATED PERFORMANCE HUD */
+        .field-grand-wrapper {
+            background-color: var(--pitch-green);
+            border: 4px solid var(--pitch-lines); border-radius: 16px;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.06);
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
+        }
         .pitch-container-horizontal {
-            background-color: var(--pitch-green); 
             background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%), radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.12) 100%);
             background-size: 45px 100%, 100% 100%;
-            border: 4px solid var(--pitch-lines); border-radius: 16px; height: 430px; position: relative;
-            display: flex; flex-direction: row; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
+            height: 380px; position: relative; display: flex; flex-direction: row; width: 100%;
         }
         .pitch-center-line-vert { position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background: var(--pitch-lines); transform: translateX(-50%); }
         .pitch-center-circle-middle { position: absolute; top: 50%; left: 50%; width: 110px; height: 110px; border: 2px solid var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
         
-        /* Tactical HUD Overlay Text Strings */
-        .pitch-hud-label { position: absolute; top: 14px; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.6px; background: rgba(0,0,0,0.2); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
+        /* Tactical Labels */
+        .pitch-hud-label { position: absolute; top: 14px; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.6px; background: rgba(15,23,42,0.4); padding: 4px 10px; border-radius: 4px; pointer-events: none; backdrop-filter: blur(2px); }
         .pitch-hud-label.left-label { left: 16px; }
         .pitch-hud-label.right-label { right: 16px; }
 
-        .pitch-team-half { width: 50%; height: 100%; position: relative; display: flex; flex-direction: row; justify-content: space-around; align-items: center; box-sizing: border-box; padding: 20px 15px; }
+        .pitch-team-half { width: 50%; height: 100%; position: relative; display: flex; flex-direction: row; justify-content: space-around; align-items: center; box-sizing: border-box; padding: 20px 25px; }
         .pitch-team-half.home-left-side { flex-direction: row; }
         .pitch-team-half.away-right-side { flex-direction: row-reverse; }
 
-        .pitch-column-band { display: flex; flex-direction: column; justify-content: center; gap: 24px; height: 100%; align-items: center; flex-grow: 1; }
+        .pitch-column-band { display: flex; flex-direction: column; justify-content: center; gap: 28px; height: 100%; align-items: center; flex-grow: 1; }
 
-        .player-node { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 65px; animation: scaleIn 0.4s ease forwards; }
-        .player-badge { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.75); padding: 2px 6px; border-radius: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 75px; }
+        .player-node { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 65px; animation: scaleIn 0.4s ease forwards; }
+        .player-badge { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+        .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.85); padding: 2px 7px; border-radius: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
 
-        .sidebar-right-panel { display: flex; flex-direction: column; gap: 20px; }
-        .ratings-widget { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-        .widget-title { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        /* Integrated Bottom Performance Matrix Panel */
+        .integrated-performance-hud {
+            background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 14px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; backdrop-filter: blur(4px);
+        }
+        .stat-bar-block { display: flex; flex-direction: column; gap: 4px; }
+        .stat-labels { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.3px; }
+        .stat-labels span.stat-val-highlight { color: #fff; font-family: monospace; font-size: 0.82rem; }
+        .stat-split-track { height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; display: flex; overflow: hidden; margin-top: 2px; }
 
+        /* Squad Roster Tables Grid */
         .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 650px) { .roster-lists { grid-template-columns: 1fr; } }
-        .roster-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; }
+        .roster-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); }
         .roster-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .roster-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; text-transform: uppercase; }
         .roster-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
+        .roster-table tr:last-child td { border-bottom: 0; }
 
         .loading-view { text-align: center; padding: 60px 0; color: var(--text-muted); font-weight: 500; width: 100%; }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -235,29 +245,6 @@
             `).join('');
         }
 
-        function parseAmericanDateTime(dateStr, timeStr) {
-            if (!dateStr) return 0;
-            try {
-                const dateParts = dateStr.split('/');
-                if (dateParts.length !== 3) return 0;
-                const month = parseInt(dateParts[0], 10) - 1;
-                const day = parseInt(dateParts[1], 10);
-                const year = parseInt(dateParts[2], 10);
-
-                let hrs = 12, mins = 0;
-                if (timeStr) {
-                    let cleanTime = timeStr.replace(/(AM|PM)/i, '').trim();
-                    let isPM = timeStr.toUpperCase().includes('PM');
-                    let parts = cleanTime.split(':');
-                    hrs = parseInt(parts[0], 10) || 12;
-                    mins = parseInt(parts[1], 10) || 0;
-                    if (isPM && hrs < 12) hrs += 12;
-                    if (!isPM && hrs === 12) hrs = 0;
-                }
-                return new Date(year, month, day, hrs, mins, 0).getTime() || 0;
-            } catch(e) { return 0; }
-        }
-
         function buildFormHTML(formArray) {
             let nodes = [];
             for (let i = 0; i < 5; i++) {
@@ -273,7 +260,7 @@
         async function initMatchCentre() {
             try {
                 const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
-                if (!week) { throw new Error("Missing URL parameters."); }
+                if (!week) { throw new Error("Missing structural URL parameters."); }
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
@@ -292,7 +279,7 @@
                     };
                 });
 
-                // Map League Ladder standings rank positions
+                // Compute exact Rank Positions
                 standingsRaw.forEach((row, i) => {
                     if (i > 0 && row && row[1]) {
                         const k = row[1].trim().toLowerCase();
@@ -318,7 +305,7 @@
                     if (targetRowIdx !== -1) matchTarget = fullScheduleItems[targetRowIdx];
                 }
 
-                if (!matchTarget) { throw new Error("Target match metrics not found."); }
+                if (!matchTarget) { throw new Error("Target match metrics not found inside dataset."); }
 
                 const homeTeamName = (matchTarget[4] || 'Home Team').trim();
                 const homeScore = (matchTarget[5] || '0').trim();
@@ -327,16 +314,27 @@
                 const matchTime = (matchTarget[2] || '').trim();
                 const matchDateStr = (matchTarget[1] || '').trim();
                 
-                // Clock validation checks
-                const matchTimestamp = parseAmericanDateTime(matchDateStr, matchTime);
-                const isClockPassed = matchTimestamp > 0 ? (Date.now() > matchTimestamp) : true;
-                const finalStatus = isClockPassed ? (matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING') : 'UPCOMING';
+                // Align status calculations with index.html live checking sequence
+                let baseStatus = matchTarget[3] ? matchTarget[3].toLowerCase().trim() : 'upcoming';
+                
+                // Pure index.html date engine integration
+                const today = new Date();
+                const dd = String(today.getDate()).padStart(2, '0');
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const yyyy = today.getFullYear();
+                const todayString = `${dd}/${mm}/${yyyy}`;
 
-                // Process Form safely without revealing future matches
+                // Force status to upcoming if target row date does not match active window rules
+                let finalStatus = baseStatus;
+                if (matchDateStr !== todayString && baseStatus === 'live') {
+                    finalStatus = 'upcoming';
+                }
+
+                // Process Form safely without revealing upcoming results
                 let dynamicFormTracker = {};
                 Object.keys(teamsMap).forEach(k => { dynamicFormTracker[k] = []; });
                 fullScheduleItems.forEach((row, idx) => {
-                    if (idx === targetRowIdx && finalStatus === 'UPCOMING') return; // Hide current result if upcoming
+                    if (idx === targetRowIdx && finalStatus === 'upcoming') return; 
                     if ((row[3] || '').toUpperCase().trim() === 'FINALISED') {
                         const hN = (row[4] || '').trim().toLowerCase();
                         const aN = (row[6] || '').trim().toLowerCase();
@@ -355,7 +353,7 @@
                 const homeTextColor = darkTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
                 const awayTextColor = darkTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
 
-                // Split metrics for bars
+                // Process Squad Ratings and Strengths
                 const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[1]).map(r => {
                     const posM = (r[2] || '').match(/\[(.*?)\]/);
                     const offM = (r[4] || '').match(/\((\d+)\)/);
@@ -370,9 +368,8 @@
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
-                let baseChance = 35;
-                let winHome = Math.max(15, baseChance + ((homePlayers.length - awayPlayers.length) * 2));
-                let winAway = Math.max(15, baseChance - ((homePlayers.length - awayPlayers.length) * 2));
+                let winHome = Math.max(15, 35 + ((homePlayers.length - awayPlayers.length) * 2));
+                let winAway = Math.max(15, 35 - ((homePlayers.length - awayPlayers.length) * 2));
                 let t = winHome + winAway + 30;
                 let pHome = Math.round((winHome / t) * 100); let pAway = Math.round((winAway / t) * 100); let pDraw = 100 - (pHome + pAway);
 
@@ -381,7 +378,7 @@
                 let avgAOff = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.off, 0) / awayPlayers.length) : 0;
                 let avgADef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
 
-                const displayScore = (finalStatus === 'FINALISED' || finalStatus === 'LIVE');
+                const displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
 
                 document.getElementById('app-mount').innerHTML = `
                     <div class="scoreboard-outer-card" style="--home-gradient-color: ${homeTeam.hex}; --away-gradient-color: ${awayTeam.hex};">
@@ -398,7 +395,7 @@
                         </div>
                         <div class="score-center-block">
                             <div class="score-row">${displayScore ? `${homeScore} - ${awayScore}` : 'VS'}</div>
-                            <span class="match-meta-badge ${finalStatus.toLowerCase()}">${finalStatus.toLowerCase()}</span>
+                            <span class="match-meta-badge ${finalStatus}">${finalStatus}</span>
                             <span class="match-time-label">${matchTime}<br>${matchDateStr}</span>
                         </div>
                         <div class="scoreboard-side">
@@ -414,7 +411,7 @@
                     </div>
 
                     <div class="predictor-bar-card">
-                        <div class="predictor-labels"><span>${homeTeam.code} win</span><span>Draw</span><span>${awayTeam.code} win</span></div>
+                        <div class="predictor-labels"><span>${homeTeam.code} Win Chance</span><span>Draw Probability</span><span>${awayTeam.code} Win Chance</span></div>
                         <div class="predictor-track-combined">
                             <div class="predictor-segment" style="width: ${pHome}%; background: ${homeTeam.hex};">${pHome}%</div>
                             <div class="predictor-segment" style="width: ${pDraw}%; background: #94a3b8;">${pDraw}%</div>
@@ -422,33 +419,44 @@
                         </div>
                     </div>
 
-                    <div class="dashboard-body-layout">
+                    <div class="field-grand-wrapper">
                         <div class="pitch-container-horizontal">
                             <div class="pitch-center-line-vert"></div>
                             <div class="pitch-center-circle-middle"></div>
-                            <div class="pitch-hud-label left-label">${homeTeam.code} FC (4-3-3)</div>
-                            <div class="pitch-hud-label right-label">${awayTeam.code} FC (4-3-3)</div>
+                            <div class="pitch-hud-label left-label">${homeTeam.code} (4-3-3)</div>
+                            <div class="pitch-hud-label right-label">${awayTeam.code} (4-3-3)</div>
                             
                             <div class="pitch-team-half home-left-side">${buildHorizontalPitchNodes(homePlayers, homeTeam.hex, homeTextColor)}</div>
                             <div class="pitch-team-half away-right-side">${buildHorizontalPitchNodes(awayPlayers, awayTeam.hex, awayTextColor)}</div>
                         </div>
 
-                        <div class="sidebar-right-panel">
-                            <div class="ratings-widget">
-                                <h4 class="widget-title">Squad Performance Index</h4>
-                                <div class="stat-bar-block">
-                                    <div class="stat-labels"><span>${avgHOff}</span><span>Attack Power</span><span>${avgAOff}</span></div>
-                                    <div class="stat-split-track">
-                                        <div style="height:100%; width:${(avgHOff/(avgHOff+avgAOff||1))*100}%; background:${homeTeam.hex};"></div>
-                                        <div style="height:100%; width:${(avgAOff/(avgHOff+avgAOff||1))*100}%; background:${awayTeam.hex};"></div>
+                        <div class="integrated-performance-hud">
+                            <div class="stat-bar-block">
+                                <div class="stat-labels">
+                                    <span>Attack Rating</span>
+                                    <div>
+                                        <span class="stat-val-highlight" style="color:${homeTeam.hex};">${avgHOff}</span>
+                                        <span style="color:rgba(255,255,255,0.4); margin:0 4px;">:</span>
+                                        <span class="stat-val-highlight" style="color:${awayTeam.hex};">${avgAOff}</span>
                                     </div>
                                 </div>
-                                <div class="stat-bar-block" style="margin-top:10px;">
-                                    <div class="stat-labels"><span>${avgHDef}</span><span>Defence Depth</span><span>${avgADef}</span></div>
-                                    <div class="stat-split-track">
-                                        <div style="height:100%; width:${(avgHDef/(avgHDef+avgADef||1))*100}%; background:${homeTeam.hex};"></div>
-                                        <div style="height:100%; width:${(avgADef/(avgHDef+avgADef||1))*100}%; background:${awayTeam.hex};"></div>
+                                <div class="stat-split-track">
+                                    <div style="height:100%; width:${(avgHOff/(avgHOff+avgAOff||1))*100}%; background:${homeTeam.hex};"></div>
+                                    <div style="height:100%; width:${(avgAOff/(avgHOff+avgAOff||1))*100}%; background:${awayTeam.hex};"></div>
+                                </div>
+                            </div>
+                            <div class="stat-bar-block">
+                                <div class="stat-labels">
+                                    <span>Defence Depth</span>
+                                    <div>
+                                        <span class="stat-val-highlight" style="color:${homeTeam.hex};">${avgHDef}</span>
+                                        <span style="color:rgba(255,255,255,0.4); margin:0 4px;">:</span>
+                                        <span class="stat-val-highlight" style="color:${awayTeam.hex};">${avgADef}</span>
                                     </div>
+                                </div>
+                                <div class="stat-split-track">
+                                    <div style="height:100%; width:${(avgHDef/(avgHDef+avgADef||1))*100}%; background:${homeTeam.hex};"></div>
+                                    <div style="height:100%; width:${(avgADef/(avgHDef+avgADef||1))*100}%; background:${awayTeam.hex};"></div>
                                 </div>
                             </div>
                         </div>
