@@ -16,9 +16,8 @@
             --text-main: #0f172a;
             --text-muted: #64748b;
             --accent-color: #0066cc;
-            --pitch-green: #2e7d32;
-            --pitch-lines: rgba(255, 255, 255, 0.4);
-            --color-draw: #94a3b8;
+            --pitch-green: #1e5e22;
+            --pitch-lines: rgba(255, 255, 255, 0.35);
             --color-home: #3b82f6;
             --color-away: #ef4444;
         }
@@ -48,7 +47,7 @@
             margin-top: 20px; z-index: 1;
         }
 
-        /* 3. Improved Layout - Scoreboard */
+        /* 3. Improved Layout - Scoreboard Header */
         .scoreboard {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -65,12 +64,13 @@
             flex-direction: column;
             align-items: center;
             flex: 1;
+            text-align: center;
         }
 
         .team-block a {
             text-decoration: none;
             color: var(--text-main);
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 800;
             transition: color 0.2s;
         }
@@ -83,79 +83,88 @@
             font-size: 0.85rem;
             color: var(--text-muted);
             background: #f1f5f9;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 12px;
-            margin-top: 4px;
-            font-weight: 600;
+            margin-top: 6px;
+            font-weight: 700;
         }
 
         .score-block {
-            flex: 0.5;
+            flex: 0.6;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
         }
 
         .score-text {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 900;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
         }
 
         .hidden-score-btn {
             background: var(--text-main);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.9rem;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .hidden-score-btn:hover { background: var(--accent-color); }
+        .hidden-score-btn:hover { 
+            background: var(--accent-color);
+            transform: translateY(-1px);
+        }
 
-        /* 3. Improved Layout - Pitch & Rosters Grid */
+        /* 3. Improved Layout - Content Columns Grid */
         .match-content-grid {
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: 1fr 340px;
             gap: 24px;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 950px) {
             .match-content-grid { grid-template-columns: 1fr; }
             .scoreboard { flex-direction: column; gap: 20px; }
         }
 
-        /* Pitch Styles */
+        /* Responsive 2D Tactical Field Layout */
         .pitch-container {
             background: var(--pitch-green);
             border-radius: 12px;
             position: relative;
-            height: 600px;
+            height: 620px;
             overflow: hidden;
-            border: 4px solid var(--card-bg);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.2);
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
         }
 
+        /* Technical Markings */
         .pitch-lines {
-            position: absolute; top: 5%; bottom: 5%; left: 5%; right: 5%;
+            position: absolute; top: 4%; bottom: 4%; left: 4%; right: 4%;
             border: 2px solid var(--pitch-lines);
+            pointer-events: none;
         }
         .pitch-center-line {
-            position: absolute; top: 50%; left: 0; right: 0;
+            position: absolute; top: 50%; left: 4%; right: 4%;
             height: 2px; background: var(--pitch-lines);
+            pointer-events: none;
         }
         .pitch-circle {
             position: absolute; top: 50%; left: 50%;
-            width: 100px; height: 100px;
+            width: 110px; height: 110px;
             border: 2px solid var(--pitch-lines);
             border-radius: 50%;
             transform: translate(-50%, -50%);
+            pointer-events: none;
         }
 
+        /* Player Nodes on Field */
         .player-node {
             position: absolute;
             transform: translate(-50%, -50%);
@@ -164,70 +173,81 @@
             align-items: center;
             text-align: center;
             z-index: 10;
+            transition: all 0.3s ease;
         }
 
         .player-dot {
-            width: 24px; height: 24px;
+            width: 26px; height: 26px;
             border-radius: 50%;
-            background: #fff;
-            border: 3px solid #333;
-            color: #333;
+            background: #ffffff;
+            border: 3px solid #333333;
+            color: #111111;
             font-weight: 800;
             font-size: 11px;
             display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            margin-bottom: 4px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            margin-bottom: 3px;
         }
 
         .player-name {
-            background: rgba(0,0,0,0.7);
-            color: white;
+            background: rgba(15, 23, 42, 0.85);
+            color: #ffffff;
             padding: 2px 6px;
             border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.72rem;
+            font-weight: 700;
             white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         .player-ratings {
-            background: rgba(255,255,255,0.9);
-            padding: 1px 4px;
+            background: #ffffff;
+            padding: 1px 5px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 800;
             margin-bottom: 2px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            border: 1px solid var(--border-color);
+            display: inline-flex;
+            gap: 3px;
         }
 
-        /* Roster Styles */
+        /* Roster Sidebar Panels */
         .rosters-sidebar {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
         }
 
         .roster-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .roster-card h3 {
-            margin-top: 0; padding-bottom: 8px;
-            font-weight: 800; font-size: 1.1rem;
+            margin-top: 0; margin-bottom: 14px;
+            font-weight: 800; font-size: 1.15rem;
+            padding-bottom: 6px;
         }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { color: var(--text-muted); font-weight: 600; }
+        th, td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        
         .manager-info {
-            margin-top: 12px;
+            margin-top: 14px;
             padding-top: 12px;
             border-top: 1px dashed var(--border-color);
             font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 600;
+            color: var(--text-main);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
@@ -236,67 +256,97 @@
     <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-br">
 
     <div id="app-mount">
-        <div style="text-align:center; padding: 40px; color: var(--text-muted);">
-            Syncing Match Data...
+        <div style="text-align:center; padding: 60px; color: var(--text-muted); font-weight: 600;">
+            Connecting to Hub Streams...
         </div>
     </div>
 
     <script>
-        // Reveal Score Function
+        // 4. Working reveal function mapped precisely to infrastructure
         function revealScore(btn) { 
             btn.style.display = 'none'; 
             btn.nextElementSibling.style.display = 'block'; 
         }
 
-        // Calculate simple standings for ranking
+        // 7. Standings collector module to gather real-time data metrics
         function getStandingsRankings(data) {
             let standings = data.teams.map(t => ({ name: t.name, pts: 0, gd: 0 }));
             
-            data.schedule.forEach(week => {
-                week.matches.forEach(m => {
-                    if(m.homeScore !== undefined && m.awayScore !== undefined && m.status === 'finalised') {
-                        let hTeam = standings.find(s => s.name === m.home);
-                        let aTeam = standings.find(s => s.name === m.away);
-                        if(hTeam && aTeam) {
-                            let gd = m.homeScore - m.awayScore;
-                            hTeam.gd += gd; aTeam.gd -= gd;
-                            if(m.homeScore > m.awayScore) hTeam.pts += 3;
-                            else if(m.homeScore < m.awayScore) aTeam.pts += 3;
-                            else { hTeam.pts += 1; aTeam.pts += 1; }
-                        }
+            if (data.schedule) {
+                data.schedule.forEach(week => {
+                    if (week.matches) {
+                        week.matches.forEach(m => {
+                            if(m.homeScore !== undefined && m.awayScore !== undefined && m.status === 'finalised') {
+                                let hTeam = standings.find(s => s.name === m.home);
+                                let aTeam = standings.find(s => s.name === m.away);
+                                if(hTeam && aTeam) {
+                                    let hScore = parseInt(m.homeScore) || 0;
+                                    let aScore = parseInt(m.awayScore) || 0;
+                                    let gd = hScore - aScore;
+                                    hTeam.gd += gd; aTeam.gd -= gd;
+                                    if(hScore > aScore) hTeam.pts += 3;
+                                    else if(hScore < aScore) aTeam.pts += 3;
+                                    else { hTeam.pts += 1; aTeam.pts += 1; }
+                                }
+                            }
+                        });
                     }
                 });
-            });
+            }
 
             standings.sort((a, b) => b.pts - a.pts || b.gd - a.gd);
             return standings;
         }
 
-        // Build roster table helper
+        // Clean Roster generation module
         function buildRosterTable(players) {
-            if (!players) return '';
+            if (!players || players.length === 0) return '<tr><td colspan="4">No roster registered.</td></tr>';
             return `
                 <table>
                     <thead>
                         <tr>
-                            <th>Pos</th>
+                            <th style="width: 40px;">Pos</th>
                             <th>Player</th>
-                            <th style="text-align:center">O</th>
-                            <th style="text-align:center">D</th>
+                            <th style="text-align:center; width: 30px;">O</th>
+                            <th style="text-align:center; width: 30px;">D</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${players.map(p => `
                             <tr>
-                                <td style="font-weight:600; color:var(--text-muted);">${p.pos}</td>
-                                <td style="font-weight:700;">${p.name}</td>
-                                <td style="text-align:center; color:#ef4444; font-weight:700;">${p.off}</td>
-                                <td style="text-align:center; color:#0066cc; font-weight:700;">${p.def}</td>
+                                <td style="font-weight:700; color:var(--text-muted); font-size:0.75rem;">${p.pos || 'P'}</td>
+                                <td style="font-weight:700; color:var(--text-main);">${p.name}</td>
+                                <td style="text-align:center; color:#ef4444; font-weight:800;">${p.off}</td>
+                                <td style="text-align:center; color:#0066cc; font-weight:800;">${p.def}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
+        }
+
+        // Tactical 2D positioning generator engine
+        function generatePitchLineHTML(linePlayers, basePercentY, hexColor) {
+            if (!linePlayers || linePlayers.length === 0) return '';
+            const count = linePlayers.length;
+            
+            return linePlayers.map((p, index) => {
+                // 6. Split full name and extract only the surname
+                const lastName = p.name ? p.name.split(' ').pop() : 'Player';
+                
+                // Perfectly spread players horizontally along their specific coordinate depth row
+                let xPos = count === 1 ? 50 : 16 + (index * (68 / (count - 1)));
+
+                return `
+                    <div class="player-node" style="left: ${xPos}%; top: ${basePercentY}%;">
+                        <div class="player-ratings">
+                            <span style="color:#ef4444">${p.off}</span><span style="color:var(--border-color)">|</span><span style="color:#0066cc">${p.def}</span>
+                        </div>
+                        <div class="player-dot" style="border-color: ${hexColor};">${p.pos || 'P'}</div>
+                        <div class="player-name">${lastName}</div>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function initMatchCentre() {
@@ -313,67 +363,77 @@
                     if (found) { targetMatch = found; break; }
                 }
 
-                if (!targetMatch) throw new Error("Could not locate match ID in schedule.");
+                if (!targetMatch) throw new Error("Target Match ID is invalid or could not be found.");
 
                 const homeTeam = data.teams.find(t => t.name === targetMatch.home) || { name: targetMatch.home, players: [] };
                 const awayTeam = data.teams.find(t => t.name === targetMatch.away) || { name: targetMatch.away, players: [] };
                 
-                // Calculate live leaderboard positions
+                // 7. Calculate live leaderboard rank index positioning
                 const rankings = getStandingsRankings(data);
                 const homeRank = rankings.findIndex(r => r.name === homeTeam.name) + 1;
                 const awayRank = rankings.findIndex(r => r.name === awayTeam.name) + 1;
 
-                // Time based system to hide score
+                // 4. Secure time framework system logic
                 const matchDateStr = targetMatch.time || targetMatch.date;
                 const matchDate = matchDateStr ? new Date(matchDateStr).getTime() : 0;
                 const isUpcoming = matchDate > Date.now();
                 
-                // Define scores safely before structural templates execute
                 const hScore = targetMatch.homeScore !== undefined ? targetMatch.homeScore : '-';
                 const aScore = targetMatch.awayScore !== undefined ? targetMatch.awayScore : '-';
 
                 let scoreHTML = '';
                 if (isUpcoming) {
                     scoreHTML = `
-                        <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:8px;">Upcoming Fixture</div>
-                        <button class="hidden-score-btn" onclick="revealScore(this)">Reveal Score Early</button>
+                        <div style="font-size:0.8rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px;">Upcoming Fixture</div>
+                        <button class="hidden-score-btn" onclick="revealScore(this)">Reveal Score</button>
                         <div class="score-text" style="display:none;">${hScore} - ${aScore}</div>
                     `;
                 } else {
                     scoreHTML = `<div class="score-text">${hScore} - ${aScore}</div>`;
                 }
 
-                // Render Pitch Nodes
-                const pitchNodes = [];
-                const processTeamPitch = (teamData, isHome, hexColor) => {
-                    const sortedPlayers = [...teamData.players].sort((a,b) => a.id - b.id).slice(0, 11);
-                    sortedPlayers.forEach((p, index) => {
-                        const lastName = p.name.split(' ').pop(); 
-                        let yPos = isHome ? 15 + (index * 3) : 85 - (index * 3);
-                        let xPos = 20 + ((index % 4) * 20);
-
-                        pitchNodes.push(`
-                            <div class="player-node" style="left: ${xPos}%; top: ${yPos}%;">
-                                <div class="player-ratings">
-                                    <span style="color:#ef4444">${p.off}</span> | <span style="color:#0066cc">${p.def}</span>
-                                </div>
-                                <div class="player-dot" style="border-color: ${hexColor};">${p.pos || 'P'}</div>
-                                <div class="player-name">${lastName}</div>
-                            </div>
-                        `);
+                // Symmetrical Grid categorization engine to completely prevent visual element overlap
+                const sortIntoFormations = (playersList) => {
+                    const starters = [...playersList].slice(0, 11);
+                    const lines = { gk: [], def: [], mid: [], fwd: [] };
+                    
+                    starters.forEach(p => {
+                        const pos = (p.pos || '').toUpperCase();
+                        if (pos.includes('GK') || pos.includes('GOAL')) lines.gk.push(p);
+                        else if (pos.includes('DF') || pos.includes('DEF') || pos.includes('CB') || pos.includes('LB') || pos.includes('RB')) lines.def.push(p);
+                        else if (pos.includes('FW') || pos.includes('FWD') || pos.includes('ST') || pos.includes('LW') || pos.includes('RW')) lines.fwd.push(p);
+                        else lines.mid.push(p); // Standard Fallback Line
                     });
+                    return lines;
                 };
 
-                if(homeTeam.players && homeTeam.players.length > 0) processTeamPitch(homeTeam, true, homeTeam.hex || 'var(--color-home)');
-                if(awayTeam.players && awayTeam.players.length > 0) processTeamPitch(awayTeam, false, awayTeam.hex || 'var(--color-away)');
+                const homeLines = sortIntoFormations(homeTeam.players || []);
+                const awayLines = sortIntoFormations(awayTeam.players || []);
 
-                // Inject into DOM
+                const homeColor = homeTeam.hex || '#3b82f6';
+                const awayColor = awayTeam.hex || '#ef4444';
+
+                // Build full positional board layout safely
+                let pitchNodesHTML = '';
+                // Home: Top Half defending top, moving down
+                pitchNodesHTML += generatePitchLineHTML(homeLines.gk, 12, homeColor);
+                pitchNodesHTML += generatePitchLineHTML(homeLines.def, 25, homeColor);
+                pitchNodesHTML += generatePitchLineHTML(homeLines.mid, 38, homeColor);
+                pitchNodesHTML += generatePitchLineHTML(homeLines.fwd, 46, homeColor);
+
+                // Away: Bottom Half defending bottom, moving up
+                pitchNodesHTML += generatePitchLineHTML(awayLines.fwd, 54, awayColor);
+                pitchNodesHTML += generatePitchLineHTML(awayLines.mid, 62, awayColor);
+                pitchNodesHTML += generatePitchLineHTML(awayLines.def, 75, awayColor);
+                pitchNodesHTML += generatePitchLineHTML(awayLines.gk, 88, awayColor);
+
+                // Safe full context injection
                 const mount = document.getElementById('app-mount');
                 mount.innerHTML = `
                     <div class="scoreboard">
                         <div class="team-block">
                             <a href="team.html?name=${encodeURIComponent(homeTeam.name)}">${homeTeam.name}</a>
-                            <div class="team-rank" style="color: ${homeTeam.hex || 'var(--color-home)'}">League Rank: #${homeRank || '-'}</div>
+                            <div class="team-rank" style="color: ${homeColor}">League Rank: #${homeRank || '-'}</div>
                         </div>
                         
                         <div class="score-block">
@@ -382,7 +442,7 @@
 
                         <div class="team-block">
                             <a href="team.html?name=${encodeURIComponent(awayTeam.name)}">${awayTeam.name}</a>
-                            <div class="team-rank" style="color: ${awayTeam.hex || 'var(--color-away)'}">League Rank: #${awayRank || '-'}</div>
+                            <div class="team-rank" style="color: ${awayColor}">League Rank: #${awayRank || '-'}</div>
                         </div>
                     </div>
 
@@ -391,18 +451,18 @@
                             <div class="pitch-lines"></div>
                             <div class="pitch-center-line"></div>
                             <div class="pitch-circle"></div>
-                            ${pitchNodes.join('')}
+                            ${pitchNodesHTML}
                         </div>
 
                         <div class="rosters-sidebar">
                             <div class="roster-card">
-                                <h3 style="border-bottom: 3px solid ${homeTeam.hex || 'var(--color-home)'}; display:inline-block;">${homeTeam.name}</h3>
+                                <h3 style="border-bottom: 3px solid ${homeColor}; display:inline-block;">${homeTeam.name} Lineup</h3>
                                 ${buildRosterTable(homeTeam.players)}
                                 <div class="manager-info">👤 Manager: ${homeTeam.manager || 'Caretaker Manager'}</div>
                             </div>
 
                             <div class="roster-card">
-                                <h3 style="border-bottom: 3px solid ${awayTeam.hex || 'var(--color-away)'}; display:inline-block;">${awayTeam.name}</h3>
+                                <h3 style="border-bottom: 3px solid ${awayColor}; display:inline-block;">${awayTeam.name} Lineup</h3>
                                 ${buildRosterTable(awayTeam.players)}
                                 <div class="manager-info">👤 Manager: ${awayTeam.manager || 'Caretaker Manager'}</div>
                             </div>
@@ -411,13 +471,13 @@
                 `;
 
             } catch (err) {
-                console.error("Match Render Error:", err);
+                console.error("Match Sync Interrupt Error:", err);
                 const errorMount = document.getElementById('app-mount');
                 if (errorMount) {
                     errorMount.innerHTML = `
                         <div style="text-align:center; padding: 50px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
                             <h3 style="color: #ef4444; margin-top:0;">Match Sync Interrupted</h3>
-                            <p style="color: #64748b; font-size: 0.9rem;">Ensure you're launching this page via a fixture card on the main hub and with a valid Match ID.</p>
+                            <p style="color: #64748b; font-size: 0.9rem;">Please ensure you launch this viewport link through an explicit match selector item containing valid system routing IDs.</p>
                             <p style="color: #64748b; font-size: 0.8rem; font-family: monospace; margin-top: 15px;">System Log: ${err.message}</p>
                         </div>
                     `;
@@ -425,7 +485,6 @@
             }
         }
 
-        // Run on load
         window.addEventListener('DOMContentLoaded', initMatchCentre);
     </script>
 </body>
