@@ -68,8 +68,10 @@
             background-size: 20px 20px;
         }
         .scoreboard-side { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+        .team-title-link { text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .team-title-link:hover .team-name-lg { color: var(--accent-color); }
         .team-logo-lg { width: 85px; height: 85px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.08)); }
-        .team-name-lg { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin: 0; }
+        .team-name-lg { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin: 0; transition: color 0.2s; }
         .team-manager-sm { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin: 0; }
         .team-ladder-rank { font-size: 0.78rem; font-weight: 700; color: var(--accent-color); background: rgba(0,102,204,0.08); padding: 3px 10px; border-radius: 6px; margin-top: 2px; }
         
@@ -98,6 +100,23 @@
         .predictor-track-combined { height: 12px; background: #e2e8f0; border-radius: 6px; display: flex; overflow: hidden; }
         .predictor-segment { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.65rem; font-weight: 700; font-family: monospace; }
 
+        /* Fake Video Media Section */
+        .news-media-card {
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
+            padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: center;
+        }
+        @media (max-width: 600px) { .news-media-card { grid-template-columns: 1fr; } }
+        .fake-youtube-embed {
+            height: 115px; background: #0f172a; border-radius: 10px; position: relative;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        }
+        .youtube-indicator-pill { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .play-vector-icon { width: 44px; height: 44px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }
+        .news-content h3 { margin: 0 0 6px 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px; line-height: 1.3; }
+        .news-source-line { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+        .star-players-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 0.8rem; font-weight: 500; }
+
         /* PITCH CANVAS OVERHAUL WITH ACCURATE PENALTY & GOAL MARKINGS */
         .field-grand-wrapper {
             background-color: var(--pitch-green);
@@ -111,22 +130,18 @@
             height: 410px; position: relative; display: flex; flex-direction: row; width: 100%;
         }
         
-        /* Tactical Pitch Markings */
         .pitch-center-line-vert { position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background: var(--pitch-lines); transform: translateX(-50%); }
         .pitch-center-circle-middle { position: absolute; top: 50%; left: 50%; width: 120px; height: 120px; border: 2px solid var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
         .pitch-center-spot { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
         
-        /* Penalty Box Left */
         .pitch-penalty-box-left { position: absolute; left: 0; top: 50%; height: 220px; width: 85px; border: 2px solid var(--pitch-lines); border-left: 0; transform: translateY(-50%); }
         .pitch-goal-box-left { position: absolute; left: 0; top: 50%; height: 100px; width: 30px; border: 2px solid var(--pitch-lines); border-left: 0; transform: translateY(-50%); }
         .pitch-penalty-spot-left { position: absolute; left: 65px; top: 50%; width: 4px; height: 4px; background: var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
 
-        /* Penalty Box Right */
         .pitch-penalty-box-right { position: absolute; right: 0; top: 50%; height: 220px; width: 85px; border: 2px solid var(--pitch-lines); border-right: 0; transform: translateY(-50%); }
         .pitch-goal-box-right { position: absolute; right: 0; top: 50%; height: 100px; width: 30px; border: 2px solid var(--pitch-lines); border-right: 0; transform: translateY(-50%); }
         .pitch-penalty-spot-right { position: absolute; right: 65px; top: 50%; width: 4px; height: 4px; background: var(--pitch-lines); border-radius: 50%; transform: translate(50%, -50%); }
 
-        /* Tactical HUD Labels */
         .pitch-hud-label { position: absolute; top: 16px; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.6px; background: rgba(15,23,42,0.6); padding: 5px 12px; border-radius: 6px; pointer-events: none; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); }
         .pitch-hud-label.left-label { left: 16px; }
         .pitch-hud-label.right-label { right: 16px; }
@@ -180,7 +195,7 @@
     <script>
         const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
         const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
-        const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
+        const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm17JSSYN/pub?gid=492816603&single=true&output=csv";
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
 
         function getMatchDateTime(dateStr, timeStr) {
@@ -347,17 +362,14 @@
                 const matchTime = (matchTarget[2] || '').trim();
                 const matchDateStr = (matchTarget[1] || '').trim();
                 
-                // Absolute real-time kickoff validation logic
                 const matchTimeObj = getMatchDateTime(matchDateStr, matchTime);
                 const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
 
-                // Overwrite the FINALISED text status unless time has actually elapsed
                 let finalStatus = (matchTarget[3] || 'upcoming').toLowerCase().trim();
                 if (finalStatus === 'finalised' && !isTimePassed) {
                     finalStatus = 'upcoming';
                 }
 
-                // Compile Forms safely (ignoring future matches)
                 let dynamicFormTracker = {};
                 Object.keys(teamsMap).forEach(k => { dynamicFormTracker[k] = []; });
                 fullScheduleItems.forEach((row, idx) => {
@@ -384,7 +396,6 @@
                 const homeTextColor = darkTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
                 const awayTextColor = darkTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
 
-                // Compute Team Stats Matrix
                 const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[1]).map(r => {
                     const posM = (r[2] || '').match(/\[(.*?)\]/);
                     const offM = (r[4] || '').match(/\((\d+)\)/);
@@ -399,6 +410,10 @@
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
+                // Pick MVP / Star Players based on high stats dynamically
+                const bestHomePlayer = homePlayers.length ? [...homePlayers].sort((a,b) => (b.off + b.def) - (a.off + a.def))[0] : null;
+                const bestAwayPlayer = awayPlayers.length ? [...awayPlayers].sort((a,b) => (b.off + b.def) - (a.off + a.def))[0] : null;
+
                 let winHome = Math.max(15, 35 + ((homePlayers.length - awayPlayers.length) * 2));
                 let winAway = Math.max(15, 35 - ((homePlayers.length - awayPlayers.length) * 2));
                 let t = winHome + winAway + 30;
@@ -411,13 +426,53 @@
 
                 const displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
 
+                // Determine whether to display prediction chances or fake YouTube highlight feeds
+                let middleUtilitySectionHTML = '';
+                if (finalStatus === 'finalised') {
+                    const homeStarSnippet = bestHomePlayer ? `⭐ ${bestHomePlayer.name} (#${bestHomePlayer.num})` : '';
+                    const awayStarSnippet = bestAwayPlayer ? `⭐ ${bestAwayPlayer.name} (#${bestAwayPlayer.num})` : '';
+                    
+                    middleUtilitySectionHTML = `
+                        <div class="news-media-card">
+                            <div class="fake-youtube-embed" style="background: linear-gradient(rgba(15,23,42,0.85), rgba(15,23,42,0.95)), url('${getLocalTeamLogo(homeTeam.code)}') no-repeat center; background-size: 80px;">
+                                <div class="play-vector-icon">▶</div>
+                                <span class="youtube-indicator-pill">12:40</span>
+                            </div>
+                            <div class="news-content">
+                                <h3>${homeTeamName} v ${awayTeamName}: FIFA World Cup 2026 Highlights Round of 16 Championship</h3>
+                                <div class="news-source-line">YouTube · 3 hours ago · HCL Broadcasting Network</div>
+                                <div class="star-players-row">
+                                    <span style="color:var(--text-muted); font-weight:700; text-transform:uppercase; font-size:0.7rem; background:#f1f5f9; padding:2px 6px; border-radius:4px;">Featured Stars</span>
+                                    <span style="color:${homeTeam.hex};">${homeStarSnippet}</span>
+                                    <span style="color:var(--text-muted);">|</span>
+                                    <span style="color:${awayTeam.hex};">${awayStarSnippet}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    middleUtilitySectionHTML = `
+                        <div class="predictor-bar-card">
+                            <div class="predictor-labels"><span>${homeTeam.code} Win Chance</span><span>Draw Probability</span><span>${awayTeam.code} Win Chance</span></div>
+                            <div class="predictor-track-combined">
+                                <div class="predictor-segment" style="width: ${pHome}%; background: ${homeTeam.hex};">${pHome}%</div>
+                                <div class="predictor-segment" style="width: ${pDraw}%; background: #94a3b8;">${pDraw}%</div>
+                                <div class="predictor-segment" style="width: ${pAway}%; background: ${awayTeam.hex};">${pAway}%</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 document.getElementById('app-mount').innerHTML = `
                     <div class="scoreboard-outer-card" style="--home-gradient-color: ${homeTeam.hex}; --away-gradient-color: ${awayTeam.hex};">
                         <div class="scoreboard-bg-gradient"></div>
                         <div class="scoreboard-overlay-mesh"></div>
+                        
                         <div class="scoreboard-side">
-                            <img src="${getLocalTeamLogo(homeTeam.code)}" class="team-logo-lg" alt="">
-                            <h2 class="team-name-lg">${homeTeamName}</h2>
+                            <a href="team.html?name=${encodeURIComponent(homeTeamName)}" class="team-title-link">
+                                <img src="${getLocalTeamLogo(homeTeam.code)}" class="team-logo-lg" alt="">
+                                <h2 class="team-name-lg">${homeTeamName}</h2>
+                            </a>
                             <p class="team-manager-sm">Manager: ${homeTeam.manager}</p>
                             <span class="team-ladder-rank">Rank ${homeTeam.rank}</span>
                             <div class="team-badge-meta-block">
@@ -425,14 +480,18 @@
                                 <div class="form-string">${buildFormHTML(homeTeam.form)}</div>
                             </div>
                         </div>
+
                         <div class="score-center-block">
                             <div class="score-row">${displayScore ? `${homeScore} - ${awayScore}` : 'VS'}</div>
                             <span class="match-meta-badge ${finalStatus}">${finalStatus}</span>
                             <span class="match-time-label">${matchTime}<br>${matchDateStr}</span>
                         </div>
+
                         <div class="scoreboard-side">
-                            <img src="${getLocalTeamLogo(awayTeam.code)}" class="team-logo-lg" alt="">
-                            <h2 class="team-name-lg">${awayTeamName}</h2>
+                            <a href="team.html?name=${encodeURIComponent(awayTeamName)}" class="team-title-link">
+                                <img src="${getLocalTeamLogo(awayTeam.code)}" class="team-logo-lg" alt="">
+                                <h2 class="team-name-lg">${awayTeamName}</h2>
+                            </a>
                             <p class="team-manager-sm">Manager: ${awayTeam.manager}</p>
                             <span class="team-ladder-rank">Rank ${awayTeam.rank}</span>
                             <div class="team-badge-meta-block">
@@ -442,14 +501,7 @@
                         </div>
                     </div>
 
-                    <div class="predictor-bar-card">
-                        <div class="predictor-labels"><span>${homeTeam.code} Win Chance</span><span>Draw Probability</span><span>${awayTeam.code} Win Chance</span></div>
-                        <div class="predictor-track-combined">
-                            <div class="predictor-segment" style="width: ${pHome}%; background: ${homeTeam.hex};">${pHome}%</div>
-                            <div class="predictor-segment" style="width: ${pDraw}%; background: #94a3b8;">${pDraw}%</div>
-                            <div class="predictor-segment" style="width: ${pAway}%; background: ${awayTeam.hex};">${pAway}%</div>
-                        </div>
-                    </div>
+                    ${middleUtilitySectionHTML}
 
                     <div class="field-grand-wrapper">
                         <div class="pitch-container-horizontal">
@@ -506,11 +558,11 @@
 
                     <div class="roster-lists">
                         <div class="roster-card">
-                            <h3 style="margin-top:0; border-bottom: 3px solid ${homeTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800;">${homeTeamName} Squad</h3>
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${homeTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800;"><a href="team.html?name=${encodeURIComponent(homeTeamName)}" style="text-decoration:none; color:inherit;">${homeTeamName} Squad ➡</a></h3>
                             ${buildRosterTable(homePlayers)}
                         </div>
                         <div class="roster-card">
-                            <h3 style="margin-top:0; border-bottom: 3px solid ${awayTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800;">${awayTeamName} Squad</h3>
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${awayTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800;"><a href="team.html?name=${encodeURIComponent(awayTeamName)}" style="text-decoration:none; color:inherit;">${awayTeamName} Squad ➡</a></h3>
                             ${buildRosterTable(awayPlayers)}
                         </div>
                     </div>
