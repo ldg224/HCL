@@ -13,8 +13,9 @@
             --text-main: #0f172a;
             --text-muted: #64748b;
             --accent-color: #0066cc;
-            --pitch-green: #155e24;
-            --pitch-lines: rgba(255, 255, 255, 0.6);
+            --pitch-green: #2e7d32;
+            --pitch-lines: rgba(255, 255, 255, 0.4);
+            --color-draw: #94a3b8;
         }
 
         body {
@@ -27,6 +28,18 @@
             overflow-x: hidden;
             position: relative;
         }
+
+        /* Animated Ambient Weather Overlays */
+        .weather-overlay {
+            position: fixed; top:0; left:0; width:100vw; height:100vh;
+            pointer-events: none; z-index: 1; opacity: 0.25;
+        }
+        .rain-active { background: linear-gradient(transparent, rgba(255,255,255,0.05)), repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(156,163,175,0.15) 20px, rgba(156,163,175,0.15) 40px); animation: rainFall 0.6s linear infinite; }
+        .sunny-active { background: radial-gradient(circle at top right, rgba(253,224,71,0.2) 0%, transparent 60%); }
+        .windy-active { animation: windSway 4s ease-in-out infinite alternate; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.02) 50%, transparent); }
+
+        @keyframes rainFall { from { background-position: 0 0; } to { background-position: 20px 400px; } }
+        @keyframes windSway { from { transform: translateX(-20px); } to { transform: translateX(20px); } }
 
         .corner-graphic {
             position: fixed; width: 280px; height: 280px; object-fit: contain;
@@ -47,153 +60,112 @@
         .back-link:hover { color: var(--accent-color); }
 
         main {
-            width: 100%; max-width: 1100px; padding: 0 20px 50px 20px;
+            width: 100%; max-width: 1000px; padding: 0 20px 50px 20px;
             box-sizing: border-box; z-index: 10; display: flex; flex-direction: column; gap: 24px;
         }
 
-        /* Top Scoreboard Card Header */
-        .scoreboard-outer-card {
+        .scoreboard-card {
             background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 24px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-            position: relative; overflow: hidden; display: grid; 
-            grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; padding: 40px 30px;
+            border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px;
+            backdrop-filter: blur(8px); transform: translateY(0); transition: transform 0.3s ease;
         }
-        .scoreboard-bg-gradient {
-            position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: 0.14;
-            background: linear-gradient(135deg, var(--home-gradient-color, #3b82f6) 0%, transparent 45%, transparent 55%, var(--away-gradient-color, #ef4444) 100%);
-        }
-        .scoreboard-overlay-mesh {
-            position: absolute; inset: 0; opacity: 0.03; pointer-events: none; z-index: 1;
-            background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .scoreboard-side { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
-        .team-title-link { text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .team-title-link:hover .team-name-lg { color: var(--accent-color); }
-        .team-logo-lg { width: 85px; height: 85px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.08)); }
-        .team-name-lg { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin: 0; transition: color 0.2s; }
-        .team-manager-sm { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin: 0; }
-        .team-ladder-rank { font-size: 0.78rem; font-weight: 700; color: var(--accent-color); background: rgba(0,102,204,0.08); padding: 3px 10px; border-radius: 6px; margin-top: 2px; }
+        .scoreboard-card:hover { transform: translateY(-2px); }
+        .scoreboard-side { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+        .team-logo-lg { width: 75px; height: 75px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.08)); transition: transform 0.3s ease; }
+        .scoreboard-side:hover .team-logo-lg { transform: scale(1.08) rotate(3deg); }
+        .team-name-lg { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.3px; margin: 0; }
+        .team-code-pill { font-size: 0.75rem; font-weight: 700; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; color: var(--text-muted); }
         
-        .team-badge-meta-block { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 4px; }
-        .team-code-pill { font-size: 0.75rem; font-weight: 700; background: #e2e8f0; padding: 3px 10px; border-radius: 6px; color: var(--text-main); text-transform: uppercase; }
-
-        .score-center-block { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 180px; }
-        .score-row { font-family: -apple-system, monospace; font-size: 3.8rem; font-weight: 900; letter-spacing: -1px; color: var(--text-main); line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .match-meta-badge { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; background: #fef3c7; color: #b45309; padding: 5px 14px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .score-center-block { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 160px; }
+        .score-row { font-family: monospace; font-size: 3.5rem; font-weight: 800; letter-spacing: -1px; color: var(--text-main); line-height: 1; }
+        .match-meta-badge { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px; }
         .match-meta-badge.finalised { background: #dcfce7; color: #16a34a; }
-        .match-meta-badge.upcoming { background: #f1f5f9; color: #475569; }
-        .match-meta-badge.live { background: #fee2e2; color: #ef4444; }
-        .match-time-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); text-align: center; line-height: 1.4; }
+        .match-meta-badge.live { background: #fee2e2; color: #ef4444; font-weight: 800; animation: pulseGlow 1.5s infinite; }
+        .match-time-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; text-align: center; }
 
-        /* Integrated Form Indicators */
-        .form-string { display: flex; gap: 4px; font-family: monospace; font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+        @keyframes pulseGlow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+
+        /* Immersive Venue & Atmosphere Box */
+        .atmosphere-banner {
+            background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 14px;
+            padding: 16px 20px; color: #ffffff; display: flex; flex-wrap: wrap; justify-content: space-between;
+            align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-size: 0.88rem;
+        }
+        .atmo-item { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .atmo-label { color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+
+        .details-grid { display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
+        @media (max-width: 850px) { .details-grid { grid-template-columns: 1fr; } .scoreboard-card { grid-template-columns: 1fr; padding: 20px; } .score-center-block { grid-row: 1; } }
+
+        .sidebar-panel { display: flex; flex-direction: column; gap: 20px; }
+        .info-widget { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); display: flex; flex-direction: column; gap: 14px; }
+        .widget-title { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        
+        .predictor-row { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; font-weight: 600; }
+        .predictor-meta { display: flex; justify-content: space-between; }
+        .predictor-track { height: 10px; background: #e2e8f0; border-radius: 5px; display: flex; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        .predictor-fill { height: 100%; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .form-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; font-weight: 600; }
+        .form-string { display: flex; gap: 4px; font-family: monospace; font-size: 0.8rem; font-weight: 700; }
         .form-dot { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; }
         .form-w { background: #16a34a; }
         .form-d { background: #94a3b8; }
         .form-l { background: #ef4444; }
-        .form-empty { background: transparent; border: 1px dashed #cbd5e1; color: transparent; width: 16px; height: 16px; }
 
-        /* Stadium Ambient HUD */
-        .stadium-env-strip {
-            background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px;
-            padding: 10px 16px; display: flex; justify-content: space-between; flex-wrap: wrap;
-            gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.01);
-        }
+        .stat-bar-block { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; }
+        .stat-labels { display: flex; justify-content: space-between; color: var(--text-muted); }
+        .stat-split-track { height: 6px; background: #e2e8f0; border-radius: 3px; display: flex; overflow: hidden; }
+        .stat-half { height: 100%; transition: width 1s ease; }
 
-        /* Win Predictor Strip Header */
-        .predictor-bar-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.01); }
-        .predictor-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted); }
-        .predictor-track-combined { height: 12px; background: #e2e8f0; border-radius: 6px; display: flex; overflow: hidden; }
-        .predictor-segment { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.65rem; font-weight: 700; font-family: monospace; }
+        /* Dynamic Statements & Styled Quote Enclaves */
+        .statement-box {
+            border-radius: 12px; padding: 18px; color: #ffffff; position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06); display: flex; gap: 14px; align-items: flex-start;
+            animation: slideUp 0.5s ease forwards; margin-top: 10px;
+        }
+        .statement-logo { width: 45px; height: 45px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.85; flex-shrink: 0; }
+        .statement-logo.dark-icon { filter: none; opacity: 0.9; }
+        .statement-text { font-size: 0.9rem; line-height: 1.45; font-weight: 500; margin: 0; }
+        .statement-author { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; opacity: 0.8; margin-top: 6px; display: block; letter-spacing: 0.5px; }
 
-        /* Media Display & Replay Deck Section */
-        .news-media-card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
-            padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 14px;
+        .pitch-container {
+            background-color: var(--pitch-green); background-image: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.15) 100%);
+            border: 4px solid var(--pitch-lines); border-radius: 14px; height: 580px; position: relative;
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.05);
         }
-        .media-player-wrapper {
-            position: relative; width: 100%; padding-bottom: 56.25%; height: 0; 
-            border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .media-player-wrapper iframe {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;
-        }
-        .news-content h3 { margin: 4px 0 4px 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.3px; line-height: 1.3; color: var(--text-main); }
-        .news-source-line { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .live-red-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: inline-block; }
-
-        /* Press Conference Quotes Block */
-        .press-quotes-deck {
-            background: #0f172a; border-radius: 14px; color: #f8fafc; padding: 20px;
-            display: flex; flex-direction: column; gap: 12px; border-left: 5px solid var(--accent-color);
-        }
-        .press-quote-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #38bdf8; }
-        .press-quote-body { font-size: 0.92rem; font-style: italic; line-height: 1.5; color: #e2e8f0; margin: 0; }
-
-        /* PITCH CANVAS OVERHAUL */
-        .field-grand-wrapper {
-            background-color: var(--pitch-green);
-            border: 4px solid var(--pitch-lines); border-radius: 20px;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.35), 0 10px 25px rgba(15,23,42,0.08);
-            display: flex; flex-direction: column; overflow: hidden; position: relative;
-        }
-        .pitch-container-horizontal {
-            background-image: linear-gradient(90deg, rgba(255,255,255,0.02) 50%, transparent 50%);
-            background-size: 60px 100%;
-            height: 410px; position: relative; display: flex; flex-direction: row; width: 100%;
-        }
+        .pitch-center-line { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: var(--pitch-lines); transform: translateY(-50%); }
+        .pitch-center-circle { position: absolute; top: 50%; left: 50%; width: 110px; height: 110px; border: 2px solid var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
+        .pitch-half { height: 50%; width: 100%; position: relative; display: flex; justify-content: space-around; box-sizing: border-box; padding: 20px 10px; }
         
-        .pitch-center-line-vert { position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background: var(--pitch-lines); transform: translateX(-50%); }
-        .pitch-center-circle-middle { position: absolute; top: 50%; left: 50%; width: 120px; height: 120px; border: 2px solid var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
-        .pitch-center-spot { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
+        .pitch-half.away-side { display: flex; flex-direction: column-reverse; }
+        .pitch-half.home-side { display: flex; flex-direction: column; }
         
-        .pitch-penalty-box-left { position: absolute; left: 0; top: 50%; height: 220px; width: 85px; border: 2px solid var(--pitch-lines); border-left: 0; transform: translateY(-50%); }
-        .pitch-goal-box-left { position: absolute; left: 0; top: 50%; height: 100px; width: 30px; border: 2px solid var(--pitch-lines); border-left: 0; transform: translateY(-50%); }
-        .pitch-penalty-spot-left { position: absolute; left: 65px; top: 50%; width: 4px; height: 4px; background: var(--pitch-lines); border-radius: 50%; transform: translate(-50%, -50%); }
+        .pitch-line-row { display: flex; justify-content: center; gap: 30px; width: 100%; align-items: center; flex-grow: 1; }
 
-        .pitch-penalty-box-right { position: absolute; right: 0; top: 50%; height: 220px; width: 85px; border: 2px solid var(--pitch-lines); border-right: 0; transform: translateY(-50%); }
-        .pitch-goal-box-right { position: absolute; right: 0; top: 50%; height: 100px; width: 30px; border: 2px solid var(--pitch-lines); border-right: 0; transform: translateY(-50%); }
-        .pitch-penalty-spot-right { position: absolute; right: 65px; top: 50%; width: 4px; height: 4px; background: var(--pitch-lines); border-radius: 50%; transform: translate(50%, -50%); }
+        .player-node { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 70px; animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; }
+        .player-badge { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: #fff; box-shadow: 0 3px 6px rgba(0,0,0,0.2); text-shadow: 0 1px 1px rgba(0,0,0,0.2); transition: transform 0.2s; }
+        .player-node:hover .player-badge { transform: scale(1.15); }
+        .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.75); padding: 2px 6px; border-radius: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 75px; backdrop-filter: blur(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
-        .pitch-hud-label { position: absolute; top: 16px; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.6px; background: rgba(15,23,42,0.6); padding: 5px 12px; border-radius: 6px; pointer-events: none; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); }
-        .pitch-hud-label.left-label { left: 16px; }
-        .pitch-hud-label.right-label { right: 16px; }
-
-        .pitch-team-half { width: 50%; height: 100%; position: relative; display: flex; flex-direction: row; justify-content: space-around; align-items: center; box-sizing: border-box; padding: 20px 45px; z-index: 2; }
-        .pitch-team-half.home-left-side { flex-direction: row; }
-        .pitch-team-half.away-right-side { flex-direction: row-reverse; }
-
-        .pitch-column-band { display: flex; flex-direction: column; justify-content: center; gap: 32px; height: 100%; align-items: center; flex-grow: 1; }
-
-        .player-node { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 70px; animation: scaleIn 0.4s ease forwards; }
-        .player-badge { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
-        .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.88); padding: 3px 8px; border-radius: 5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        /* Integrated Bottom Performance Matrix Panel */
-        .integrated-performance-hud {
-            background: rgba(15, 23, 42, 0.94); border-top: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 16px 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 45px; backdrop-filter: blur(6px); position: relative; z-index: 3;
-        }
-        .stat-bar-block { display: flex; flex-direction: column; gap: 5px; }
-        .stat-labels { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 800; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-labels span.stat-val-highlight { color: #fff; font-family: monospace; font-size: 0.85rem; font-weight: 700; }
-        .stat-split-track { height: 7px; background: rgba(255,255,255,0.15); border-radius: 4px; display: flex; overflow: hidden; margin-top: 2px; }
-
-        /* Squad Roster Tables Grid */
         .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 650px) { .roster-lists { grid-template-columns: 1fr; } }
         .roster-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.01); }
-        .roster-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-        .roster-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; text-transform: uppercase; }
+        .roster-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .roster-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
         .roster-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
         .roster-table tr:last-child td { border-bottom: 0; }
 
         .loading-view { text-align: center; padding: 60px 0; color: var(--text-muted); font-weight: 500; width: 100%; }
-        @keyframes scaleIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        @keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
+
+    <div id="weather-space" class="weather-overlay"></div>
 
     <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-top-right">
     <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-bottom-left">
@@ -212,71 +184,89 @@
         const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
 
-        function getMatchDateTime(dateStr, timeStr) {
-            if (!dateStr || dateStr.toLowerCase().trim() === 'tba' || dateStr.toLowerCase().trim() === 'unconfirmed') return null;
-            const datePattern = /(\d{1,4})[-/](\d{1,2})[-/](\d{1,4})/;
-            const match = dateStr.match(datePattern);
-            if (!match) return null;
-            const day = parseInt(match[1], 10);
-            const month = parseInt(match[2], 10);
-            let hours = 0, minutes = 0;
-            if (timeStr && timeStr.includes(':')) {
-                const timeSegments = timeStr.split(':');
-                hours = parseInt(timeSegments[0].trim(), 10);
-                minutes = parseInt(timeSegments[1].trim(), 10);
-            }
-            return new Date(2026, month - 1, day, hours, minutes);
-        }
+        // Immersive Realism Pools
+        const VICTORIAN_VENUES = [
+            { name: "AAMI Park", city: "Melbourne", capacity: 30050 },
+            { name: "Lakeside Stadium", city: "Albert Park", capacity: 12000 },
+            { name: "Knights Stadium", city: "Sunshine North", capacity: 10000 },
+            { name: "CB Smith Reserve", city: "Fawkner", capacity: 2000 },
+            { name: "Kingston Heath Soccer Complex", city: "Cheltenham", capacity: 5000 },
+            { name: "Olympic Village", city: "Heidelberg West", capacity: 11500 },
+            { name: "George Andrews Reserve", city: "Dandenong", capacity: 5000 },
+            { name: "Abdullah Park", city: "Hume", capacity: 3000 },
+            { name: "SS Anderson Reserve", city: "Port Melbourne", capacity: 4000 },
+            { name: "Frank Holohan Soccer Complex", city: "Endeavour Hills", capacity: 4000 }
+        ];
 
-        function calculateTimeAgo(kickoffTime) {
-            if (!kickoffTime) return "Recently";
-            const diffMs = new Date() - kickoffTime;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMins / 60);
-            const diffDays = Math.floor(diffHours / 24);
+        const WEATHER_TYPES = [
+            { cond: "Overcast / Light Showers", class: "rain-active", pitchMod: "Slick Turf" },
+            { cond: "Crisp & Clear Evening", class: "sunny-active", pitchMod: "Optimal Surface" },
+            { cond: "Gale-force Crosswinds", class: "windy-active", pitchMod: "Unpredictable Aerial Trajectories" },
+            { cond: "Sunny & Humid", class: "sunny-active", pitchMod: "Heavy Underfoot" },
+            { cond: "Classic Cool Melbourne Drizzle", class: "rain-active", pitchMod: "Fast-skidding Surface" }
+        ];
 
-            if (diffMins < 60) return `${Math.max(1, diffMins)}m ago`;
-            if (diffHours < 24) return `${diffHours} hours ago`;
-            return `${diffDays} days ago`;
-        }
+        const QUOTES_WIN = [
+            "We controlled the tempo from the opening whistle. The tactics executed tonight were flawlessly implemented by the squad.",
+            "It's an outstanding result. Every individual stepped up, and we claimed the points that our offensive movement deserved.",
+            "Winning games at this level comes down to fine structural details. Today, our high press completely choked out their distribution channels.",
+            "The lads showed incredible grit. Securing these vital three points provides immense momentum going into next week.",
+            "We identified their defensive vulnerabilities early in the video sessions and exploited them beautifully all afternoon.",
+            "To win so decisively in front of this roaring atmosphere is incredibly gratifying. Credit belongs to the tireless group.",
+            "Our defensive transitions were immaculate. Winning the ball back high up the pitch allowed us to turn the screws.",
+            "It wasn't always elegant, but championship contenders find methods to win when match circumstances become physical.",
+            "An emphasizing triumph. We proved tonight that our squad depth can systematically pick apart any layout block in the league.",
+            "The game-plan worked to absolute perfection. Our wingbacks completely dominated the flanks and dictated play.",
+            "We kept our composure during their second-half resurgence and finished our counter opportunities clinically.",
+            "An unbelievable display of tactical discipline. This clean sheet is just as rewarding as the goals scored.",
+            "We wanted to make a statement statement to the remainder of the ladder today, and that performance spoke volumes.",
+            "Total dominance from back to front. The midfield core dictated terms and refused to let them settle into an operational rhythm.",
+            "Exceptional work rate across the pitch. We hunted in packs and fully earned the celebrations inside the dressing room."
+        ];
 
-        function generateManagerQuote(managerName, teamName, resultType) {
-            const winQuotes = [
-                `"The structure held up beautifully today. We anticipated their high press lines and isolated their central defenders on counter intervals. Full credit goes to the squad."`,
-                `"Getting maximum points here was a mandatory step for our season progression. We executed the transition parameters exactly as designed on the training block."`
-            ];
-            const drawQuotes = [
-                `"A highly tactical affair. Both groups possessed solid recovery shapes, making clear looks quite rare. We take the point, reset, and look forward to the upcoming calendar lines."`,
-                `"We dominated periods of high ball circulation but lacked the critical final action in the penalty box. A draw reflects a very balanced performance."`
-            ];
-            const lossQuotes = [
-                `"A frustrating outcome. We leaked goals on small communication lapses that simply cannot happen at this elite level. The full game video replay will guide our corrections."`,
-                `"We lacked density in our defensive recovery blocks today. We congratulate our opponents, but our concentration parameters must elevate immediately."`
-            ];
+        const QUOTES_LOSS = [
+            "We were severely punished for individual operational lapses. At this level, you simply cannot offer top teams free looks.",
+            "It's a bitter pill to swallow. We dictated massive blocks of possession but lacked that killer final pass inside the box.",
+            "The squad is deeply disappointed. We failed to meet our internal standards today, and accountability starts right at the top.",
+            "We didn't matching their physical intensity early on, and playing catch-up football uphill is a tactical nightmare.",
+            "Critical refereeing turning points altered our structural configuration, but we ultimately must look in the mirror regarding our execution.",
+            "To concede from a set-piece situation when we specifically prepared for it all week is genuinely unacceptable.",
+            "We created more than enough numerical opportunities to salvage a result, but our finishing metrics let us down.",
+            "They broke lines too easily on the counter. We exposed our center halves far too often without adequate structural tracking.",
+            "This result hurts, but it serves as a valuable blueprint for necessary internal training modifications before our next fixture.",
+            "We looked uncharacteristically sluggish out there. The fatigue factor caught up with our recovery cycles this afternoon.",
+            "We lost the critical individual duels in the final third. You don't win matches when losing the standard 50-50 challenges.",
+            "A painful reality check for us. We got comfortable after our recent streak and paid the ultimate price on the pitch.",
+            "We didn't adapt quickly enough to the shifting pitch conditions and structural overloads they introduced.",
+            "Our decision-making underneath their sustained high press was rushed and lacked the required calmness.",
+            "We apologize to the traveling support who turned out. We will analyze the tape and rebuild our transitional shapes immediately."
+        ];
 
-            const collection = resultType === 'W' ? winQuotes : resultType === 'L' ? lossQuotes : drawQuotes;
-            const selectedText = collection[Math.floor(Math.random() * collection.length)];
-            return { manager: managerName, team: teamName, quote: selectedText };
-        }
-
-        function parseYouTubeEmbed(url) {
-            if (!url) return null;
-            let videoId = null;
-            if (url.includes('v=')) {
-                videoId = url.split('v=')[1]?.split('&')[0];
-            } else if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1]?.split('?')[0];
-            } else if (url.includes('embed/')) {
-                videoId = url.split('embed/')[1]?.split('?')[0];
-            }
-            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-        }
+        const QUOTES_DRAW = [
+            "A draw is probably a fair reflection of a highly balanced tactical chessboard. Both defensive units stood tall.",
+            "It's a point gained on the road, but we left details out there that could have easily transformed this into a victory.",
+            "We showed exceptional character to fight back from a deficit, showing the internal identity this team possesses.",
+            "Frustrating to not secure all three points, but maintaining our unbeaten run in the competition remains crucial.",
+            "It was a chaotic, end-to-end spectacle for the spectators, but as coaches, we desperately wanted more structure.",
+            "We lacked the clinical final touch to break the deadlock tonight despite overwhelming territory dominance.",
+            "Both teams had golden opportunities to snatch it at the death. A tense, grueling ninety minutes of high-stakes football.",
+            "We take the solitary point, tidy up our final ball variations, and pivot all attention toward our next opposition.",
+            "A real tactical battle of attrition out there. Neither side wanted to overcommit and leave their defensive shape vulnerable.",
+            "We controlled the first half, they adjusted in the second. A classic game of split structural superiority.",
+            "Conceding the equalizer so late in the piece feels like a defeat, but we must take positive lessons from our build-up segments.",
+            "Our passing sequences were crisp, but credit to their defensive block—they were highly organized and tough to penetrate.",
+            "Valuable lessons learned today about closing down matches when carrying a slim tactical margin.",
+            "A grueling afternoon where space was at a premium. A point away from home in this league is never an easy achievement.",
+            "We lacked a bit of creative spark in the final third to fully dismantle their low-lying defensive shape."
+        ];
 
         async function fetchCSV(url) {
             const res = await fetch(url);
             const text = await res.text();
             return text.split(/\r\n|\n/).map(line => {
-                let result = []; let current = ''; let inQuotes = false;
+                let result = [];
+                let current = '';
+                let inQuotes = false;
                 for (let i = 0; i < line.length; i++) {
                     let char = line[i];
                     if (char === '"') { inQuotes = !inQuotes; }
@@ -300,7 +290,8 @@
 
         function getLocalTeamLogo(code) {
             if (!code) return 'logo_hcl_main.png';
-            switch(code.toUpperCase().trim()) {
+            const cleanCode = code.toUpperCase().trim();
+            switch(cleanCode) {
                 case 'LKD': return 'logo_lucky_fc_V3.png';
                 case 'SKS': return 'logo_sks_fc.png';
                 case 'LAU': return 'logo_lads_united.png';
@@ -312,7 +303,7 @@
         }
 
         function buildRosterTable(players) {
-            if(!players || players.length === 0) return `<p style="font-size:0.82rem; color:var(--text-muted); font-style:italic; padding:10px;">No synced active roster listings.</p>`;
+            if(!players || players.length === 0) return `<p style="font-size:0.82rem; color:var(--text-muted); font-style:italic;">No active roster records synced.</p>`;
             return `
                 <table class="roster-table">
                     <thead><tr><th>#</th><th>Name</th><th>Pos</th><th>Off</th><th>Def</th></tr></thead>
@@ -331,43 +322,31 @@
             `;
         }
 
-        function buildHorizontalPitchNodes(players, teamHex, textColor) {
+        function buildPitchNodes(players, teamHex, textColor) {
             const lines = { 'GK': [], 'DEF': [], 'MID': [], 'FWD': [] };
-            players.forEach(p => { if (p && p.pos && lines[p.pos]) lines[p.pos].push(p); });
-            const order = ['GK', 'DEF', 'MID', 'FWD'];
-            return order.map(posKey => `
-                <div class="pitch-column-band">
-                    ${lines[posKey].map(p => {
-                        const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
-                        return `
-                            <div class="player-node">
-                                <div class="player-badge" style="background-color: ${teamHex}; color: ${textColor};">
-                                    ${p.num}
-                                </div>
-                                <div class="player-name-tag">${nameParts[nameParts.length - 1]}</div>
+            players.forEach(p => { 
+                if (p && p.pos && lines[p.pos]) { lines[p.pos].push(p); }
+            });
+
+            const rowOrder = ['FWD', 'MID', 'DEF', 'GK'];
+            return rowOrder.map(posKey => `
+                <div class="pitch-line-row">
+                    ${lines[posKey].map(p => `
+                        <div class="player-node">
+                            <div class="player-badge" style="background-color: ${teamHex || '#475569'}; color: ${textColor || '#ffffff'};">
+                                ${p.num}
                             </div>
-                        `;
-                    }).join('')}
+                            <div class="player-name-tag">${p.name ? p.name.split(' ')[0] : 'Unknown'}</div>
+                        </div>
+                    `).join('')}
                 </div>
             `).join('');
-        }
-
-        function buildFormHTML(formArray) {
-            let nodes = [];
-            for (let i = 0; i < 5; i++) {
-                if (i < formArray.length) {
-                    nodes.push(`<span class="form-dot form-${formArray[i].toLowerCase()}">${formArray[i]}</span>`);
-                } else {
-                    nodes.push(`<span class="form-dot form-empty"></span>`);
-                }
-            }
-            return nodes.join('');
         }
 
         async function initMatchCentre() {
             try {
                 const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
-                if (!week) { throw new Error("Missing structural URL parameters."); }
+                if (!week) { throw new Error("Missing URL parameters. Please launch from the main portal."); }
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
@@ -380,291 +359,319 @@
                     teamsMap[teamNameKey] = {
                         name: row[0].trim(),
                         code: row[1] ? row[1].trim().toUpperCase() : 'TBA',
-                        manager: row[2] ? row[2].trim() : 'TBA',
+                        manager: row[2] ? row[2].trim() : 'Staff Coach',
                         hex: row[3] ? row[3].trim() : '#475569',
-                        form: [], rank: 'N/A'
+                        form: 'DDDDD'
                     };
-                });
-
-                // FIXED: Robust processing of cloud standings data
-                standingsRaw.forEach((row) => {
-                    if (!row || !row[1] || !row[0]) return;
-                    // Filter out comments or asterisk notice blocks
-                    if (row[0].startsWith('*') || row[0].toLowerCase().includes('notice')) return;
-                    
-                    const teamNameKey = row[1].trim().toLowerCase();
-                    const rankValue = row[0].trim();
-                    
-                    if (teamsMap[teamNameKey]) {
-                        teamsMap[teamNameKey].rank = rankValue.startsWith('#') ? rankValue : `#${rankValue}`;
-                    } else {
-                        // Failsafe: search by 3-letter code if names differ slightly
-                        const shortCode = teamNameKey.substring(0,3).toUpperCase();
-                        for (let k in teamsMap) {
-                            if (teamsMap[k].code === shortCode) {
-                                teamsMap[k].rank = `#${rankValue}`;
-                                break;
-                            }
-                        }
-                    }
                 });
 
                 const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row && row.length > 0 && row[0]);
 
-                let matchTarget = null;
-                let targetRowIdx = -1;
-                if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
-                    targetRowIdx = parseInt(matchIndex, 10);
-                    if (!isNaN(targetRowIdx) && fullScheduleItems[targetRowIdx]) matchTarget = fullScheduleItems[targetRowIdx];
-                } else if (homeCodeUrl && awayCodeUrl) {
-                    targetRowIdx = fullScheduleItems.findIndex(row => {
-                        const rHome = (row[4] || '').trim().toLowerCase();
-                        const rAway = (row[6] || '').trim().toLowerCase();
-                        return (row[0] || '').trim() === week.trim() && 
-                               (teamsMap[rHome]?.code === homeCodeUrl.toUpperCase().trim()) && 
-                               (teamsMap[rAway]?.code === awayCodeUrl.toUpperCase().trim());
-                    });
-                    if (targetRowIdx !== -1) matchTarget = fullScheduleItems[targetRowIdx];
-                }
-
-                if (!matchTarget) { throw new Error("Target match metrics not found inside dataset."); }
-
-                const homeTeamName = (matchTarget[4] || 'Home Team').trim();
-                const homeScoreStr = (matchTarget[5] || '0').trim();
-                const awayTeamName = (matchTarget[6] || 'Away Team').trim();
-                const awayScoreStr = (matchTarget[7] || '0').trim();
-                const matchTime = (matchTarget[2] || '').trim();
-                const matchDateStr = (matchTarget[1] || '').trim();
-                const spreadsheetVideoUrl = (matchTarget[8] || '').trim();
-                
-                const matchTimeObj = getMatchDateTime(matchDateStr, matchTime);
-                const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-
-                let finalStatus = (matchTarget[3] || 'upcoming').toLowerCase().trim();
-                if (finalStatus === 'finalised' && !isTimePassed) {
-                    finalStatus = 'upcoming';
-                }
-
                 let dynamicFormTracker = {};
                 Object.keys(teamsMap).forEach(k => { dynamicFormTracker[k] = []; });
-                fullScheduleItems.forEach((row, idx) => {
-                    const rDate = (row[1] || '').trim();
-                    const rTime = (row[2] || '').trim();
-                    const rTimeObj = getMatchDateTime(rDate, rTime);
-                    const rTimePassed = rTimeObj ? (new Date() >= rTimeObj) : false;
+                
+                fullScheduleItems.forEach(row => {
+                    const status = (row[3] || '').toUpperCase().trim();
+                    if (status === 'FINALISED') {
+                        const hName = (row[4] || '').trim().toLowerCase();
+                        const aName = (row[6] || '').trim().toLowerCase();
+                        const hScore = parseInt(row[5], 10) || 0;
+                        const aScore = parseInt(row[7], 10) || 0;
 
-                    if ((row[3] || '').toUpperCase().trim() === 'FINALISED' && rTimePassed) {
-                        const hN = (row[4] || '').trim().toLowerCase();
-                        const aN = (row[6] || '').trim().toLowerCase();
-                        const hS = parseInt(row[5], 10) || 0;
-                        const aS = parseInt(row[7], 10) || 0;
-                        if (dynamicFormTracker[hN]) dynamicFormTracker[hN].push(hS > aS ? 'W' : hS === aS ? 'D' : 'L');
-                        if (dynamicFormTracker[aN]) dynamicFormTracker[aN].push(aS > hS ? 'W' : aS === hS ? 'D' : 'L');
+                        if (dynamicFormTracker[hName]) {
+                            if (hScore > aScore) dynamicFormTracker[hName].push('W');
+                            else if (hScore === aScore) dynamicFormTracker[hName].push('D');
+                            else dynamicFormTracker[hName].push('L');
+                        }
+                        if (dynamicFormTracker[aName]) {
+                            if (aScore > hScore) dynamicFormTracker[aName].push('W');
+                            else if (aScore === hScore) dynamicFormTracker[aName].push('D');
+                            else dynamicFormTracker[aName].push('L');
+                        }
                     }
                 });
-                Object.keys(teamsMap).forEach(k => { teamsMap[k].form = (dynamicFormTracker[k] || []).slice(-5); });
 
-                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: [], rank: 'N/A' };
-                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: [], rank: 'N/A' };
+                Object.keys(teamsMap).forEach(k => {
+                    let historicalArr = dynamicFormTracker[k] || [];
+                    let last5 = historicalArr.slice(-5);
+                    while (last5.length < 5) { last5.push('D'); }
+                    teamsMap[k].form = last5.join('');
+                });
 
-                const darkTeams = ['LKD', 'TUR', 'CFC'];
-                const homeTextColor = darkTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
-                const awayTextColor = darkTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
+                let matchTarget = null;
+                if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
+                    const targetIdx = parseInt(matchIndex, 10);
+                    if (!isNaN(targetIdx) && fullScheduleItems[targetIdx]) { matchTarget = fullScheduleItems[targetIdx]; }
+                } else if (homeCodeUrl && awayCodeUrl) {
+                    matchTarget = fullScheduleItems.find(row => {
+                        const rowWeek = (row[0] || '').trim();
+                        const rowHomeName = (row[4] || '').trim().toLowerCase();
+                        const rowAwayName = (row[6] || '').trim().toLowerCase();
+                        const mappedHomeCode = teamsMap[rowHomeName] ? teamsMap[rowHomeName].code : '';
+                        const mappedAwayCode = teamsMap[rowAwayName] ? teamsMap[rowAwayName].code : '';
+                        return rowWeek === week.trim() && 
+                               mappedHomeCode.toUpperCase() === homeCodeUrl.toUpperCase().trim() && 
+                               mappedAwayCode.toUpperCase() === awayCodeUrl.toUpperCase().trim();
+                    });
+                }
 
-                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[1]).map(r => {
-                    const posM = (r[2] || '').match(/\[(.*?)\]/);
-                    const offM = (r[4] || '').match(/\((\d+)\)/);
-                    const defM = (r[5] || '').match(/\((\d+)\)/);
-                    return {
-                        num: parseInt(r[0], 10) || 0, name: r[1], team: (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase(),
-                        pos: posM ? posM[1].toUpperCase().trim() : 'MID',
-                        off: offM ? parseInt(offM[1], 10) : 0, def: defM ? parseInt(defM[1], 10) : 0
-                    };
+                if (!matchTarget) { throw new Error("Target match metrics not found in Google Sheets data."); }
+
+                const homeTeamName = (matchTarget[4] || 'Home Team').trim();
+                const homeScore = parseInt(matchTarget[5], 10) || 0;
+                const awayTeamName = (matchTarget[6] || 'Away Team').trim();
+                const awayScore = parseInt(matchTarget[7], 10) || 0;
+                const matchTime = (matchTarget[2] || 'TBA').trim();
+                const matchDate = (matchTarget[1] || 'TBA').trim();
+                let matchStatus = matchTarget[3] ? matchTarget[3].toUpperCase().trim() : 'UPCOMING';
+
+                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', hex: '#3b82f6', form: 'DDDDD', manager: 'Staff Coach' };
+                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', hex: '#ef4444', form: 'DDDDD', manager: 'Staff Coach' };
+
+                const darkTextTeams = ['LKD', 'TUR', 'CFC'];
+                const homeTextColor = darkTextTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
+                const awayTextColor = darkTextTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
+
+                let ladderMap = {};
+                standingsRaw.forEach((row, i) => {
+                    if (i > 0 && row && row[1]) { ladderMap[row[1].trim().toLowerCase()] = parseInt(row[9], 10) || 0; }
+                });
+
+                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r.length >= 6 && r[1]).map(r => {
+                    const posMatch = (r[2] || '').match(/\[(.*?)\]/);
+                    const pos = posMatch ? posMatch[1].toUpperCase().trim() : 'MID';
+                    const teamClean = (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase();
+                    const offMatch = (r[4] || '').match(/\((\d+)\)/);
+                    const off = offMatch ? parseInt(offMatch[1], 10) : (parseInt((r[4] || '').replace(/\D/g, ''), 10) || 0);
+                    const defMatch = (r[5] || '').match(/\((\d+)\)/);
+                    const def = defMatch ? parseInt(defMatch[1], 10) : (parseInt((r[5] || '').replace(/\D/g, ''), 10) || 0);
+                    const jerseyNum = parseInt(r[0], 10);
+                    return { id: r[0] || '', num: isNaN(jerseyNum) ? '0' : jerseyNum, name: r[1] || 'Unknown', team: teamClean, pos: pos, off: off, def: def };
                 });
 
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
-                let winHome = Math.max(15, 35 + ((homePlayers.length - awayPlayers.length) * 2));
-                let winAway = Math.max(15, 35 - ((homePlayers.length - awayPlayers.length) * 2));
-                let t = winHome + winAway + 30;
-                let pHome = Math.round((winHome / t) * 100); let pAway = Math.round((winAway / t) * 100); let pDraw = 100 - (pHome + pAway);
+                // FIX: Real Probability Logic Engine matching Index metrics
+                let homePts = ladderMap[homeTeamName.toLowerCase()] || 0;
+                let awayPts = ladderMap[awayTeamName.toLowerCase()] || 0;
+                let baseChance = 38; let drawChance = 24;
+                let diff = homePts - awayPts;
+                let winHome = Math.max(12, baseChance + (diff * 2.5));
+                let winAway = Math.max(12, baseChance - (diff * 2.5));
+                let totalOdds = winHome + winAway + drawChance;
+                let pHome = Math.round((winHome / totalOdds) * 100);
+                let pAway = Math.round((winAway / totalOdds) * 100);
+                let pDraw = 100 - (pHome + pAway);
 
-                let avgHOff = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.off, 0) / homePlayers.length) : 0;
-                let avgHDef = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.def, 0) / homePlayers.length) : 0;
-                let avgAOff = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.off, 0) / awayPlayers.length) : 0;
-                let avgADef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
+                let avgHomeOff = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.off, 0) / homePlayers.length) : 0;
+                let avgHomeDef = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.def, 0) / homePlayers.length) : 0;
+                let avgAwayOff = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.off, 0) / awayPlayers.length) : 0;
+                let avgAwayDef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
 
-                const displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
+                // Random Atmosphere Seeds using local match Index details
+                const seedIndex = (homeTeamName.length + awayTeamName.length + week.length) % 10;
+                const chosenVenue = VICTORIAN_VENUES[seedIndex];
+                const chosenWeather = WEATHER_TYPES[seedIndex % 5];
+                
+                // Add weather CSS animation classes to fixed viewport layer
+                document.getElementById('weather-space').className = `weather-overlay ${chosenWeather.class}`;
 
-                let middleUtilitySectionHTML = '';
+                // Randomized attendance metrics relative to stadium thresholds
+                const attendancePercent = 65 + Math.floor(((homePts + awayPts) % 35));
+                const exactAttendance = Math.round(chosenVenue.capacity * (attendancePercent / 100));
 
-                if (finalStatus === 'finalised') {
-                    const embeddedLink = parseYouTubeEmbed(spreadsheetVideoUrl) || "https://www.youtube.com/embed/dQw4w9WgXcQ";
-                    const relativeTimeStr = calculateTimeAgo(matchTimeObj);
-                    
-                    const hScoreInt = parseInt(homeScoreStr, 10) || 0;
-                    const aScoreInt = parseInt(awayScoreStr, 10) || 0;
-                    
-                    let homeResult = 'D'; let awayResult = 'D';
-                    if (hScoreInt > aScoreInt) { homeResult = 'W'; awayResult = 'L'; }
-                    else if (aScoreInt > hScoreInt) { homeResult = 'L'; awayResult = 'W'; }
+                // Contextual Media Statement Logic Selection Block
+                let selectedQuote = "";
+                let quoteAuthor = "Press Release";
+                let containerBgColor = "#475569";
+                let textIsDark = false;
+                let quoteLogo = getLocalTeamLogo(homeTeam.code);
 
-                    const hQuoteObj = generateManagerQuote(homeTeam.manager, homeTeamName, homeResult);
-                    const aQuoteObj = generateManagerQuote(awayTeam.manager, awayTeamName, awayResult);
-
-                    middleUtilitySectionHTML = `
-                        <div class="news-media-card">
-                            <div class="media-player-wrapper">
-                                <iframe src="${embeddedLink}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                            </div>
-                            <div class="news-content">
-                                <div class="news-source-line">
-                                    <span class="live-red-dot"></span> YouTube · Replay uploaded ${relativeTimeStr} · HCL Network
-                                </div>
-                                <h3>${homeTeamName} v ${awayTeamName}: HCL Season 1, Full Game Highlights | Week ${week}</h3>
-                            </div>
-                        </div>
-
-                        <div class="press-quotes-deck">
-                            <div>
-                                <div class="press-quote-title">${hQuoteObj.team} Post-Match Review — ${hQuoteObj.manager}</div>
-                                <p class="press-quote-body">${hQuoteObj.quote}</p>
-                            </div>
-                            <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:12px;">
-                                <div class="press-quote-title" style="color: #f43f5e;">${aQuoteObj.team} Post-Match Review — ${aQuoteObj.manager}</div>
-                                <p class="press-quote-body">${aQuoteObj.quote}</p>
-                            </div>
-                        </div>
-                    `;
+                if (matchStatus === 'FINALISED') {
+                    if (homeScore > awayScore) {
+                        selectedQuote = QUOTES_WIN[(homeScore + seedIndex) % 15];
+                        quoteAuthor = `${homeTeam.manager} (${homeTeam.code} Manager)`;
+                        containerBgColor = homeTeam.hex;
+                        textIsDark = darkTextTeams.includes(homeTeam.code);
+                        quoteLogo = getLocalTeamLogo(homeTeam.code);
+                    } else if (awayScore > homeScore) {
+                        selectedQuote = QUOTES_WIN[(awayScore + seedIndex) % 15];
+                        quoteAuthor = `${awayTeam.manager} (${awayTeam.code} Manager)`;
+                        containerBgColor = awayTeam.hex;
+                        textIsDark = darkTextTeams.includes(awayTeam.code);
+                        quoteLogo = getLocalTeamLogo(awayTeam.code);
+                    } else {
+                        selectedQuote = QUOTES_DRAW[(seedIndex) % 15];
+                        quoteAuthor = `${homeTeam.manager} (${homeTeam.code} Manager)`;
+                        containerBgColor = homeTeam.hex;
+                        textIsDark = darkTextTeams.includes(homeTeam.code);
+                        quoteLogo = getLocalTeamLogo(homeTeam.code);
+                    }
                 } else {
-                    middleUtilitySectionHTML = `
-                        <div class="predictor-bar-card">
-                            <div class="predictor-labels"><span>${homeTeam.code} Win Chance</span><span>Draw Probability</span><span>${awayTeam.code} Win Chance</span></div>
-                            <div class="predictor-track-combined">
-                                <div class="predictor-segment" style="width: ${pHome}%; background: ${homeTeam.hex};">${pHome}%</div>
-                                <div class="predictor-segment" style="width: ${pDraw}%; background: #94a3b8;">${pDraw}%</div>
-                                <div class="predictor-segment" style="width: ${pAway}%; background: ${awayTeam.hex};">${pAway}%</div>
-                            </div>
-                        </div>
-                    `;
+                    // Match Upcoming - Default to tactical pre-match breakdown from home boss
+                    selectedQuote = QUOTES_DRAW[(seedIndex + 4) % 15];
+                    quoteAuthor = `${homeTeam.manager} (${homeTeam.code} Manager Pre-Match Briefing)`;
+                    containerBgColor = homeTeam.hex;
+                    textIsDark = darkTextTeams.includes(homeTeam.code);
+                    quoteLogo = getLocalTeamLogo(homeTeam.code);
                 }
 
-                const baseCapacity = 38000 + (parseInt(week, 10) * 850);
-                const attendanceValue = (finalStatus === 'finalised') ? baseCapacity : Math.floor(baseCapacity * 0.94);
-
-                document.getElementById('app-mount').innerHTML = `
-                    <div class="scoreboard-outer-card" style="--home-gradient-color: ${homeTeam.hex}; --away-gradient-color: ${awayTeam.hex};">
-                        <div class="scoreboard-bg-gradient"></div>
-                        <div class="scoreboard-overlay-mesh"></div>
-                        
+                const isLiveOrFinalised = matchStatus === 'FINALISED' || matchStatus === 'LIVE';
+                const appMount = document.getElementById('app-mount');
+                
+                appMount.innerHTML = `
+                    <div class="scoreboard-card">
                         <div class="scoreboard-side">
-                            <a href="team.html?name=${encodeURIComponent(homeTeamName)}" class="team-title-link">
-                                <img src="${getLocalTeamLogo(homeTeam.code)}" class="team-logo-lg" alt="">
-                                <h2 class="team-name-lg">${homeTeamName}</h2>
-                            </a>
-                            <p class="team-manager-sm">Manager: ${homeTeam.manager}</p>
-                            <span class="team-ladder-rank">${homeTeam.rank.includes('N/A') ? 'Rank Pending' : homeTeam.rank}</span>
-                            <div class="team-badge-meta-block">
-                                <span class="team-code-pill">${homeTeam.code}</span>
-                                <div class="form-string">${buildFormHTML(homeTeam.form)}</div>
-                            </div>
+                            <img src="${getLocalTeamLogo(homeTeam.code)}" onerror="this.src='logo_hcl_main.png';" class="team-logo-lg" alt="">
+                            <h2 class="team-name-lg">${homeTeamName}</h2>
+                            <span class="team-code-pill">${homeTeam.code}</span>
                         </div>
-
                         <div class="score-center-block">
-                            <div class="score-row">${displayScore ? `${homeScoreStr} - ${awayScoreStr}` : 'VS'}</div>
-                            <span class="match-meta-badge ${finalStatus}">${finalStatus}</span>
-                            <span class="match-time-label">${matchTime}<br>${matchDateStr}</span>
+                            <div class="score-row">${isLiveOrFinalised ? `${homeScore} - ${awayScore}` : 'VS'}</div>
+                            <span class="match-meta-badge ${matchStatus.toLowerCase()}">${matchStatus.toLowerCase()}</span>
+                            <span class="match-time-label">${matchTime}<br>${matchDate}</span>
                         </div>
-
                         <div class="scoreboard-side">
-                            <a href="team.html?name=${encodeURIComponent(awayTeamName)}" class="team-title-link">
-                                <img src="${getLocalTeamLogo(awayTeam.code)}" class="team-logo-lg" alt="">
-                                <h2 class="team-name-lg">${awayTeamName}</h2>
-                            </a>
-                            <p class="team-manager-sm">Manager: ${awayTeam.manager}</p>
-                            <span class="team-ladder-rank">${awayTeam.rank.includes('N/A') ? 'Rank Pending' : awayTeam.rank}</span>
-                            <div class="team-badge-meta-block">
-                                <span class="team-code-pill">${awayTeam.code}</span>
-                                <div class="form-string">${buildFormHTML(awayTeam.form)}</div>
+                            <img src="${getLocalTeamLogo(awayTeam.code)}" onerror="this.src='logo_hcl_main.png';" class="team-logo-lg" alt="">
+                            <h2 class="team-name-lg">${awayTeamName}</h2>
+                            <span class="team-code-pill">${awayTeam.code}</span>
+                        </div>
+                    </div>
+
+                    <div class="atmosphere-banner">
+                        <div class="atmo-item">
+                            <span>📍</span>
+                            <div>
+                                <span class="atmo-label">VENUE LOCATION</span>
+                                <strong>${chosenVenue.name}, ${chosenVenue.city}</strong>
+                            </div>
+                        </div>
+                        <div class="atmo-item">
+                            <span>🌤️</span>
+                            <div>
+                                <span class="atmo-label">ENVIRONMENT CONDITIONS</span>
+                                <strong>${chosenWeather.cond} (${chosenWeather.pitchMod})</strong>
+                            </div>
+                        </div>
+                        <div class="atmo-item">
+                            <span>📢</span>
+                            <div>
+                                <span class="atmo-label">MATCH ATMOSPHERE CROWD</span>
+                                <strong>${exactAttendance.toLocaleString()} fans (${attendancePercent}% Capacity)</strong>
                             </div>
                         </div>
                     </div>
 
-                    <div class="stadium-env-strip">
-                        <span>🏟️ Location: ${homeTeamName} Community Stadium Ground</span>
-                        <span>👥 Crowds: ${attendanceValue.toLocaleString()} / Full Capacity</span>
-                        <span>🌤️ Environment: 18°C, Overcast Sky Conditions</span>
-                    </div>
-
-                    ${middleUtilitySectionHTML}
-
-                    <div class="field-grand-wrapper">
-                        <div class="pitch-container-horizontal">
-                            <div class="pitch-center-line-vert"></div>
-                            <div class="pitch-center-circle-middle"></div>
-                            <div class="pitch-center-spot"></div>
-                            
-                            <div class="pitch-penalty-box-left"></div>
-                            <div class="pitch-goal-box-left"></div>
-                            <div class="pitch-penalty-spot-left"></div>
-
-                            <div class="pitch-penalty-box-right"></div>
-                            <div class="pitch-goal-box-right"></div>
-                            <div class="pitch-penalty-spot-right"></div>
-
-                            <div class="pitch-hud-label left-label">${homeTeam.code}</div>
-                            <div class="pitch-hud-label right-label">${awayTeam.code}</div>
-                            
-                            <div class="pitch-team-half home-left-side">${buildHorizontalPitchNodes(homePlayers, homeTeam.hex, homeTextColor)}</div>
-                            <div class="pitch-team-half away-right-side">${buildHorizontalPitchNodes(awayPlayers, awayTeam.hex, awayTextColor)}</div>
-                        </div>
-
-                        <div class="integrated-performance-hud">
-                            <div class="stat-bar-block">
-                                <div class="stat-labels">
-                                    <span>Attack Power Rating</span>
-                                    <div>
-                                        <span class="stat-val-highlight" style="color:${homeTeam.hex};">${avgHOff}</span>
-                                        <span style="color:rgba(255,255,255,0.4); margin:0 4px;">:</span>
-                                        <span class="stat-val-highlight" style="color:${awayTeam.hex};">${avgAOff}</span>
-                                    </div>
+                    <div class="details-grid">
+                        <div class="sidebar-panel">
+                            <div class="info-widget">
+                                <h4 class="widget-title">Win Predictor Matrix</h4>
+                                <div class="predictor-row">
+                                    <div class="predictor-meta"><span>${homeTeamName} Chance</span><span>${pHome}%</span></div>
+                                    <div class="predictor-track"><div class="predictor-fill" style="width:0%; background:${homeTeam.hex};" id="p-home-bar"></div></div>
                                 </div>
-                                <div class="stat-split-track">
-                                    <div style="height:100%; width:${(avgHOff/(avgHOff+avgAOff||1))*100}%; background:${homeTeam.hex};"></div>
-                                    <div style="height:100%; width:${(avgAOff/(avgHOff+avgAOff||1))*100}%; background:${awayTeam.hex};"></div>
+                                <div class="predictor-row">
+                                    <div class="predictor-meta"><span>Draw Probability</span><span>${pDraw}%</span></div>
+                                    <div class="predictor-track"><div class="predictor-fill" style="width:0%; background:var(--color-draw);" id="p-draw-bar"></div></div>
+                                </div>
+                                <div class="predictor-row">
+                                    <div class="predictor-meta"><span>${awayTeamName} Chance</span><span>${pAway}%</span></div>
+                                    <div class="predictor-track"><div class="predictor-fill" style="width:0%; background:${awayTeam.hex};" id="p-away-bar"></div></div>
                                 </div>
                             </div>
-                            <div class="stat-bar-block">
-                                <div class="stat-labels">
-                                    <span>Defence Depth Rating</span>
-                                    <div>
-                                        <span class="stat-val-highlight" style="color:${homeTeam.hex};">${avgHDef}</span>
-                                        <span style="color:rgba(255,255,255,0.4); margin:0 4px;">:</span>
-                                        <span class="stat-val-highlight" style="color:${awayTeam.hex};">${avgADef}</span>
+
+                            <div class="info-widget">
+                                <h4 class="widget-title">Recent Form Index</h4>
+                                <div class="form-row">
+                                    <span>${homeTeam.code}</span>
+                                    <div class="form-string">
+                                        ${homeTeam.form.split('').map(char => `<span class="form-dot form-${char.toLowerCase()}">${char}</span>`).join('')}
                                     </div>
                                 </div>
-                                <div class="stat-split-track">
-                                    <div style="height:100%; width:${(avgHDef/(avgHDef+avgADef||1))*100}%; background:${homeTeam.hex};"></div>
-                                    <div style="height:100%; width:${(avgADef/(avgHDef+avgADef||1))*100}%; background:${awayTeam.hex};"></div>
+                                <div class="form-row">
+                                    <span>${awayTeam.code}</span>
+                                    <div class="form-string">
+                                        ${awayTeam.form.split('').map(char => `<span class="form-dot form-${char.toLowerCase()}">${char}</span>`).join('')}
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="info-widget">
+                                <h4 class="widget-title">Squad Performance Ratings</h4>
+                                <div class="stat-bar-block" style="margin-top:4px;">
+                                    <div class="stat-labels"><span>${avgHomeOff}</span><span>Average Attack</span><span>${avgAwayOff}</span></div>
+                                    <div class="stat-split-track">
+                                        <div class="stat-half" style="width:${(avgHomeOff / (avgHomeOff + avgAwayOff || 1)) * 100}%; background:${homeTeam.hex};"></div>
+                                        <div class="stat-half" style="width:${(avgAwayOff / (avgHomeOff + avgAwayOff || 1)) * 100}%; background:${awayTeam.hex};"></div>
+                                    </div>
+                                </div>
+                                <div class="stat-bar-block">
+                                    <div class="stat-labels"><span>${avgHomeDef}</span><span>Average Defence</span><span>${avgAwayDef}</span></div>
+                                    <div class="stat-split-track">
+                                        <div class="stat-half" style="width:${(avgHomeDef / (avgHomeDef + avgAwayDef || 1)) * 100}%; background:${homeTeam.hex};"></div>
+                                        <div class="stat-half" style="width:${(avgAwayDef / (avgHomeDef + avgAwayDef || 1)) * 100}%; background:${awayTeam.hex};"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="statement-box" style="background-color: ${containerBgColor}; color: ${textIsDark ? '#0f172a' : '#ffffff'};">
+                                <img src="${quoteLogo}" onerror="this.src='logo_hcl_main.png';" class="statement-logo ${textIsDark ? 'dark-icon' : ''}" alt="">
+                                <div>
+                                    <p class="statement-text">"${selectedQuote}"</p>
+                                    <span class="statement-author" style="color: ${textIsDark ? '#334155' : 'rgba(255,255,255,0.85)'};">${quoteAuthor}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pitch-container">
+                            <div class="pitch-center-line"></div>
+                            <div class="pitch-center-circle"></div>
+                            
+                            <div class="pitch-half away-side">
+                                ${buildPitchNodes(awayPlayers, awayTeam.hex, awayTextColor)}
+                            </div>
+                            <div class="pitch-half home-side">
+                                ${buildPitchNodes(homePlayers, homeTeam.hex, homeTextColor)}
                             </div>
                         </div>
                     </div>
 
                     <div class="roster-lists">
                         <div class="roster-card">
-                            <h3 style="margin-top:0; border-bottom: 3px solid ${homeTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800; letter-spacing:-0.2px;"><a href="team.html?name=${encodeURIComponent(homeTeamName)}" style="text-decoration:none; color:inherit;">${homeTeamName} Squad ➡</a></h3>
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${homeTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800; letter-spacing:-0.2px;">${homeTeamName} Squad</h3>
                             ${buildRosterTable(homePlayers)}
                         </div>
                         <div class="roster-card">
-                            <h3 style="margin-top:0; border-bottom: 3px solid ${awayTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800; letter-spacing:-0.2px;"><a href="team.html?name=${encodeURIComponent(awayTeamName)}" style="text-decoration:none; color:inherit;">${awayTeamName} Squad ➡</a></h3>
+                            <h3 style="margin-top:0; border-bottom: 3px solid ${awayTeam.hex}; display:inline-block; padding-bottom:4px; font-weight:800; letter-spacing:-0.2px;">${awayTeamName} Squad</h3>
                             ${buildRosterTable(awayPlayers)}
                         </div>
                     </div>
                 `;
+
+                // Stagger animations smoothly on load parameters
+                setTimeout(() => {
+                    document.getElementById('p-home-bar').style.width = `${pHome}%`;
+                    document.getElementById('p-draw-bar').style.width = `${pDraw}%`;
+                    document.getElementById('p-away-bar').style.width = `${pAway}%`;
+                    
+                    document.querySelectorAll('.player-node').forEach((node, idx) => {
+                        setTimeout(() => { node.style.opacity = '1'; }, idx * 40);
+                    });
+                }, 150);
+
             } catch (err) {
-                document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding:50px;"><h3>Match Sync Interrupted</h3><p>${err.message}</p></div>`;
+                console.error("Match Render Error:", err);
+                const errorMount = document.getElementById('app-mount');
+                if (errorMount) {
+                    errorMount.innerHTML = `
+                        <div style="text-align:center; padding: 50px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <h3 style="color: #ef4444; margin-top:0;">Match Sync Interrupted</h3>
+                            <p style="color: #64748b; font-size: 0.9rem;">Ensure you're launching this page via a fixture card on the main hub.</p>
+                            <p style="color: #64748b; font-size: 0.8rem; font-family: monospace; margin-top: 15px;">System Log: ${err.message}</p>
+                        </div>
+                    `;
+                }
             }
         }
 
