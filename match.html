@@ -206,7 +206,7 @@
             `;
         }
 
-        function buildPitchNodes(players, teamHex) {
+        function buildPitchNodes(players, teamHex, textColor) {
             const lines = { 'GK': [], 'DEF': [], 'MID': [], 'FWD': [] };
             players.forEach(p => { 
                 if (p && p.pos && lines[p.pos]) {
@@ -219,7 +219,7 @@
                 <div class="pitch-line-row">
                     ${lines[posKey].map(p => `
                         <div class="player-node">
-                            <div class="player-badge" style="background-color: ${teamHex || '#475569'};">
+                            <div class="player-badge" style="background-color: ${teamHex || '#475569'}; color: ${textColor || '#ffffff'};">
                                 ${p.num}
                             </div>
                             <div class="player-name-tag">${p.name ? p.name.split(' ')[0] : 'Unknown'}</div>
@@ -238,23 +238,58 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // Map teams row configurations
+                // Map teams row configurations safely matching Teams.csv layout
                 let teamsMap = {};
                 teamsRaw.forEach((row, i) => {
                     if (i === 0 || !row || !row[0]) return;
-                    teamsMap[row[0].trim().toLowerCase()] = {
-                        code: row[1] ? row[1].trim() : 'TBA',
-                        hex: row[2] ? row[2].trim() : '#475569',
-                        form: row[3] ? row[3].trim() : 'DDDDD'
+                    const teamNameKey = row[0].trim().toLowerCase();
+                    teamsMap[teamNameKey] = {
+                        name: row[0].trim(),
+                        code: row[1] ? row[1].trim().toUpperCase() : 'TBA',
+                        manager: row[2] ? row[2].trim() : '',
+                        hex: row[3] ? row[3].trim() : '#475569',
+                        form: 'DDDDD' // Form calculated dynamically from schedule below
                     };
                 });
 
                 // Extract schedule items securely
                 const fullScheduleItems = scheduleRaw.filter((row, i) => i > 0 && row && row.length > 0 && row[0]);
 
-                // Find Match logic
-                let matchTarget = null;
+                // Dynamic Form History Indexer Engine
+                let dynamicFormTracker = {};
+                Object.keys(teamsMap).forEach(k => { dynamicFormTracker[k] = []; });
                 
+                fullScheduleItems.forEach(row => {
+                    const status = (row[3] || '').toUpperCase().trim();
+                    if (status === 'FINALISED') {
+                        const hName = (row[4] || '').trim().toLowerCase();
+                        const aName = (row[6] || '').trim().toLowerCase();
+                        const hScore = parseInt(row[5], 10) || 0;
+                        const aScore = parseInt(row[7], 10) || 0;
+
+                        if (dynamicFormTracker[hName]) {
+                            if (hScore > aScore) dynamicFormTracker[hName].push('W');
+                            else if (hScore === aScore) dynamicFormTracker[hName].push('D');
+                            else dynamicFormTracker[hName].push('L');
+                        }
+                        if (dynamicFormTracker[aName]) {
+                            if (aScore > hScore) dynamicFormTracker[aName].push('W');
+                            else if (aScore === hScore) dynamicFormTracker[aName].push('D');
+                            else dynamicFormTracker[aName].push('L');
+                        }
+                    }
+                });
+
+                // Finalize form histories (take last 5 matches, pad with D if brand new)
+                Object.keys(teamsMap).forEach(k => {
+                    let historicalArr = dynamicFormTracker[k] || [];
+                    let last5 = historicalArr.slice(-5);
+                    while (last5.length < 5) { last5.push('D'); }
+                    teamsMap[k].form = last5.join('');
+                });
+
+                // Resolve Target Match lookup
+                let matchTarget = null;
                 if (matchIndex !== null && matchIndex !== undefined && matchIndex !== '') {
                     const targetIdx = parseInt(matchIndex, 10);
                     if (!isNaN(targetIdx) && fullScheduleItems[targetIdx]) {
@@ -266,7 +301,6 @@
                         const rowHomeName = (row[4] || '').trim().toLowerCase();
                         const rowAwayName = (row[6] || '').trim().toLowerCase();
                         
-                        // Strict null-safe fallback (No Optional Chaining syntax)
                         const mappedHomeCode = teamsMap[rowHomeName] ? teamsMap[rowHomeName].code : '';
                         const mappedAwayCode = teamsMap[rowAwayName] ? teamsMap[rowAwayName].code : '';
 
@@ -280,7 +314,7 @@
                     throw new Error("Target match metrics not found in Google Sheets data."); 
                 }
 
-                // Extract core stats
+                // Extract core variables
                 const homeTeamName = (matchTarget[4] || 'Home Team').trim();
                 const homeScore = (matchTarget[5] || '0').trim();
                 const awayTeamName = (matchTarget[6] || 'Away Team').trim();
@@ -292,22 +326,47 @@
                 const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', hex: '#3b82f6', form: 'DDDDD' };
                 const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', hex: '#ef4444', form: 'DDDDD' };
 
+                // Handle dynamic text badge contrast modes matching index.html aesthetics
+                const darkTextTeams = ['LKD', 'TUR', 'CFC'];
+                const homeTextColor = darkTextTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
+                const awayTextColor = darkTextTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
+
                 let ladderMap = {};
                 standingsRaw.forEach((row, i) => {
                     if (i > 0 && row && row[1]) {
-                        ladderMap[row[1].trim().toLowerCase()] = parseInt(row[9]) || 0;
+                        ladderMap[row[1].trim().toLowerCase()] = parseInt(row[9], 10) || 0;
                     }
                 });
 
-                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[3]).map(r => ({
-                    id: r[0] || '', 
-                    num: r[1] || '0', 
-                    name: r[2] || 'Unknown', 
-                    team: (r[3] || '').trim().toLowerCase(), 
-                    pos: (r[4] || 'MID').toUpperCase().trim(), 
-                    off: parseInt(r[5]) || 0, 
-                    def: parseInt(r[6]) || 0
-                }));
+                // Roster Parsing Engine addressing structural bracket requirements
+                const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r.length >= 6 && r[1]).map(r => {
+                    // Extract shorthand field configuration (e.g. "[FWD] Forward" -> "FWD")
+                    const posMatch = (r[2] || '').match(/\[(.*?)\]/);
+                    const pos = posMatch ? posMatch[1].toUpperCase().trim() : 'MID';
+
+                    // Extract clean assignment parent name (remove team brackets prefix safely)
+                    const teamClean = (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase();
+
+                    // Parse rating value matrices from numeric layout boundaries
+                    const offMatch = (r[4] || '').match(/\((\d+)\)/);
+                    const off = offMatch ? parseInt(offMatch[1], 10) : (parseInt((r[4] || '').replace(/\D/g, ''), 10) || 0);
+
+                    const defMatch = (r[5] || '').match(/\((\d+)\)/);
+                    const def = defMatch ? parseInt(defMatch[1], 10) : (parseInt((r[5] || '').replace(/\D/g, ''), 10) || 0);
+
+                    // Use numeric parts of player registration ID safely as primary jersey identifier
+                    const jerseyNum = parseInt(r[0], 10);
+
+                    return {
+                        id: r[0] || '', 
+                        num: isNaN(jerseyNum) ? '0' : jerseyNum, 
+                        name: r[1] || 'Unknown', 
+                        team: teamClean, 
+                        pos: pos, 
+                        off: off, 
+                        def: def
+                    };
+                });
 
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
@@ -408,10 +467,10 @@
                             <div class="pitch-center-circle"></div>
                             
                             <div class="pitch-half away-side">
-                                ${buildPitchNodes(awayPlayers, awayTeam.hex)}
+                                ${buildPitchNodes(awayPlayers, awayTeam.hex, awayTextColor)}
                             </div>
                             <div class="pitch-half home-side">
-                                ${buildPitchNodes(homePlayers, homeTeam.hex)}
+                                ${buildPitchNodes(homePlayers, homeTeam.hex, homeTextColor)}
                             </div>
                         </div>
                     </div>
