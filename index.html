@@ -57,7 +57,7 @@
             box-sizing: border-box; 
         }
 
-        /* Structural Page Header */
+        /* Structural Top Header Panel */
         .page-header {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -67,7 +67,7 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.03);
             animation: fadeInUp 0.5s ease forwards;
         }
-        .welcome-block h1 { margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
+        .welcome-block h1 { margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
         .welcome-block p { margin: 0; font-size: 0.92rem; color: var(--text-muted); }
 
         /* Two-Column Master Layout Grid */
@@ -250,7 +250,7 @@
         <!-- Structural Top Header Panel -->
         <div class="page-header">
             <div class="welcome-block">
-                <h1 style="background: linear-gradient(45deg, #0f172a, #0066cc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">HCL Match Portal</h1>
+                <h1>HCL Match Portal</h1>
                 <p>Track live team rosters, match parameters, and explore interconnected tactical performance matrices.</p>
             </div>
         </div>
@@ -712,7 +712,6 @@
                 bucketUnconfirmed.forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
             }
 
-            // Render Sidebar Live Match Feed Block
             const tickerMount = document.getElementById('live-ticker-mount');
             if(tickerMatches.length === 0) {
                 tickerMount.innerHTML = `<div class="loading-text" style="padding:10px 0; font-size:0.8rem;">No matches scheduled for today.</div>`;
