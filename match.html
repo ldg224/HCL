@@ -404,7 +404,7 @@
             return nodes.join('');
         }
 
-        async function initMatchCentre() {
+async function initMatchCentre() {
             try {
                 const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
                 if (!week) { throw new Error("Missing structural URL parameters."); }
@@ -422,19 +422,19 @@
                         code: row[1] ? row[1].trim().toUpperCase() : 'TBA',
                         manager: row[2] ? row[2].trim() : 'TBA',
                         hex: row[3] ? row[3].trim() : '#475569',
-                        form: [], rank: 'N/A'
+                        form: [], rank: 'N/A', points: 0
                     };
                 });
 
-// FIXED: Robust processing of cloud standings data
+                // FIXED: Accurate index matching with index.html points column
                 standingsRaw.forEach((row) => {
                     if (!row || !row[1] || !row[0]) return;
-                    // Filter out comments or asterisk notice blocks
                     if (row[0].startsWith('*') || row[0].toLowerCase().includes('notice')) return;
                     
                     const teamNameKey = row[1].trim().toLowerCase();
                     const rankValue = row[0].trim();
-                    const pointsValue = parseInt(row[6] || row[row.length - 1], 10) || 0; // Capture points column
+                    // CRITICAL FIX: Pulling points from index 9, EXACTLY matching index.html logic
+                    const pointsValue = parseInt(row[9], 10) || 0; 
                     
                     if (teamsMap[teamNameKey]) {
                         teamsMap[teamNameKey].rank = rankValue.startsWith('#') ? rankValue : `#${rankValue}`;
@@ -479,7 +479,6 @@
                 const matchTime = (matchTarget[2] || '').trim();
                 const matchDateStr = (matchTarget[1] || '').trim();
                 
-                // Fetch Link at Index 8 ("Match Video Link" column)
                 const spreadsheetVideoUrl = (matchTarget[8] || '').trim();
                 const matchTimeObj = getMatchDateTime(matchDateStr, matchTime);
                 const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
@@ -508,8 +507,8 @@
                 });
                 Object.keys(teamsMap).forEach(k => { teamsMap[k].form = (dynamicFormTracker[k] || []).slice(-5); });
 
-                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: [], rank: 'N/A' };
-                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: [], rank: 'N/A' };
+                const homeTeam = teamsMap[homeTeamName.toLowerCase()] || { code: 'HME', manager: 'TBA', hex: '#3b82f6', form: [], rank: 'N/A', points: 0 };
+                const awayTeam = teamsMap[awayTeamName.toLowerCase()] || { code: 'AWY', manager: 'TBA', hex: '#ef4444', form: [], rank: 'N/A', points: 0 };
 
                 const darkTeams = ['LKD', 'TUR', 'CFC'];
                 const homeTextColor = darkTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
@@ -529,16 +528,14 @@
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
-// --- REALISTIC WIN PREDICTOR ENGINE (POINT-BASED MATCHED) ---
+                // --- REALISTIC WIN PREDICTOR ENGINE (MATCHES INDEX EXACTLY) ---
                 let homePts = homeTeam.points || 0;
                 let awayPts = awayTeam.points || 0;
 
-                // Incorporate Home Ground Advantage (HGA)
                 const HOME_ADVANTAGE_MODIFIER = 3.0; 
                 let homeRating = homePts + HOME_ADVANTAGE_MODIFIER;
                 let awayRating = awayPts;
 
-                // Bradley-Terry / Logistic Probability Calculation
                 const SCALING_FACTOR = 15; 
                 let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
                 let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
@@ -547,18 +544,15 @@
                 let baseHomeWin = homeExpected / totalExpected;
                 let baseAwayWin = awayExpected / totalExpected;
 
-                // Dynamic Draw Calculation
                 const MAX_DRAW_CHANCE = 0.26; 
                 let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
                 let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
 
-                // Allocate remaining probability fields
                 let remainingProb = 1.0 - drawChance;
                 let pHome = Math.round(baseHomeWin * remainingProb * 100);
                 let pAway = Math.round(baseAwayWin * remainingProb * 100);
                 let pDraw = 100 - (pHome + pAway);
 
-                // Final safety check to ensure zero negative values
                 if (pHome < 5) { pHome = 5; pDraw = 20; pAway = 75; }
                 if (pAway < 5) { pAway = 5; pDraw = 20; pHome = 75; }
                 // --- END PREDICTOR ENGINE ---
@@ -573,7 +567,6 @@
                 let middleUtilitySectionHTML = '';
 
                 if (finalStatus === 'finalised') {
-                    // Try parsing real link; NO MORE dummy video fallback
                     const embeddedLink = parseYouTubeEmbed(spreadsheetVideoUrl);
                     const relativeTimeStr = calculateTimeAgo(matchTimeObj);
                     
@@ -587,7 +580,6 @@
                     const hQuoteObj = generateManagerQuote(homeTeam.manager, homeTeamName, homeResult);
                     const aQuoteObj = generateManagerQuote(awayTeam.manager, awayTeamName, awayResult);
 
-                    // Dynamic Video Block Rendering
                     const videoBlock = embeddedLink 
                         ? `<div class="media-player-wrapper">
                                <iframe src="${embeddedLink}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
@@ -748,8 +740,3 @@
                 document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding:50px;"><h3>Match Sync Interrupted</h3><p>${err.message}</p></div>`;
             }
         }
-
-        window.addEventListener('DOMContentLoaded', initMatchCentre);
-    </script>
-</body>
-</html>
