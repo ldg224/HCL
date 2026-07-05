@@ -101,53 +101,11 @@
             gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.01);
         }
 
-function calculatePredictorPercentages(homeTeam, awayTeam) {
-    // 1. Extract raw leaderboard points
-    let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
-    let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
-
-    // 2. Incorporate Home Ground Advantage (HGA)
-    // In Elo systems, HGA is typically worth around +25 to +50 rating points.
-    // We scale your standing points to approximate an Elo-like gap.
-    const HOME_ADVANTAGE_MODIFIER = 3.0; 
-    let homeRating = homePts + HOME_ADVANTAGE_MODIFIER;
-    let awayRating = awayPts;
-
-    // 3. Bradley-Terry / Logistic Probability Calculation
-    // We calculate an expected performance metric using an exponential base (e.g., 10^x or e^x)
-    // This creates a realistic curve where small gaps matter, but huge gaps don't break the math.
-    const SCALING_FACTOR = 15; // Controls how steep the performance curve is
-    let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
-    let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
-
-    // Baseline win distributions before accounting for a draw
-    let totalExpected = homeExpected + awayExpected;
-    let baseHomeWin = homeExpected / totalExpected;
-    let baseAwayWin = awayExpected / totalExpected;
-
-    // 4. Dynamic Draw Calculation
-    // Draws are most frequent when teams are perfectly matched (base win is 50/50).
-    // As the skill gap widens, the probability of a draw naturally shrinks toward 0.
-    const MAX_DRAW_CHANCE = 0.26; // 26% historical average draw rate for balanced soccer/football matchups
-    let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
-    let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
-
-    // 5. Allocate remaining probability to Home and Away wins
-    let remainingProb = 1.0 - drawChance;
-    let finalHomeWin = baseHomeWin * remainingProb;
-    let finalAwayWin = baseAwayWin * remainingProb;
-
-    // 6. Convert to clean, rounded percentages summing exactly to 100%
-    let homeWinPct = Math.round(finalHomeWin * 100);
-    let awayWinPct = Math.round(finalAwayWin * 100);
-    let drawPct = 100 - (homeWinPct + awayWinPct);
-
-    // Final safety check to ensure zero negative values in catastrophic point scenarios
-    if (homeWinPct < 5) { homeWinPct = 5; drawPct = 20; awayWinPct = 75; }
-    if (awayWinPct < 5) { awayWinPct = 5; drawPct = 20; homeWinPct = 75; }
-
-    return { home: homeWinPct, draw: drawPct, away: awayWinPct };
-}
+        /* Win Predictor Strip Header */
+        .predictor-bar-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.01); }
+        .predictor-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted); }
+        .predictor-track-combined { height: 12px; background: #e2e8f0; border-radius: 6px; display: flex; overflow: hidden; }
+        .predictor-segment { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.65rem; font-weight: 700; font-family: monospace; }
 
         /* Media Display & Replay Deck Section */
         .news-media-card {
@@ -568,10 +526,43 @@ function calculatePredictorPercentages(homeTeam, awayTeam) {
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
-                let winHome = Math.max(15, 35 + ((homePlayers.length - awayPlayers.length) * 2));
-                let winAway = Math.max(15, 35 - ((homePlayers.length - awayPlayers.length) * 2));
-                let t = winHome + winAway + 30;
-                let pHome = Math.round((winHome / t) * 100); let pAway = Math.round((winAway / t) * 100); let pDraw = 100 - (pHome + pAway);
+               // --- DYNAMIC REALISTIC WIN PREDICTOR ENGINE ---
+let homePts = parseInt(LADDER_POINTS_MAP[homeTeamName]) || 0;
+let awayPts = parseInt(LADDER_POINTS_MAP[awayTeamName]) || 0;
+
+// 1. Incorporate Home Ground Advantage (HGA)
+const HOME_ADVANTAGE_MODIFIER = 3.0; 
+let homeRating = homePts + HOME_ADVANTAGE_MODIFIER;
+let awayRating = awayPts;
+
+// 2. Bradley-Terry / Logistic Probability Curve Calculation
+const SCALING_FACTOR = 15; // Controls performance curve steepness
+let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
+let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
+
+let totalExpected = homeExpected + awayExpected;
+let baseHomeWin = homeExpected / totalExpected;
+let baseAwayWin = awayExpected / totalExpected;
+
+// 3. Dynamic Draw Calculation (Shrinks when the skill gap is massive)
+const MAX_DRAW_CHANCE = 0.26; // Balanced baseline 26% draw rate
+let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
+let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
+
+// 4. Allocate remaining probability fields
+let remainingProb = 1.0 - drawChance;
+let finalHomeWin = baseHomeWin * remainingProb;
+let finalAwayWin = baseAwayWin * remainingProb;
+
+// 5. Convert to clean integer percentages totaling exactly 100%
+let homePct = Math.round(finalHomeWin * 100);
+let awayPct = Math.round(finalAwayWin * 100);
+let drawPct = 100 - (homePct + awayPct);
+
+// Safeguard edge case overrides
+if (homePct < 5) { homePct = 5; drawPct = 20; awayPct = 75; }
+if (awayPct < 5) { awayPct = 5; drawPct = 20; homePct = 75; }
+// --- END PREDICTOR ENGINE ---
 
                 let avgHOff = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.off, 0) / homePlayers.length) : 0;
                 let avgHDef = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.def, 0) / homePlayers.length) : 0;
