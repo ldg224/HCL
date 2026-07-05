@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Match Centre | HCL</title>
-    <link rel="icon" type="image/png" href="logo_hcl_main.png">
+    <link class="favicon" rel="icon" type="image/png" href="logo_hcl_main.png">
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -594,12 +594,11 @@
                             if (!isNaN(minute)) {
                                 let playerName = 'Unknown Player';
                                 let isHome = false;
-                                let teamHex = '#64748b'; // Fallback
+                                let teamHex = '#64748b';
                                 
-                                // First check ID exact match, fallback to checking string inclusions
                                 const playerMatch = allPlayers.find(p => p.id === idStr || p.name.includes(idStr));
                                 if (playerMatch) {
-                                    playerName = playerMatch.name.replace(/\[.*?\]\s*/, ''); // Remove the position bracket 
+                                    playerName = playerMatch.name.replace(/\[.*?\]\s*/, '');
                                     if (homePlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
                                         isHome = true;
                                         teamHex = homeTeam.hex;
@@ -614,12 +613,18 @@
                         }
                     }
                 }
-                matchEvents.sort((a, b) => a.minute - b.minute); // Chronological sorting
+                matchEvents.sort((a, b) => a.minute - b.minute);
                 
                 let gameEventsHTML = '';
                 if (matchEvents.length > 0) {
                     let firstHalf = matchEvents.filter(e => e.minute <= 45);
                     let secondHalf = matchEvents.filter(e => e.minute > 45);
+
+                    // Auto-calculate structural aggregate scores for timelines dynamically
+                    let htHomeGoals = firstHalf.filter(e => e.isHome).length;
+                    let htAwayGoals = firstHalf.filter(e => !e.isHome).length;
+                    let ftHomeGoals = matchEvents.filter(e => e.isHome).length;
+                    let ftAwayGoals = matchEvents.filter(e => !e.isHome).length;
                     
                     const renderEventLine = (ev) => `
                         <div class="timeline-event ${ev.isHome ? 'home-event' : 'away-event'}">
@@ -639,9 +644,9 @@
                                 <div class="timeline-line"></div>
                                 <div class="half-time-divider">KICK OFF</div>
                                 ${firstHalf.map(renderEventLine).join('')}
-                                ${firstHalf.length > 0 || secondHalf.length > 0 ? `<div class="half-time-divider">HALF TIME</div>` : ''}
+                                <div class="half-time-divider">HALF TIME (${htHomeGoals} - ${htAwayGoals})</div>
                                 ${secondHalf.map(renderEventLine).join('')}
-                                ${secondHalf.length > 0 ? `<div class="half-time-divider">FULL TIME</div>` : ''}
+                                <div class="half-time-divider">FULL TIME (${ftHomeGoals} - ${ftAwayGoals})</div>
                             </div>
                         </div>
                     `;
