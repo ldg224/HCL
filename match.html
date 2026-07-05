@@ -426,7 +426,7 @@
                     };
                 });
 
-                // FIXED: Robust processing of cloud standings data
+// FIXED: Robust processing of cloud standings data
                 standingsRaw.forEach((row) => {
                     if (!row || !row[1] || !row[0]) return;
                     // Filter out comments or asterisk notice blocks
@@ -434,15 +434,18 @@
                     
                     const teamNameKey = row[1].trim().toLowerCase();
                     const rankValue = row[0].trim();
+                    const pointsValue = parseInt(row[6] || row[row.length - 1], 10) || 0; // Capture points column
                     
                     if (teamsMap[teamNameKey]) {
                         teamsMap[teamNameKey].rank = rankValue.startsWith('#') ? rankValue : `#${rankValue}`;
+                        teamsMap[teamNameKey].points = pointsValue;
                     } else {
                         // Failsafe: search by 3-letter code if names differ slightly
                         const shortCode = teamNameKey.substring(0,3).toUpperCase();
                         for (let k in teamsMap) {
                             if (teamsMap[k].code === shortCode) {
                                 teamsMap[k].rank = `#${rankValue}`;
+                                teamsMap[k].points = pointsValue;
                                 break;
                             }
                         }
@@ -526,18 +529,17 @@
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
-               // --- REALISTIC WIN PREDICTOR ENGINE ---
-                // Parse the team ranks processed earlier in the script (e.g., "#1" -> 1)
-                let homeRankNum = parseInt((homeTeam.rank || '').replace('#', '')) || 5;
-                let awayRankNum = parseInt((awayTeam.rank || '').replace('#', '')) || 5;
+// --- REALISTIC WIN PREDICTOR ENGINE (POINT-BASED MATCHED) ---
+                let homePts = homeTeam.points || 0;
+                let awayPts = awayTeam.points || 0;
 
-                // Invert rank scale so smaller rank numbers equal higher quality ratings
-                const HOME_ADVANTAGE_MODIFIER = 1.5;
-                let homeRating = (10 - homeRankNum) + HOME_ADVANTAGE_MODIFIER;
-                let awayRating = (10 - awayRankNum);
+                // Incorporate Home Ground Advantage (HGA)
+                const HOME_ADVANTAGE_MODIFIER = 3.0; 
+                let homeRating = homePts + HOME_ADVANTAGE_MODIFIER;
+                let awayRating = awayPts;
 
-                // Logistic curve calculation
-                const SCALING_FACTOR = 8;
+                // Bradley-Terry / Logistic Probability Calculation
+                const SCALING_FACTOR = 15; 
                 let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
                 let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
 
@@ -545,17 +547,18 @@
                 let baseHomeWin = homeExpected / totalExpected;
                 let baseAwayWin = awayExpected / totalExpected;
 
-                // Dynamic draw scaling
-                const MAX_DRAW_CHANCE = 0.26;
-                let skillGap = Math.abs(baseHomeWin - baseAwayWin);
+                // Dynamic Draw Calculation
+                const MAX_DRAW_CHANCE = 0.26; 
+                let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
                 let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
 
+                // Allocate remaining probability fields
                 let remainingProb = 1.0 - drawChance;
                 let pHome = Math.round(baseHomeWin * remainingProb * 100);
                 let pAway = Math.round(baseAwayWin * remainingProb * 100);
                 let pDraw = 100 - (pHome + pAway);
 
-                // Safety floors
+                // Final safety check to ensure zero negative values
                 if (pHome < 5) { pHome = 5; pDraw = 20; pAway = 75; }
                 if (pAway < 5) { pAway = 5; pDraw = 20; pHome = 75; }
                 // --- END PREDICTOR ENGINE ---
