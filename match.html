@@ -125,10 +125,14 @@
 
         /* Press Conference Quotes Block */
         .press-quotes-deck {
-            background: #0f172a; border-radius: 14px; color: #f8fafc; padding: 20px;
-            display: flex; flex-direction: column; gap: 12px; border-left: 5px solid var(--accent-color);
+            background: #0f172a; border-radius: 14px; color: #f8fafc; padding: 20px 20px 20px 25px;
+            display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden;
         }
-        .press-quote-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #38bdf8; }
+        .press-quotes-deck::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+            background: linear-gradient(to bottom, var(--team-home-hex, #3b82f6), var(--team-away-hex, #ef4444));
+        }
+        .press-quote-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         .press-quote-body { font-size: 0.92rem; font-style: italic; line-height: 1.5; color: #e2e8f0; margin: 0; }
 
         /* --- GAME EVENTS TIMELINE --- */
@@ -191,12 +195,11 @@
         .player-badge { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
         .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.88); padding: 3px 8px; border-radius: 5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        /* Goal & Captain/Top Rated Indicator Additions */
+        /* Goal & Captain Indicator Additions */
         .goal-stack { position: absolute; bottom: -6px; right: -8px; display: flex; flex-direction: row; z-index: 5; }
         .goal-icon { width: 14px; height: 14px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; box-shadow: 0 1px 3px rgba(0,0,0,0.4); margin-left: -5px; border: 1px solid #e2e8f0; color: #000; }
         .goal-icon:first-child { margin-left: 0; }
-        .top-rated-pill { position: absolute; top: -8px; right: -16px; background: #3b82f6; color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 5px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 5; border: 1px solid #fff; display: flex; align-items: center; gap: 2px; line-height: 1; }
-        .captain-icon { position: absolute; bottom: -4px; left: -6px; background: #fff; color: #000; font-size: 0.55rem; font-weight: 900; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 5; border: 1px solid #e2e8f0; }
+        .captain-icon { position: absolute; top: -8px; right: -8px; background: #fbbf24; color: #000; font-size: 0.6rem; font-weight: 900; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.4); z-index: 5; border: 1px solid #fff; }
 
         /* Integrated Bottom Performance Matrix Panel */
         .integrated-performance-hud {
@@ -290,15 +293,30 @@
         function generateManagerQuote(managerName, teamName, resultType) {
             const winQuotes = [
                 `"The structure held up beautifully today. We anticipated their high press lines and isolated their central defenders on counter intervals. Full credit goes to the squad."`,
-                `"Getting maximum points here was a mandatory step for our season progression. We executed the transition parameters exactly as designed on the training block."`
+                `"Getting maximum points here was a mandatory step for our season progression. We executed the transition parameters exactly as designed on the training block."`,
+                `"I'm delighted with the work rate. The boys showed fantastic character to control the tempo from the first whistle to the last."`,
+                `"Tactically we were spot on. We knew if we could dominate the midfield transitions, we'd create overloads in the final third, and it paid off."`,
+                `"A very professional performance. We got the early goal and managed the game perfectly after that. Three points was all that mattered today."`,
+                `"Our defensive solidity gave us the platform to go and win this game. The backline was immense and our attackers were clinical when the chances came."`,
+                `"We asked for a reaction after a tough week in training, and the players delivered. The intensity was exactly what I wanted to see."`
             ];
             const drawQuotes = [
-                `"A highly tactical affair. Both groups possessed solid recovery shapes, making clear looks quite rare. We take the point, reset, and look forward to the upcoming calendar lines."`,
-                `"We dominated periods of high ball circulation but lacked the critical final action in the penalty box. A draw reflects a very balanced performance."`
+                `"A highly tactical affair. Both groups possessed solid recovery shapes, making clear looks quite rare. We take the point, reset, and look forward."`,
+                `"We dominated periods of high ball circulation but lacked the critical final action in the penalty box. A draw reflects a very balanced performance."`,
+                `"It's a frustrating result because we felt we created enough to win it, but you have to respect the opponent. They defended their box very well."`,
+                `"A game of two halves, really. We were excellent in the first but dropped our intensity in the second. A point is probably fair in the end."`,
+                `"We couldn't quite find that killer pass in the final third. Defensively we were sound, but we need to be more ruthless in front of goal."`,
+                `"Both teams went for it, and it turned into a bit of a chess match. We'll take the clean sheet and move on to the next fixture."`,
+                `"We lacked the clinical edge today, but the structure was there. A point away from home against a tough side is never a bad result."`
             ];
             const lossQuotes = [
-                `"What a joke. This type of performance is what I expect from a nonce. My team is shit, the refs were shocking and if only the players were a bit more like Messi. I need to consider options such as Vozinha for the Keeper position, as our current lineup is just not strong. Jeffery Epstein has been getting to work, and all of his recent attacks have been promising, at least from our point of view. Certainly one to keep a very close eye on. "`,
-                `"We lacked density in our defensive recovery blocks today. We congratulate our opponents, but our concentration parameters must elevate immediately."`
+                `"We lacked density in our defensive recovery blocks today. We congratulate our opponents, but our concentration parameters must elevate immediately."`,
+                `"We were second best in every department today. You can't start a match that slowly and expect to get anything from it at this level."`,
+                `"Very disappointing. We made individual errors that cost us dearly, and at this level, you get punished for those mistakes."`,
+                `"The game plan went out the window after conceding so early. We tried to chase the game but left ourselves too open at the back."`,
+                `"We have to hold our hands up and admit we weren't good enough today. The desire and application simply weren't there."`,
+                `"A tough afternoon for us. We struggled to cope with their physicality in midfield and never really established a foothold in the match."`,
+                `"We'll review the tape, but it's clear we need to be much better in both boxes. We lacked conviction today."`
             ];
 
             const collection = resultType === 'W' ? winQuotes : resultType === 'L' ? lossQuotes : drawQuotes;
@@ -404,10 +422,8 @@
                             goalIcons += '</div>';
                         }
 
-                        let topRatedHtml = '';
                         let captainHtml = '';
-                        if (p.isTopRated) {
-                            topRatedHtml = '<div class="top-rated-pill">' + p.ratingValue + ' ★</div>';
+                        if (p.isCaptain) {
                             captainHtml = '<div class="captain-icon">C</div>';
                         }
 
@@ -416,7 +432,6 @@
                                 <div class="player-badge" style="background-color: ${teamHex}; color: ${textColor};">
                                     ${p.num}
                                     ${goalIcons}
-                                    ${topRatedHtml}
                                     ${captainHtml}
                                 </div>
                                 <div class="player-name-tag">${nameParts[nameParts.length - 1]}</div>
@@ -571,6 +586,24 @@
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
 
+                // --- Calculate Captains (Highest rated player per team) ---
+                let homeCaptain = null;
+                let homeMaxRating = -1;
+                homePlayers.forEach(p => {
+                    const avg = (p.off + p.def) / 2;
+                    if (avg > homeMaxRating) { homeMaxRating = avg; homeCaptain = p; }
+                });
+                if (homeCaptain) homeCaptain.isCaptain = true;
+
+                let awayCaptain = null;
+                let awayMaxRating = -1;
+                awayPlayers.forEach(p => {
+                    const avg = (p.off + p.def) / 2;
+                    if (avg > awayMaxRating) { awayMaxRating = avg; awayCaptain = p; }
+                });
+                if (awayCaptain) awayCaptain.isCaptain = true;
+                // -----------------------------------------------------------
+
                 // --- REALISTIC WIN PREDICTOR ENGINE (MATCHES INDEX EXACTLY) ---
                 let homePts = homeTeam.points || 0;
                 let awayPts = awayTeam.points || 0;
@@ -644,24 +677,6 @@
                     }
                 }
                 matchEvents.sort((a, b) => a.minute - b.minute);
-
-                // --- Calculate Top Rated Player For Captain Icon & Star ---
-                let maxRating = -1;
-                let topRatedPlayer = null;
-                const activePlayers = [...homePlayers, ...awayPlayers];
-                activePlayers.forEach(p => {
-                    const avg = (p.off + p.def) / 2;
-                    if (avg > maxRating) {
-                        maxRating = avg;
-                        topRatedPlayer = p;
-                    }
-                });
-                if (topRatedPlayer) {
-                    topRatedPlayer.isTopRated = true;
-                    // Converting average ~80-90 rating into an ~8.0-9.0 formatted style typical of Match Ratings
-                    topRatedPlayer.ratingValue = (maxRating / 10).toFixed(1);
-                }
-                // -----------------------------------------------------------
                 
                 let gameEventsHTML = '';
                 if (matchEvents.length > 0) {
@@ -736,13 +751,13 @@
                             </div>
                         </div>
 
-                        <div class="press-quotes-deck">
+                        <div class="press-quotes-deck" style="--team-home-hex: ${homeTeam.hex}; --team-away-hex: ${awayTeam.hex};">
                             <div>
-                                <div class="press-quote-title">${hQuoteObj.team} Post-Match Review — ${hQuoteObj.manager}</div>
+                                <div class="press-quote-title" style="color: ${homeTeam.hex};">${hQuoteObj.team} Post-Match Review — ${hQuoteObj.manager}</div>
                                 <p class="press-quote-body">${hQuoteObj.quote}</p>
                             </div>
                             <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:12px;">
-                                <div class="press-quote-title" style="color: #f43f5e;">${aQuoteObj.team} Post-Match Review — ${aQuoteObj.manager}</div>
+                                <div class="press-quote-title" style="color: ${awayTeam.hex};">${aQuoteObj.team} Post-Match Review — ${aQuoteObj.manager}</div>
                                 <p class="press-quote-body">${aQuoteObj.quote}</p>
                             </div>
                         </div>
