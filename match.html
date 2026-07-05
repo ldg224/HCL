@@ -557,12 +557,14 @@
                let pAway = Math.round(baseAwayWin * remainingProb * 100);
                let pDraw = 100 - (pHome + pAway);
                
-               // Safeguard edge case overrides
+// Safeguard edge case overrides
                if (pHome < 5) { pHome = 5; pDraw = 20; pAway = 75; }
                if (pAway < 5) { pAway = 5; pDraw = 20; pHome = 75; }
                // --- END PREDICTOR ENGINE ---
 
-                let middleUtilitySectionHTML = '';
+               let displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
+
+               let middleUtilitySectionHTML = '';
 
                 if (finalStatus === 'finalised') {
                     // Try parsing real link; NO MORE dummy video fallback
