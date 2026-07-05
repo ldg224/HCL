@@ -18,7 +18,7 @@
             
             --status-upcoming: #b45309;
             --status-finalised: #16a34a;
-            --status-live: #22c55e;
+            --status-live: #FF0000;
 
             --color-home: #3b82f6;
             --color-draw: #94a3b8;
@@ -741,7 +741,7 @@
 
             const tickerMount = document.getElementById('live-ticker-mount');
             if(tickerMatches.length === 0) {
-                tickerMount.innerHTML = `<div class="loading-text" style="padding:10px 0; font-size:0.8rem;">No matches scheduled for today.</div>`;
+                tickerMount.innerHTML = `<div class="loading-text" style="padding:10px 0; font-size:0.8rem;">(KNOWN ISSUE) Matchday viewer failed to load.</div>`;
             } else {
                 tickerMount.innerHTML = tickerMatches.map((m, i) => {
                     const matchTimeObj = getMatchDateTime(m.date, m.time);
