@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -131,6 +131,27 @@
         .press-quote-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #38bdf8; }
         .press-quote-body { font-size: 0.92rem; font-style: italic; line-height: 1.5; color: #e2e8f0; margin: 0; }
 
+        /* --- GAME EVENTS TIMELINE --- */
+        .events-card {
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
+            padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column;
+            width: 100%; box-sizing: border-box;
+        }
+        .events-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.3px; margin: 0 0 16px 0; text-align: center; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+        .timeline-container { position: relative; padding: 10px 0; }
+        .timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--border-color); transform: translateX(-50%); }
+        .timeline-event { display: flex; width: 100%; justify-content: space-between; align-items: center; margin-bottom: 15px; position: relative; z-index: 2; }
+        .timeline-event.home-event { flex-direction: row; }
+        .timeline-event.away-event { flex-direction: row-reverse; }
+        .timeline-half { width: 45%; display: flex; align-items: center; gap: 10px; }
+        .timeline-event.home-event .timeline-half { justify-content: flex-end; text-align: right; }
+        .timeline-event.away-event .timeline-half { justify-content: flex-start; text-align: left; }
+        .timeline-empty-half { width: 45%; }
+        .timeline-center-icon { width: 24px; height: 24px; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .event-minute { font-weight: 800; font-size: 0.8rem; padding: 3px 8px; border-radius: 6px; color: #fff; }
+        .event-player { font-weight: 700; font-size: 0.9rem; }
+        .half-time-divider { text-align: center; padding: 10px 0; margin: 10px 0; background: var(--bg-color); border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); position: relative; z-index: 2; border: 1px dashed var(--border-color); }
+
         /* PITCH CANVAS OVERHAUL */
         .field-grand-wrapper {
             background-color: var(--pitch-green);
@@ -194,34 +215,21 @@
 
         /* --- Mobile Support Additions --- */
         @media (max-width: 768px) {
-            .scoreboard-outer-card {
-                grid-template-columns: 1fr;
-                padding: 30px 20px;
-                gap: 25px;
-            }
-            .score-center-block {
-                order: -1;
-            }
-            .integrated-performance-hud {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            .field-grand-wrapper {
-                overflow-x: auto;
-            }
-            .pitch-container-horizontal {
-                min-width: 700px;
-            }
-            .team-logo-lg { 
-                width: 70px; 
-                height: 70px; 
-            }
-            .team-name-lg { 
-                font-size: 1.4rem; 
-            }
-            .score-row { 
-                font-size: 3.2rem; 
-            }
+            .scoreboard-outer-card { grid-template-columns: 1fr; padding: 30px 20px; gap: 25px; }
+            .score-center-block { order: -1; }
+            .integrated-performance-hud { grid-template-columns: 1fr; gap: 20px; }
+            .field-grand-wrapper { overflow-x: auto; }
+            .pitch-container-horizontal { min-width: 700px; }
+            .team-logo-lg { width: 70px; height: 70px; }
+            .team-name-lg { font-size: 1.4rem; }
+            .score-row { font-size: 3.2rem; }
+            
+            /* Mobile Event Timeline Adjustments */
+            .timeline-line { left: 24px; transform: none; }
+            .timeline-event.home-event, .timeline-event.away-event { flex-direction: row; }
+            .timeline-half { width: calc(100% - 40px); justify-content: flex-start !important; text-align: left !important; margin-left: 45px; }
+            .timeline-empty-half { display: none; }
+            .timeline-center-icon { position: absolute; left: 12px; }
         }
     </style>
 </head>
@@ -413,6 +421,11 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
+                // --- Setup Dynamic Headers ---
+                const scheduleHeaders = scheduleRaw[0].map(h => h ? h.toUpperCase().trim() : '');
+                const rosterHeaders = rosterRaw[0].map(h => h ? h.toUpperCase().trim() : '');
+                const rosterIdCol = rosterHeaders.findIndex(h => h === 'PLAYER ID' || h === 'ID');
+
                 let teamsMap = {};
                 teamsRaw.forEach((row, i) => {
                     if (i === 0 || !row || !row[0]) return;
@@ -511,14 +524,19 @@
                 const homeTextColor = darkTeams.includes(homeTeam.code) ? '#1e293b' : '#ffffff';
                 const awayTextColor = darkTeams.includes(awayTeam.code) ? '#1e293b' : '#ffffff';
 
+                // Map players & correctly locate Player ID if available
                 const allPlayers = rosterRaw.filter((r, i) => i > 0 && r && r[1]).map(r => {
                     const posM = (r[2] || '').match(/\[(.*?)\]/);
                     const offM = (r[4] || '').match(/\((\d+)\)/);
                     const defM = (r[5] || '').match(/\((\d+)\)/);
                     return {
-                        num: parseInt(r[0], 10) || 0, name: r[1], team: (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase(),
+                        id: rosterIdCol > -1 ? (r[rosterIdCol] || '').trim() : '',
+                        num: parseInt(r[0], 10) || 0, 
+                        name: r[1], 
+                        team: (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase(),
                         pos: posM ? posM[1].toUpperCase().trim() : 'MID',
-                        off: offM ? parseInt(offM[1], 10) : 0, def: defM ? parseInt(defM[1], 10) : 0
+                        off: offM ? parseInt(offM[1], 10) : 0, 
+                        def: defM ? parseInt(defM[1], 10) : 0
                     };
                 });
 
@@ -560,6 +578,75 @@
                 let avgADef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
 
                 const displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
+
+                // --- GAME EVENTS PARSING (Dynamic Header Check) ---
+                let matchEvents = [];
+                for (let i = 1; i <= 15; i++) {
+                    const minIdx = scheduleHeaders.indexOf(`GOAL ${i} MIN`);
+                    const idIdx = scheduleHeaders.indexOf(`GOAL ${i} ID`);
+                    
+                    if (minIdx > -1 && idIdx > -1) {
+                        const minuteStr = (matchTarget[minIdx] || '').trim();
+                        const idStr = (matchTarget[idIdx] || '').trim();
+                        
+                        if (minuteStr && idStr) {
+                            const minute = parseInt(minuteStr, 10);
+                            if (!isNaN(minute)) {
+                                let playerName = 'Unknown Player';
+                                let isHome = false;
+                                let teamHex = '#64748b'; // Fallback
+                                
+                                // First check ID exact match, fallback to checking string inclusions
+                                const playerMatch = allPlayers.find(p => p.id === idStr || p.name.includes(idStr));
+                                if (playerMatch) {
+                                    playerName = playerMatch.name.replace(/\[.*?\]\s*/, ''); // Remove the position bracket 
+                                    if (homePlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
+                                        isHome = true;
+                                        teamHex = homeTeam.hex;
+                                    } else if (awayPlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
+                                        isHome = false;
+                                        teamHex = awayTeam.hex;
+                                    }
+                                }
+                                
+                                matchEvents.push({ minute, playerName, isHome, teamHex });
+                            }
+                        }
+                    }
+                }
+                matchEvents.sort((a, b) => a.minute - b.minute); // Chronological sorting
+                
+                let gameEventsHTML = '';
+                if (matchEvents.length > 0) {
+                    let firstHalf = matchEvents.filter(e => e.minute <= 45);
+                    let secondHalf = matchEvents.filter(e => e.minute > 45);
+                    
+                    const renderEventLine = (ev) => `
+                        <div class="timeline-event ${ev.isHome ? 'home-event' : 'away-event'}">
+                            <div class="timeline-half">
+                                <span class="event-player">${ev.playerName}</span>
+                                <span class="event-minute" style="background: ${ev.teamHex};">${ev.minute}'</span>
+                            </div>
+                            <div class="timeline-center-icon">⚽</div>
+                            <div class="timeline-empty-half"></div>
+                        </div>
+                    `;
+
+                    gameEventsHTML = `
+                        <div class="events-card">
+                            <h3 class="events-title">Match Events</h3>
+                            <div class="timeline-container">
+                                <div class="timeline-line"></div>
+                                <div class="half-time-divider">KICK OFF</div>
+                                ${firstHalf.map(renderEventLine).join('')}
+                                ${firstHalf.length > 0 || secondHalf.length > 0 ? `<div class="half-time-divider">HALF TIME</div>` : ''}
+                                ${secondHalf.map(renderEventLine).join('')}
+                                ${secondHalf.length > 0 ? `<div class="half-time-divider">FULL TIME</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                // --- END GAME EVENTS PARSING ---
 
                 let middleUtilitySectionHTML = '';
 
@@ -669,6 +756,8 @@
 
                     ${middleUtilitySectionHTML}
 
+                    ${gameEventsHTML}
+
                     <div class="field-grand-wrapper">
                         <div class="pitch-container-horizontal">
                             <div class="pitch-center-line-vert"></div>
@@ -740,3 +829,5 @@
 
         window.addEventListener('DOMContentLoaded', initMatchCentre);
     </script>
+</body>
+</html>
