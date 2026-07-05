@@ -404,7 +404,7 @@
             return nodes.join('');
         }
 
-async function initMatchCentre() {
+        async function initMatchCentre() {
             try {
                 const { week, matchIndex, homeCodeUrl, awayCodeUrl } = getUrlParams();
                 if (!week) { throw new Error("Missing structural URL parameters."); }
@@ -426,21 +426,18 @@ async function initMatchCentre() {
                     };
                 });
 
-                // FIXED: Accurate index matching with index.html points column
                 standingsRaw.forEach((row) => {
                     if (!row || !row[1] || !row[0]) return;
                     if (row[0].startsWith('*') || row[0].toLowerCase().includes('notice')) return;
                     
                     const teamNameKey = row[1].trim().toLowerCase();
                     const rankValue = row[0].trim();
-                    // CRITICAL FIX: Pulling points from index 9, EXACTLY matching index.html logic
                     const pointsValue = parseInt(row[9], 10) || 0; 
                     
                     if (teamsMap[teamNameKey]) {
                         teamsMap[teamNameKey].rank = rankValue.startsWith('#') ? rankValue : `#${rankValue}`;
                         teamsMap[teamNameKey].points = pointsValue;
                     } else {
-                        // Failsafe: search by 3-letter code if names differ slightly
                         const shortCode = teamNameKey.substring(0,3).toUpperCase();
                         for (let k in teamsMap) {
                             if (teamsMap[k].code === shortCode) {
@@ -740,3 +737,6 @@ async function initMatchCentre() {
                 document.getElementById('app-mount').innerHTML = `<div style="text-align:center; padding:50px;"><h3>Match Sync Interrupted</h3><p>${err.message}</p></div>`;
             }
         }
+
+        window.addEventListener('DOMContentLoaded', initMatchCentre);
+    </script>
