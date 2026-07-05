@@ -379,25 +379,52 @@
         }
 
         function calculatePredictorPercentages(homeTeam, awayTeam) {
-            let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
-            let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
-            let baseWinChance = 35; 
-            let drawChance = 30;
-            let ptsDiff = homePts - awayPts;
+    // 1. Extract raw leaderboard points
+    let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
+    let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
 
-            let homeWin = baseWinChance + (ptsDiff * 2);
-            let awayWin = baseWinChance - (ptsDiff * 2);
+    // 2. Incorporate Home Ground Advantage (HGA)
+    // In Elo systems, HGA is typically worth around +25 to +50 rating points.
+    // We scale your standing points to approximate an Elo-like gap.
+    const HOME_ADVANTAGE_MODIFIER = 3.0; 
+    let homeRating = homePts + HOME_ADVANTAGE_MODIFIER;
+    let awayRating = awayPts;
 
-            if (homeWin < 10) homeWin = 10;
-            if (awayWin < 10) awayWin = 10;
-            
-            let total = homeWin + awayWin + drawChance;
-            homeWin = Math.round((homeWin / total) * 100);
-            awayWin = Math.round((awayWin / total) * 100);
-            let draw = 100 - (homeWin + awayWin);
+    // 3. Bradley-Terry / Logistic Probability Calculation
+    // We calculate an expected performance metric using an exponential base (e.g., 10^x or e^x)
+    // This creates a realistic curve where small gaps matter, but huge gaps don't break the math.
+    const SCALING_FACTOR = 15; // Controls how steep the performance curve is
+    let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
+    let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
 
-            return { home: homeWin, draw: draw, away: awayWin };
-        }
+    // Baseline win distributions before accounting for a draw
+    let totalExpected = homeExpected + awayExpected;
+    let baseHomeWin = homeExpected / totalExpected;
+    let baseAwayWin = awayExpected / totalExpected;
+
+    // 4. Dynamic Draw Calculation
+    // Draws are most frequent when teams are perfectly matched (base win is 50/50).
+    // As the skill gap widens, the probability of a draw naturally shrinks toward 0.
+    const MAX_DRAW_CHANCE = 0.26; // 26% historical average draw rate for balanced soccer/football matchups
+    let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
+    let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
+
+    // 5. Allocate remaining probability to Home and Away wins
+    let remainingProb = 1.0 - drawChance;
+    let finalHomeWin = baseHomeWin * remainingProb;
+    let finalAwayWin = baseAwayWin * remainingProb;
+
+    // 6. Convert to clean, rounded percentages summing exactly to 100%
+    let homeWinPct = Math.round(finalHomeWin * 100);
+    let awayWinPct = Math.round(finalAwayWin * 100);
+    let drawPct = 100 - (homeWinPct + awayWinPct);
+
+    // Final safety check to ensure zero negative values in catastrophic point scenarios
+    if (homeWinPct < 5) { homeWinPct = 5; drawPct = 20; awayWinPct = 75; }
+    if (awayWinPct < 5) { awayWinPct = 5; drawPct = 20; homeWinPct = 75; }
+
+    return { home: homeWinPct, draw: drawPct, away: awayWinPct };
+}
 
         function initLiveCountdown(elementId, targetTimestamp) {
             function updateClock() {
