@@ -642,41 +642,43 @@
 
                 // --- GAME EVENTS PARSING (Dynamic Header Check) ---
                 let matchEvents = [];
-                for (let i = 1; i <= 15; i++) {
-                    const minIdx = scheduleHeaders.indexOf(`GOAL ${i} MIN`);
-                    const idIdx = scheduleHeaders.indexOf(`GOAL ${i} ID`);
-                    
-                    if (minIdx > -1 && idIdx > -1) {
-                        const minuteStr = (matchTarget[minIdx] || '').trim();
-                        const idStr = (matchTarget[idIdx] || '').trim();
+                if (isTimePassed) {
+                    for (let i = 1; i <= 15; i++) {
+                        const minIdx = scheduleHeaders.indexOf(`GOAL ${i} MIN`);
+                        const idIdx = scheduleHeaders.indexOf(`GOAL ${i} ID`);
                         
-                        if (minuteStr && idStr) {
-                            const minute = parseInt(minuteStr, 10);
-                            if (!isNaN(minute)) {
-                                let playerName = 'Unknown Player';
-                                let isHome = false;
-                                let teamHex = '#64748b';
-                                
-                                const playerMatch = allPlayers.find(p => p.id === idStr || p.name.includes(idStr));
-                                if (playerMatch) {
-                                    playerName = playerMatch.name.replace(/\[.*?\]\s*/, '');
-                                    playerMatch.goals = (playerMatch.goals || 0) + 1;
+                        if (minIdx > -1 && idIdx > -1) {
+                            const minuteStr = (matchTarget[minIdx] || '').trim();
+                            const idStr = (matchTarget[idIdx] || '').trim();
+                            
+                            if (minuteStr && idStr) {
+                                const minute = parseInt(minuteStr, 10);
+                                if (!isNaN(minute)) {
+                                    let playerName = 'Unknown Player';
+                                    let isHome = false;
+                                    let teamHex = '#64748b';
+                                    
+                                    const playerMatch = allPlayers.find(p => p.id === idStr || p.name.includes(idStr));
+                                    if (playerMatch) {
+                                        playerName = playerMatch.name.replace(/\[.*?\]\s*/, '');
+                                        playerMatch.goals = (playerMatch.goals || 0) + 1;
 
-                                    if (homePlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
-                                        isHome = true;
-                                        teamHex = homeTeam.hex;
-                                    } else if (awayPlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
-                                        isHome = false;
-                                        teamHex = awayTeam.hex;
+                                        if (homePlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
+                                            isHome = true;
+                                            teamHex = homeTeam.hex;
+                                        } else if (awayPlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
+                                            isHome = false;
+                                            teamHex = awayTeam.hex;
+                                        }
                                     }
+                                    
+                                    matchEvents.push({ minute, playerName, isHome, teamHex });
                                 }
-                                
-                                matchEvents.push({ minute, playerName, isHome, teamHex });
                             }
                         }
                     }
+                    matchEvents.sort((a, b) => a.minute - b.minute);
                 }
-                matchEvents.sort((a, b) => a.minute - b.minute);
                 
                 let gameEventsHTML = '';
                 if (matchEvents.length > 0) {
