@@ -525,46 +525,49 @@
 
                 const homePlayers = allPlayers.filter(p => p.team === homeTeamName.toLowerCase());
                 const awayPlayers = allPlayers.filter(p => p.team === awayTeamName.toLowerCase());
-        
-               // --- REALISTIC WIN PREDICTOR ENGINE (LADDER-BASED) ---
-               // Extract standing points by extracting the rank or fallback to squad sizes if pending
-               let homePts = parseInt(homeTeam.rank.replace('#', '')) || homePlayers.length;
-               let awayPts = parseInt(awayTeam.rank.replace('#', '')) || awayPlayers.length;
-               
-               // If rank values are used where lower is better (#1 vs #6), we invert the difference logic
-               // For this engine, we will map them smoothly:
-               const HOME_ADVANTAGE_MODIFIER = 1.5; 
-               let homeRating = (10 - homePts) + HOME_ADVANTAGE_MODIFIER; // assumes scale where lower rank number is stronger
-               let awayRating = (10 - awayPts);
-               
-               // Bradley-Terry / Logistic Probability Curve Calculation
-               const SCALING_FACTOR = 8; 
-               let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
-               let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
-               
-               let totalExpected = homeExpected + awayExpected;
-               let baseHomeWin = homeExpected / totalExpected;
-               let baseAwayWin = awayExpected / totalExpected;
-               
-               // Dynamic Draw Calculation (Shrinks when the skill gap is massive)
-               const MAX_DRAW_CHANCE = 0.26; 
-               let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
-               let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
-               
-               // Allocate remaining probability fields
-               let remainingProb = 1.0 - drawChance;
-               let pHome = Math.round(baseHomeWin * remainingProb * 100);
-               let pAway = Math.round(baseAwayWin * remainingProb * 100);
-               let pDraw = 100 - (pHome + pAway);
-               
-// Safeguard edge case overrides
-               if (pHome < 5) { pHome = 5; pDraw = 20; pAway = 75; }
-               if (pAway < 5) { pAway = 5; pDraw = 20; pHome = 75; }
-               // --- END PREDICTOR ENGINE ---
 
-               let displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
+               // --- REALISTIC WIN PREDICTOR ENGINE ---
+                // Parse the team ranks processed earlier in the script (e.g., "#1" -> 1)
+                let homeRankNum = parseInt((homeTeam.rank || '').replace('#', '')) || 5;
+                let awayRankNum = parseInt((awayTeam.rank || '').replace('#', '')) || 5;
 
-               let middleUtilitySectionHTML = '';
+                // Invert rank scale so smaller rank numbers equal higher quality ratings
+                const HOME_ADVANTAGE_MODIFIER = 1.5;
+                let homeRating = (10 - homeRankNum) + HOME_ADVANTAGE_MODIFIER;
+                let awayRating = (10 - awayRankNum);
+
+                // Logistic curve calculation
+                const SCALING_FACTOR = 8;
+                let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
+                let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
+
+                let totalExpected = homeExpected + awayExpected;
+                let baseHomeWin = homeExpected / totalExpected;
+                let baseAwayWin = awayExpected / totalExpected;
+
+                // Dynamic draw scaling
+                const MAX_DRAW_CHANCE = 0.26;
+                let skillGap = Math.abs(baseHomeWin - baseAwayWin);
+                let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
+
+                let remainingProb = 1.0 - drawChance;
+                let pHome = Math.round(baseHomeWin * remainingProb * 100);
+                let pAway = Math.round(baseAwayWin * remainingProb * 100);
+                let pDraw = 100 - (pHome + pAway);
+
+                // Safety floors
+                if (pHome < 5) { pHome = 5; pDraw = 20; pAway = 75; }
+                if (pAway < 5) { pAway = 5; pDraw = 20; pHome = 75; }
+                // --- END PREDICTOR ENGINE ---
+
+                let avgHOff = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.off, 0) / homePlayers.length) : 0;
+                let avgHDef = homePlayers.length ? Math.round(homePlayers.reduce((acc, p) => acc + p.def, 0) / homePlayers.length) : 0;
+                let avgAOff = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.off, 0) / awayPlayers.length) : 0;
+                let avgADef = awayPlayers.length ? Math.round(awayPlayers.reduce((acc, p) => acc + p.def, 0) / awayPlayers.length) : 0;
+
+                const displayScore = (finalStatus === 'finalised' || finalStatus === 'live');
+
+                let middleUtilitySectionHTML = '';
 
                 if (finalStatus === 'finalised') {
                     // Try parsing real link; NO MORE dummy video fallback
