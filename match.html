@@ -188,8 +188,15 @@
         .pitch-column-band { display: flex; flex-direction: column; justify-content: center; gap: 32px; height: 100%; align-items: center; flex-grow: 1; }
 
         .player-node { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 70px; animation: scaleIn 0.4s ease forwards; }
-        .player-badge { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
+        .player-badge { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
         .player-name-tag { font-size: 0.68rem; font-weight: 700; color: #ffffff; background: rgba(15, 23, 42, 0.88); padding: 3px 8px; border-radius: 5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        /* Goal & Captain/Top Rated Indicator Additions */
+        .goal-stack { position: absolute; bottom: -6px; right: -8px; display: flex; flex-direction: row; z-index: 5; }
+        .goal-icon { width: 14px; height: 14px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; box-shadow: 0 1px 3px rgba(0,0,0,0.4); margin-left: -5px; border: 1px solid #e2e8f0; color: #000; }
+        .goal-icon:first-child { margin-left: 0; }
+        .top-rated-pill { position: absolute; top: -8px; right: -16px; background: #3b82f6; color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 5px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 5; border: 1px solid #fff; display: flex; align-items: center; gap: 2px; line-height: 1; }
+        .captain-icon { position: absolute; bottom: -4px; left: -6px; background: #fff; color: #000; font-size: 0.55rem; font-weight: 900; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 5; border: 1px solid #e2e8f0; }
 
         /* Integrated Bottom Performance Matrix Panel */
         .integrated-performance-hud {
@@ -387,10 +394,30 @@
                 <div class="pitch-column-band">
                     ${lines[posKey].map(p => {
                         const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
+                        
+                        let goalIcons = '';
+                        if (p.goals > 0) {
+                            goalIcons = '<div class="goal-stack">';
+                            for(let g=0; g<p.goals; g++) {
+                                goalIcons += '<span class="goal-icon">⚽</span>';
+                            }
+                            goalIcons += '</div>';
+                        }
+
+                        let topRatedHtml = '';
+                        let captainHtml = '';
+                        if (p.isTopRated) {
+                            topRatedHtml = '<div class="top-rated-pill">' + p.ratingValue + ' ★</div>';
+                            captainHtml = '<div class="captain-icon">C</div>';
+                        }
+
                         return `
                             <div class="player-node">
                                 <div class="player-badge" style="background-color: ${teamHex}; color: ${textColor};">
                                     ${p.num}
+                                    ${goalIcons}
+                                    ${topRatedHtml}
+                                    ${captainHtml}
                                 </div>
                                 <div class="player-name-tag">${nameParts[nameParts.length - 1]}</div>
                             </div>
@@ -536,7 +563,8 @@
                         team: (r[3] || '').replace(/\[.*?\]\s*/, '').trim().toLowerCase(),
                         pos: posM ? posM[1].toUpperCase().trim() : 'MID',
                         off: offM ? parseInt(offM[1], 10) : 0, 
-                        def: defM ? parseInt(defM[1], 10) : 0
+                        def: defM ? parseInt(defM[1], 10) : 0,
+                        goals: 0
                     };
                 });
 
@@ -599,6 +627,8 @@
                                 const playerMatch = allPlayers.find(p => p.id === idStr || p.name.includes(idStr));
                                 if (playerMatch) {
                                     playerName = playerMatch.name.replace(/\[.*?\]\s*/, '');
+                                    playerMatch.goals = (playerMatch.goals || 0) + 1;
+
                                     if (homePlayers.some(p => p.id === playerMatch.id || p.name === playerMatch.name)) {
                                         isHome = true;
                                         teamHex = homeTeam.hex;
@@ -614,6 +644,24 @@
                     }
                 }
                 matchEvents.sort((a, b) => a.minute - b.minute);
+
+                // --- Calculate Top Rated Player For Captain Icon & Star ---
+                let maxRating = -1;
+                let topRatedPlayer = null;
+                const activePlayers = [...homePlayers, ...awayPlayers];
+                activePlayers.forEach(p => {
+                    const avg = (p.off + p.def) / 2;
+                    if (avg > maxRating) {
+                        maxRating = avg;
+                        topRatedPlayer = p;
+                    }
+                });
+                if (topRatedPlayer) {
+                    topRatedPlayer.isTopRated = true;
+                    // Converting average ~80-90 rating into an ~8.0-9.0 formatted style typical of Match Ratings
+                    topRatedPlayer.ratingValue = (maxRating / 10).toFixed(1);
+                }
+                // -----------------------------------------------------------
                 
                 let gameEventsHTML = '';
                 if (matchEvents.length > 0) {
