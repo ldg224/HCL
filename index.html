@@ -6,6 +6,16 @@
     <title>HCL Hub | Match Center</title>
     <link rel="icon" type="image/png" href="logo_hcl_main.png">
 
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "1fa590a9-6512-4643-8c91-672c7ead8308",
+    });
+  });
+</script>
+
     <style>
         :root {
             --bg-color: #f8fafc;
