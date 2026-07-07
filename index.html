@@ -180,6 +180,45 @@
         }
     </style>
 </head>
+    <script>
+  let deferredPrompt;
+  const installBanner = document.getElementById('install-banner');
+  const bannerText = document.getElementById('banner-text');
+  const installBtn = document.getElementById('install-btn');
+
+  // Detect Platform
+  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  // Logic for Android Install Prompt
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (isAndroid) {
+      installBanner.style.display = 'block';
+    }
+  });
+
+  // Logic for iOS Instructions
+  if (isiOS && !window.navigator.standalone) {
+    installBanner.style.display = 'block';
+    bannerText.innerText = "Tap the 'Share' button and select 'Add to Home Screen' to install.";
+    installBtn.style.display = 'none'; // No button needed for iOS manual steps
+  }
+
+  // Handle Android Install Click
+  installBtn.addEventListener('click', () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          installBanner.style.display = 'none';
+        }
+        deferredPrompt = null;
+      });
+    }
+  });
+</script>
 <body>
 
     <img src="hcl_graphic_corner.png" alt="" class="corner-graphic corner-top-right">
@@ -609,5 +648,12 @@
         
         initPortal();
     </script>
+
+    <!-- Install Banner -->
+<div id="install-banner" style="display:none; padding: 20px; background: #007bff; color: white; text-align: center; border-radius: 10px; margin: 10px;">
+  <p id="banner-text">Get the HCL Hub App for the best experience!</p>
+  <button id="install-btn" style="padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Install App</button>
+</div>
+    
 </body>
 </html>
