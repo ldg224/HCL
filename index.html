@@ -52,7 +52,7 @@
 
         main { 
             width: 100%; 
-            max-width: 1200px; 
+            max-width: 1000px; 
             padding: 30px 20px 40px 20px; 
             box-sizing: border-box; 
         }
@@ -70,83 +70,12 @@
         .welcome-block h1 { margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
         .welcome-block p { margin: 0; font-size: 0.92rem; color: var(--text-muted); }
 
-        /* Two-Column Master Layout Grid */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 360px;
-            gap: 24px;
-            align-items: start;
-        }
-
         .content-column {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            width: 100%;
         }
-
-        .sidebar-column {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            position: sticky;
-            top: 20px;
-        }
-
-        /* Sidebar Widgets Layout */
-        .sidebar-widget {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        .widget-title {
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-            margin: 0 0 14px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .live-dot { width: 7px; height: 7px; background-color: var(--status-live); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
-
-        /* Vertical Match Feed inside Sidebar Container */
-        .sidebar-match-feed {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .ticker-match-card {
-            background: var(--bg-color); 
-            border: 1px solid var(--border-color); 
-            border-radius: 10px;
-            padding: 12px 14px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px;
-        }
-        .ticker-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
-        .ticker-teams { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
-        
-        .ticker-team-item { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-main); transition: color 0.15s; cursor: pointer; }
-        .ticker-team-item:hover { color: var(--accent-color); }
-        .ticker-mini-logo { width: 18px; height: 18px; object-fit: contain; }
-
-        /* Mini Leaderboard Items */
-        .mini-ladder-card { display: flex; flex-direction: column; gap: 10px; }
-        .mini-ladder-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; font-weight: 600; padding: 4px 0; }
-        .mini-ladder-team { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); cursor: default; }
-        .mini-rank { font-family: monospace; color: var(--text-muted); font-weight: 700; width: 16px; }
-        .mini-pts { font-weight: 700; color: var(--accent-color); background: var(--accent-bg); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
 
         /* Section Layout Headings */
         .section-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 10px 0 14px 0; letter-spacing: -0.2px; }
@@ -158,7 +87,7 @@
         .archive-section-heading { color: var(--text-muted); }
 
         /* Timetable Layout Design */
-        .timetable-list { display: flex; flex-direction: column; gap: 10px; }
+        .timetable-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .timetable-row {
             display: flex; flex-direction: column; background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 12px; padding: 16px 20px; box-sizing: border-box; gap: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.01);
@@ -216,7 +145,7 @@
 
         footer {
             margin-top: auto; padding: 24px 20px; color: var(--text-muted); font-size: 0.78rem; text-align: center;
-            border-top: 1px solid var(--border-color); width: 100%; max-width: 1200px; box-sizing: border-box;
+            border-top: 1px solid var(--border-color); width: 100%; max-width: 1000px; box-sizing: border-box;
             display: flex; justify-content: space-between; align-items: center;
         }
 
@@ -224,12 +153,6 @@
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Structural Layout Breaks for Responsive Views */
-        @media (max-width: 960px) {
-            .main-grid { grid-template-columns: 1fr; }
-            .sidebar-column { position: static; }
-            .corner-graphic { display: none; }
-        }
         @media (max-width: 768px) {
             .schedule-main-line { flex-direction: column; align-items: flex-start; gap: 12px; }
             .schedule-teams-container { width: 100%; justify-content: space-between; }
@@ -255,40 +178,15 @@
             </div>
         </div>
 
-        <!-- Master Structure Layout Split Grid -->
-        <div class="main-grid">
-            
-            <!-- Left Grid Pane: Timetable Schedules Feed -->
-            <div class="content-column">
-                <div class="section-title">Current & Upcoming Schedule</div>
-                <div class="timetable-list" id="timetable-container">
-                    <div class="loading-text">Loading match data...</div>
-                </div>
-
-                <div class="section-title" style="margin-top: 30px; color: var(--text-muted);">Past Weeks Archive</div>
-                <div class="timetable-list" id="archive-container"></div>
+        <!-- Single Pane Full Width Layout Container -->
+        <div class="content-column">
+            <div class="section-title">Current & Upcoming Schedule</div>
+            <div class="timetable-list" id="timetable-container">
+                <div class="loading-text">Loading match data...</div>
             </div>
 
-            <!-- Right Grid Pane: Sticky Dashboard Widgets Sidebar -->
-            <div class="sidebar-column">
-                
-                <!-- Live Sidebar Widget -->
-                <div class="sidebar-widget">
-                    <div class="widget-title"><span class="live-dot"></span>Today's Match Center</div>
-                    <div class="sidebar-match-feed" id="live-ticker-mount">
-                        <div class="loading-text" style="padding:5px 0; font-size:0.8rem;">Syncing match feeds...</div>
-                    </div>
-                </div>
-
-                <!-- Leaderboard Sidebar Widget -->
-                <div class="sidebar-widget" id="mini-standings-mount">
-                    <div class="mini-ladder-card">
-                        <div class="widget-title">League Leaderboard</div>
-                        <div class="loading-text" style="padding: 5px 0;">Syncing standings...</div>
-                    </div>
-                </div>
-
-            </div>
+            <div class="section-title" style="margin-top: 30px; color: var(--text-muted);">Past Weeks Archive</div>
+            <div class="timetable-list" id="archive-container"></div>
         </div>
     </main>
 
@@ -300,7 +198,6 @@
     <script src="navbar.js"></script>
     <script>
         const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
-        const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
         const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
         
@@ -379,52 +276,37 @@
         }
 
         function calculatePredictorPercentages(homeTeam, awayTeam) {
-    // 1. Extract raw leaderboard points
-    let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
-    let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
+            let homePts = parseInt(LADDER_POINTS_MAP[homeTeam]) || 0;
+            let awayPts = parseInt(LADDER_POINTS_MAP[awayTeam]) || 0;
+            const HOME_ADVANTAGE_MODIFIER = 3.0; 
+            let homeRating = homePts + HOME_ADVANTAGE_MODIFIER;
+            let awayRating = awayPts;
 
-    // 2. Incorporate Home Ground Advantage (HGA)
-    // In Elo systems, HGA is typically worth around +25 to +50 rating points.
-    // We scale your standing points to approximate an Elo-like gap.
-    const HOME_ADVANTAGE_MODIFIER = 3.0; 
-    let homeRating = homePts + HOME_ADVANTAGE_MODIFIER;
-    let awayRating = awayPts;
+            const SCALING_FACTOR = 15;
+            let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
+            let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
 
-    // 3. Bradley-Terry / Logistic Probability Calculation
-    // We calculate an expected performance metric using an exponential base (e.g., 10^x or e^x)
-    // This creates a realistic curve where small gaps matter, but huge gaps don't break the math.
-    const SCALING_FACTOR = 15; // Controls how steep the performance curve is
-    let homeExpected = Math.pow(10, homeRating / SCALING_FACTOR);
-    let awayExpected = Math.pow(10, awayRating / SCALING_FACTOR);
+            let totalExpected = homeExpected + awayExpected;
+            let baseHomeWin = homeExpected / totalExpected;
+            let baseAwayWin = awayExpected / totalExpected;
 
-    // Baseline win distributions before accounting for a draw
-    let totalExpected = homeExpected + awayExpected;
-    let baseHomeWin = homeExpected / totalExpected;
-    let baseAwayWin = awayExpected / totalExpected;
+            const MAX_DRAW_CHANCE = 0.26;
+            let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
+            let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
 
-    // 4. Dynamic Draw Calculation
-    // Draws are most frequent when teams are perfectly matched (base win is 50/50).
-    // As the skill gap widens, the probability of a draw naturally shrinks toward 0.
-    const MAX_DRAW_CHANCE = 0.26; // 26% historical average draw rate for balanced soccer/football matchups
-    let skillGap = Math.abs(baseHomeWin - baseAwayWin); 
-    let drawChance = MAX_DRAW_CHANCE * (1.0 - skillGap);
+            let remainingProb = 1.0 - drawChance;
+            let finalHomeWin = baseHomeWin * remainingProb;
+            let finalAwayWin = baseAwayWin * remainingProb;
 
-    // 5. Allocate remaining probability to Home and Away wins
-    let remainingProb = 1.0 - drawChance;
-    let finalHomeWin = baseHomeWin * remainingProb;
-    let finalAwayWin = baseAwayWin * remainingProb;
+            let homeWinPct = Math.round(finalHomeWin * 100);
+            let awayWinPct = Math.round(finalAwayWin * 100);
+            let drawPct = 100 - (homeWinPct + awayWinPct);
 
-    // 6. Convert to clean, rounded percentages summing exactly to 100%
-    let homeWinPct = Math.round(finalHomeWin * 100);
-    let awayWinPct = Math.round(finalAwayWin * 100);
-    let drawPct = 100 - (homeWinPct + awayWinPct);
+            if (homeWinPct < 5) { homeWinPct = 5; drawPct = 20; awayWinPct = 75; }
+            if (awayWinPct < 5) { awayWinPct = 5; drawPct = 20; homeWinPct = 75; }
 
-    // Final safety check to ensure zero negative values in catastrophic point scenarios
-    if (homeWinPct < 5) { homeWinPct = 5; drawPct = 20; awayWinPct = 75; }
-    if (awayWinPct < 5) { awayWinPct = 5; drawPct = 20; homeWinPct = 75; }
-
-    return { home: homeWinPct, draw: drawPct, away: awayWinPct };
-}
+            return { home: homeWinPct, draw: drawPct, away: awayWinPct };
+        }
 
         function initLiveCountdown(elementId, targetTimestamp) {
             function updateClock() {
@@ -467,7 +349,6 @@
                         LADDER_POINTS_MAP[standingsData[i][1]] = standingsData[i][9] || "0";
                     }
                 }
-                buildMiniStandings(standingsData);
 
                 const scheduleData = await fetchCSV(CSV_SCHEDULE);
                 RAW_SCHEDULE_LINES = scheduleData.filter((r, i) => i > 0 && r[0]);
@@ -480,56 +361,45 @@
 
         function determineActiveWeek() {
             let now = new Date();
-            let todayLabel = `${now.getDate()}/${now.getMonth() + 1}`;
             
-            let todaysWeeks = [];
-            for (let i = 0; i < RAW_SCHEDULE_LINES.length; i++) {
-                let row = RAW_SCHEDULE_LINES[i];
-                let dateStr = row[1] ? row[1].trim() : "";
-                if (dateStr === todayLabel) {
-                    let w = parseInt(row[0], 10);
-                    if (!isNaN(w)) todaysWeeks.push(w);
-                }
+            let weekCompleted = {};
+            let weekHasMatches = {};
+            for (let w = 1; w <= 10; w++) {
+                weekCompleted[w] = true; 
+                weekHasMatches[w] = false;
             }
-
+            
+            RAW_SCHEDULE_LINES.forEach(row => {
+                let w = parseInt(row[0], 10);
+                if (isNaN(w) || w < 1 || w > 10) return;
+                weekHasMatches[w] = true;
+                
+                let dateStr = row[1] ? row[1].trim() : "";
+                let timeStr = row[2] ? row[2].trim() : "";
+                let status = row[3].toUpperCase();
+                
+                let mTime = getMatchDateTime(dateStr, timeStr);
+                
+                let isMatchOver = false;
+                if (mTime) {
+                    // Match remains active/current until 11:59:59 PM of that match day passes
+                    let endOfMatchDay = new Date(mTime.getFullYear(), mTime.getMonth(), mTime.getDate(), 23, 59, 59);
+                    isMatchOver = (status === "FINALISED") && (now >= endOfMatchDay);
+                }
+                
+                if (!isMatchOver) {
+                    weekCompleted[w] = false; 
+                }
+            });
+            
             let matchedWeek = 1;
-            if (todaysWeeks.length > 0) {
-                matchedWeek = Math.min(...todaysWeeks);
-            } else {
-                for (let i = 0; i < RAW_SCHEDULE_LINES.length; i++) {
-                    let row = RAW_SCHEDULE_LINES[i];
-                    let mTime = getMatchDateTime(row[1], row[2]);
-                    if (mTime && now >= mTime) {
-                        let w = parseInt(row[0], 10);
-                        if (!isNaN(w) && w > matchedWeek) matchedWeek = w;
-                    }
+            for (let w = 1; w <= 10; w++) {
+                if (weekHasMatches[w] && !weekCompleted[w]) {
+                    matchedWeek = w;
+                    break;
                 }
             }
             ACTIVE_REAL_WEEK = matchedWeek;
-        }
-
-        function buildMiniStandings(rows) {
-            const mount = document.getElementById('mini-standings-mount');
-            let topTeams = [];
-            for(let i = 1; i < rows.length; i++) {
-                if(topTeams.length >= 3) break;
-                if(!rows[i][1]) continue; 
-                topTeams.push({ rank: rows[i][0], name: rows[i][1], pts: rows[i][9] || "0" });
-            }
-            mount.innerHTML = `
-                <div class="mini-ladder-card">
-                    <div class="widget-title">League Leaderboard</div>
-                    ${topTeams.map((t, index) => `
-                        <div class="mini-ladder-row" style="animation-delay: ${index * 80}ms;">
-                            <span class="mini-ladder-team">
-                                <span class="mini-rank">${t.rank}</span>
-                                <span>${t.name}</span>
-                            </span>
-                            <span class="mini-pts">${t.pts} PTS</span>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
         }
 
         function renderActiveViews() {
@@ -539,17 +409,6 @@
             TIMEOUT_TRACKERS = [];
             CLOCKS_TO_INIT = [];
 
-            let todayObj = new Date();
-            let tomorrowObj = new Date();
-            tomorrowObj.setDate(todayObj.getDate() + 1);
-
-            // Create baseline timestamps for today and tomorrow (ignoring times)
-            let todayMidnight = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate()).getTime();
-            let tomorrowMidnight = new Date(tomorrowObj.getFullYear(), tomorrowObj.getMonth(), tomorrowObj.getDate()).getTime();
-
-            let tickerMatches = [];
-            let bucketToday = [];
-            let bucketTomorrow = [];
             let bucketWeeks = {}; 
             let bucketUnconfirmed = [];
 
@@ -575,22 +434,8 @@
                     homeCode: homeCode, awayCode: awayCode, rawYtLink: rawYtLink 
                 };
 
-                // Parse the match date string safely into a Date object
-                let matchTimeObj = getMatchDateTime(dateStr, timeStr);
-                let matchMidnight = matchTimeObj ? new Date(matchTimeObj.getFullYear(), matchTimeObj.getMonth(), matchTimeObj.getDate()).getTime() : null;
-
-                // Safely check if the match falls on today or tomorrow using timestamps
-                let isToday = (matchMidnight === todayMidnight);
-                let isTomorrow = (matchMidnight === tomorrowMidnight);
-
-                if (isToday) { tickerMatches.push(payload); }
-
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed" || status.includes("CONFIRM")) {
                     bucketUnconfirmed.push(payload);
-                } else if (isToday) {
-                    bucketToday.push(payload);
-                } else if (isTomorrow) {
-                    bucketTomorrow.push(payload);
                 } else {
                     let wKey = parseInt(weekNum);
                     if (bucketWeeks[wKey]) bucketWeeks[wKey].push(payload);
@@ -600,7 +445,6 @@
             function makeScheduleRowHTML(m) {
                 const matchTimeObj = getMatchDateTime(m.date, m.time);
                 const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                const isFinishedOrActive = isTimePassed;
 
                 let badgeClass = "status-upcoming-badge";
                 let labelStatus = m.status.toLowerCase();
@@ -655,7 +499,7 @@
                 let homeLogoHtml = homeLogoUrl ? `<img src="${homeLogoUrl}" onerror="this.style.display='none';" class="schedule-mini-logo">` : '';
                 let awayLogoHtml = awayLogoUrl ? `<img src="${awayLogoUrl}" onerror="this.style.display='none';" class="schedule-mini-logo">` : '';
 
-                if (!isFinishedOrActive && !isPlaceholderMatch && !m.status.includes("CONFIRM")) {
+                if (!isTimePassed && !isPlaceholderMatch && !m.status.includes("CONFIRM")) {
                     const isRealHomeTeam = m.home in LADDER_POINTS_MAP;
                     const isRealAwayTeam = m.away in LADDER_POINTS_MAP;
 
@@ -679,7 +523,7 @@
                     }
                 }
 
-                if (!isFinishedOrActive && matchTimeObj && !m.status.includes("CONFIRM")) {
+                if (!isTimePassed && matchTimeObj && !m.status.includes("CONFIRM")) {
                     const uniqueClockId = `clock-${m.week}-${m.idx}`;
                     countdownHTML = `<div class="match-countdown-banner" id="${uniqueClockId}">Calculating countdown...</div>`;
                     CLOCKS_TO_INIT.push({ id: uniqueClockId, time: matchTimeObj.getTime() });
@@ -720,16 +564,6 @@
             let primaryLayoutHTML = [];
             let archiveLayoutHTML = [];
 
-            if (bucketToday.length > 0) {
-                primaryLayoutHTML.push(`<div class="schedule-section-heading">📅 Matches Today</div>`);
-                bucketToday.forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
-            }
-
-            if (bucketTomorrow.length > 0) {
-                primaryLayoutHTML.push(`<div class="schedule-section-heading">⏳ Matches Tomorrow</div>`);
-                bucketTomorrow.forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
-            }
-
             for (let w = 1; w <= 10; w++) {
                 if (bucketWeeks[w].length > 0) {
                     if (w < ACTIVE_REAL_WEEK) {
@@ -746,35 +580,6 @@
             if (bucketUnconfirmed.length > 0) {
                 primaryLayoutHTML.push(`<div class="schedule-section-heading">❓ Unconfirmed / TBA Matches</div>`);
                 bucketUnconfirmed.forEach(m => primaryLayoutHTML.push(makeScheduleRowHTML(m)));
-            }
-
-            const tickerMount = document.getElementById('live-ticker-mount');
-            if(tickerMatches.length === 0) {
-                tickerMount.innerHTML = `<div class="loading-text" style="padding:10px 0; font-size:0.8rem;">(KNOWN ISSUE) Matchday viewer failed to load.</div>`;
-            } else {
-                tickerMount.innerHTML = tickerMatches.map((m, i) => {
-                    const matchTimeObj = getMatchDateTime(m.date, m.time);
-                    const isTimePassed = matchTimeObj ? (new Date() >= matchTimeObj) : false;
-                    const showTickerScore = (m.status === 'FINALISED' && isTimePassed);
-                    let tickerHomeLogo = getLocalTeamLogo(m.homeCode);
-                    let tickerAwayLogo = getLocalTeamLogo(m.awayCode);
-                    return `
-                        <div class="ticker-match-card">
-                            <div class="ticker-meta"><span>🕒 ${m.time}</span> <span style="color:var(--accent-color)">${(!isTimePassed && m.status === 'FINALISED') ? 'upcoming' : m.status.toLowerCase()}</span></div>
-                            <div class="ticker-teams">
-                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
-                                    ${tickerHomeLogo ? `<img src="${tickerHomeLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
-                                    <span>${m.homeCode}</span>
-                                </a>
-                                <span style="color:var(--text-muted); font-size:0.8rem;">${showTickerScore ? m.homeScore+' - '+m.awayScore : 'vs'}</span>
-                                <a href="match.html?home=${m.homeCode}&away=${m.awayCode}&week=${m.week}" class="ticker-team-item">
-                                    <span>${m.awayCode}</span>
-                                    ${tickerAwayLogo ? `<img src="${tickerAwayLogo}" onerror="this.src='logo_hcl_main.png';" class="ticker-mini-logo">` : ''}
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
             }
 
             document.getElementById('timetable-container').innerHTML = primaryLayoutHTML.length > 0 ? primaryLayoutHTML.join('') : `<div class="loading-text">No current or upcoming items.</div>`;
