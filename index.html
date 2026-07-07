@@ -6,7 +6,6 @@
     <title>HCL Hub | Match Center</title>
     <link rel="icon" type="image/png" href="logo_hcl_main.png">
 
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -14,7 +13,11 @@
     await OneSignal.init({
       appId: "7a4983a5-748b-4477-a35e-ed6e0a36bc52",
       serviceWorkerPath: "/HCL/OneSignalSDKWorker.js",
-      serviceWorkerParam: { scope: "/HCL/" }
+      serviceWorkerParam: { scope: "/HCL/" },
+      // Add the notifyButton code below:
+      notifyButton: { 
+        enable: true
+      }
     });
   });
 </script>
