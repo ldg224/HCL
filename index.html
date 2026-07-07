@@ -543,8 +543,9 @@
             let tomorrowObj = new Date();
             tomorrowObj.setDate(todayObj.getDate() + 1);
 
-            let todayLabel = `${todayObj.getDate()}/${todayObj.getMonth() + 1}`;
-            let tomorrowLabel = `${tomorrowObj.getDate()}/${tomorrowObj.getMonth() + 1}`;
+            // Create baseline timestamps for today and tomorrow (ignoring times)
+            let todayMidnight = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate()).getTime();
+            let tomorrowMidnight = new Date(tomorrowObj.getFullYear(), tomorrowObj.getMonth(), tomorrowObj.getDate()).getTime();
 
             let tickerMatches = [];
             let bucketToday = [];
@@ -574,13 +575,21 @@
                     homeCode: homeCode, awayCode: awayCode, rawYtLink: rawYtLink 
                 };
 
-                if (dateStr === todayLabel) { tickerMatches.push(payload); }
+                // Parse the match date string safely into a Date object
+                let matchTimeObj = getMatchDateTime(dateStr, timeStr);
+                let matchMidnight = matchTimeObj ? new Date(matchTimeObj.getFullYear(), matchTimeObj.getMonth(), matchTimeObj.getDate()).getTime() : null;
+
+                // Safely check if the match falls on today or tomorrow using timestamps
+                let isToday = (matchMidnight === todayMidnight);
+                let isTomorrow = (matchMidnight === tomorrowMidnight);
+
+                if (isToday) { tickerMatches.push(payload); }
 
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed" || status.includes("CONFIRM")) {
                     bucketUnconfirmed.push(payload);
-                } else if (dateStr === todayLabel) {
+                } else if (isToday) {
                     bucketToday.push(payload);
-                } else if (dateStr === tomorrowLabel) {
+                } else if (isTomorrow) {
                     bucketTomorrow.push(payload);
                 } else {
                     let wKey = parseInt(weekNum);
